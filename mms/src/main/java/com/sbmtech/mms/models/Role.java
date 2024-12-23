@@ -5,35 +5,38 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "roles")
 public class Role {
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Integer id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Integer id;
 
-  @Enumerated(EnumType.STRING)
-  @Column(length = 20)
-  private ERole name;
+	@Enumerated(EnumType.STRING)
+	private ERole name;
 
-  public Role() {
+	@Column(name = "permissions")
+	private String permissions;
 
-  }
+	public Integer getId() {
+		return id;
+	}
 
-  public Role(ERole name) {
-    this.name = name;
-  }
+	public void setId(Integer id) {
+		this.id = id;
+	}
 
-  public Integer getId() {
-    return id;
-  }
+	public ERole getName() {
+		return name;
+	}
 
-  public void setId(Integer id) {
-    this.id = id;
-  }
+	public void setName(ERole name) {
+		this.name = name;
+	}
 
-  public ERole getName() {
-    return name;
-  }
+	public String getPermissions() {
+		return permissions;
+	}
 
-  public void setName(ERole name) {
-    this.name = name;
-  }
+	public void setPermissions(String permissions) {
+		this.permissions = permissions;
+	}
+
 }

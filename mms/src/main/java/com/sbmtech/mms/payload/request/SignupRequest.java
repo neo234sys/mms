@@ -2,7 +2,6 @@ package com.sbmtech.mms.payload.request;
 
 import java.util.Set;
 
-import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,52 +12,24 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SignupRequest {
-  @NotBlank
-  @Size(min = 3, max = 20)
-  private String username;
 
-  @NotBlank
-  @Size(max = 50)
-  @Email
-  private String email;
+	private String mobileNo;
 
-  private Set<String> role;
+	private String email;
 
-  @NotBlank
-  @Size(min = 6, max = 40)
-  private String password;
+	private Set<String> role;
 
-  /*
-  public String getUsername() {
-    return username;
-  }
+	private String password;
 
-  public void setUsername(String username) {
-    this.username = username;
-  }
+	private Boolean active;
 
-  public String getEmail() {
-    return email;
-  }
+	private Long emiratesId;
 
-  public void setEmail(String email) {
-    this.email = email;
-  }
+	private Long natId;
 
-  public String getPassword() {
-    return password;
-  }
+	private Long companyId;
 
-  public void setPassword(String password) {
-    this.password = password;
-  }
+	private String address;
 
-  public Set<String> getRole() {
-    return this.role;
-  }
-
-  public void setRole(Set<String> role) {
-    this.role = role;
-  }
-  */
+	private byte[] eidaCopy;
 }

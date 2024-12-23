@@ -4,86 +4,134 @@ import java.util.HashSet;
 import java.util.Set;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 
 @Entity
-@Table(name = "users", 
-    uniqueConstraints = { 
-      @UniqueConstraint(columnNames = "username"),
-      @UniqueConstraint(columnNames = "email") 
-    })
+@Table(name = "users")
 public class User {
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-  @NotBlank
-  @Size(max = 20)
-  private String username;
+	@Column(name = "active")
+	private Boolean active;
 
-  @NotBlank
-  @Size(max = 50)
-  @Email
-  private String email;
+	@Column(name = "email")
+	private String email;
 
-  @NotBlank
-  @Size(max = 120)
-  private String password;
+	@Column(name = "mobile_no")
+	private String mobileNo;
 
-  @ManyToMany(fetch = FetchType.LAZY)
-  @JoinTable(  name = "user_roles", 
-        joinColumns = @JoinColumn(name = "user_id"), 
-        inverseJoinColumns = @JoinColumn(name = "role_id"))
-  private Set<Role> roles = new HashSet<>();
+	@Column(name = "password")
+	private String password;
 
-  public User() {
-  }
+	@Column(name = "emirates_id")
+	private Long emiratesId;
 
-  public User(String username, String email, String password) {
-    this.username = username;
-    this.email = email;
-    this.password = password;
-  }
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "nat_id")
+	private Nationality nationality;
 
-  public Long getId() {
-    return id;
-  }
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "company_id")
+	private Company company;
 
-  public void setId(Long id) {
-    this.id = id;
-  }
+	@Column(name = "address")
+	private String address;
 
-  public String getUsername() {
-    return username;
-  }
+	@Lob
+	@Column(name = "eida_copy", columnDefinition = "longblob")
+	private byte[] eidaCopy;
 
-  public void setUsername(String username) {
-    this.username = username;
-  }
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+	private Set<Role> roles = new HashSet<>();
 
-  public String getEmail() {
-    return email;
-  }
+	public Long getId() {
+		return id;
+	}
 
-  public void setEmail(String email) {
-    this.email = email;
-  }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-  public String getPassword() {
-    return password;
-  }
+	public Boolean getActive() {
+		return active;
+	}
 
-  public void setPassword(String password) {
-    this.password = password;
-  }
+	public void setActive(Boolean active) {
+		this.active = active;
+	}
 
-  public Set<Role> getRoles() {
-    return roles;
-  }
+	public String getEmail() {
+		return email;
+	}
 
-  public void setRoles(Set<Role> roles) {
-    this.roles = roles;
-  }
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getMobileNo() {
+		return mobileNo;
+	}
+
+	public void setMobileNo(String mobileNo) {
+		this.mobileNo = mobileNo;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public Long getEmiratesId() {
+		return emiratesId;
+	}
+
+	public void setEmiratesId(Long emiratesId) {
+		this.emiratesId = emiratesId;
+	}
+
+	public Nationality getNationality() {
+		return nationality;
+	}
+
+	public void setNationality(Nationality nationality) {
+		this.nationality = nationality;
+	}
+
+	public Company getCompany() {
+		return company;
+	}
+
+	public void setCompany(Company company) {
+		this.company = company;
+	}
+
+	public String getAddress() {
+		return address;
+	}
+
+	public void setAddress(String address) {
+		this.address = address;
+	}
+
+	public byte[] getEidaCopy() {
+		return eidaCopy;
+	}
+
+	public void setEidaCopy(byte[] eidaCopy) {
+		this.eidaCopy = eidaCopy;
+	}
+
+	public Set<Role> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(Set<Role> roles) {
+		this.roles = roles;
+	}
+
 }

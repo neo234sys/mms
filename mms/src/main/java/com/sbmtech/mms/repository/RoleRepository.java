@@ -9,6 +9,6 @@ import com.sbmtech.mms.models.ERole;
 import com.sbmtech.mms.models.Role;
 
 @Repository
-public interface RoleRepository extends JpaRepository<Role, Long> {
+public interface RoleRepository extends JpaRepository<Role, Integer> {
   Optional<Role> findByName(ERole name);
 }

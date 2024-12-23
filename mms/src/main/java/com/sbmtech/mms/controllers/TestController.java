@@ -13,34 +13,35 @@ import org.apache.logging.log4j.LogManager;
 @RestController
 @RequestMapping("/api/test")
 public class TestController {
-	
 
 	private static final Logger logger = LogManager.getLogger(TestController.class);
-	  
-  @GetMapping("/all")
-  public String allAccess() {
-	  logger.debug("Debug Message Logged !!!");
+
+	@GetMapping("/all")
+	public String allAccess() {
+		logger.debug("Debug Message Logged !!!");
 		logger.info("Info Message Logged !!!");
-		//logger.error("Error Message Logged !!!", new NullPointerException("NullError"));
-		int a=9/0;
-    return "Public Content.";
-  }
+		// logger.error("Error Message Logged !!!", new
+		// NullPointerException("NullError"));
+		@SuppressWarnings("unused")
+		int a = 9 / 0;
+		return "Public Content.";
+	}
 
-  @GetMapping("/user")
-  @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
-  public String userAccess() {
-    return "User Content.";
-  }
+	@GetMapping("/user")
+	@PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
+	public String userAccess() {
+		return "User Content.";
+	}
 
-  @GetMapping("/mod")
-  @PreAuthorize("hasRole('MODERATOR')")
-  public String moderatorAccess() {
-    return "Moderator Board.";
-  }
+	@GetMapping("/mod")
+	@PreAuthorize("hasRole('MODERATOR')")
+	public String moderatorAccess() {
+		return "Moderator Board.";
+	}
 
-  @GetMapping("/admin")
-  @PreAuthorize("hasRole('ADMIN')")
-  public String adminAccess() {
-    return "Admin Board.";
-  }
+	@GetMapping("/admin")
+	@PreAuthorize("hasRole('ADMIN')")
+	public String adminAccess() {
+		return "Admin Board.";
+	}
 }
