@@ -1,7 +1,5 @@
 package com.sbmtech.mms.payload.request;
 
-import java.util.Set;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,7 +15,7 @@ public class SignupRequest {
 
 	private String email;
 
-	private Set<String> role;
+	private String role;
 
 	private String password;
 
@@ -25,9 +23,9 @@ public class SignupRequest {
 
 	private Long emiratesId;
 
-	private Long natId;
+	private Integer natId;
 
-	private Long companyId;
+	private Integer companyId;
 
 	private String address;
 
