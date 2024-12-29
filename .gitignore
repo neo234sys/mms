@@ -61,9 +61,4 @@ build/
 
 
 ###Pjt specific ###
-sbmtech/src/main/java/com/sbmtech/controller/GoogleDriveApplication.java
-sbmtech/src/main/resources/application-dev.properties
-sbmtech/src/main/resources/application-prod.properties
-sbmtech/src/main/resources/application-stage.properties
-sbmtech/src/main/java/com/sbmtech/repository/GroupTeamPowerEntityRepository.java
-sbmtech/src/main/resources/application-ppe.properties
+
