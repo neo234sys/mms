@@ -1,6 +1,6 @@
 package com.sbmtech.mms.models;
 
-import jakarta.persistence.*;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "roles")
