@@ -1,6 +1,8 @@
 package com.sbmtech.mms.controllers;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +21,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sbmtech.mms.models.Company;
+import com.sbmtech.mms.models.Countries;
 import com.sbmtech.mms.models.ERole;
-import com.sbmtech.mms.models.Nationality;
 import com.sbmtech.mms.models.Role;
 import com.sbmtech.mms.models.User;
 import com.sbmtech.mms.payload.request.ApiResponse;
@@ -28,7 +30,7 @@ import com.sbmtech.mms.payload.request.LoginRequest;
 import com.sbmtech.mms.payload.request.SignupRequest;
 import com.sbmtech.mms.payload.response.JwtResponse;
 import com.sbmtech.mms.repository.CompanyRepository;
-import com.sbmtech.mms.repository.NationalityRepository;
+import com.sbmtech.mms.repository.CountriesRepository;
 import com.sbmtech.mms.repository.RoleRepository;
 import com.sbmtech.mms.repository.UserRepository;
 import com.sbmtech.mms.security.jwt.JwtUtils;
@@ -51,7 +53,7 @@ public class AuthController {
 	RoleRepository roleRepository;
 
 	@Autowired
-	private NationalityRepository nationalityRepository;
+	private CountriesRepository nationalityRepository;
 
 	@Autowired
 	private CompanyRepository companyRepository;
@@ -76,7 +78,7 @@ public class AuthController {
 
 		try {
 			Authentication authentication = authenticationManager.authenticate(
-					new UsernamePasswordAuthenticationToken(loginRequest.getMobileNo(), loginRequest.getPassword()));
+					new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
 
 			SecurityContextHolder.getContext().setAuthentication(authentication);
 			String jwt = jwtUtils.generateJwtToken(authentication);
@@ -85,8 +87,8 @@ public class AuthController {
 			List<String> roles = userDetails.getAuthorities().stream().map(item -> item.getAuthority())
 					.collect(Collectors.toList());
 
-			JwtResponse jwtResponse = new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(),
-					userDetails.getEmail(), roles);
+			JwtResponse jwtResponse = new JwtResponse(jwt, userDetails.getUserId(), userDetails.getUsername(),
+					userDetails.getMobileNo(), roles);
 			return ResponseEntity.ok(new ApiResponse<>(1, "Authentication successful!", jwtResponse));
 
 		} catch (BadCredentialsException e) {
@@ -116,32 +118,41 @@ public class AuthController {
 			return ResponseEntity.ok(new ApiResponse<>(0, "Invalid Nationality ID!", null));
 		}
 
-		if (signUpRequest.getCompanyId() == null || !companyRepository.existsById(signUpRequest.getCompanyId())) {
-			return ResponseEntity.ok(new ApiResponse<>(0, "Invalid Company ID!", null));
-		}
+//		if (signUpRequest.getCompanyId() == null || !companyRepository.existsById(signUpRequest.getCompanyId())) {
+//			return ResponseEntity.ok(new ApiResponse<>(0, "Invalid Company ID!", null));
+//		}
 
+		System.out.println("pwd="+encoder.encode(signUpRequest.getPassword()));
 		User user = new User();
 		user.setMobileNo(signUpRequest.getMobileNo());
 		user.setEmail(signUpRequest.getEmail());
 		user.setPassword(encoder.encode(signUpRequest.getPassword()));
-		user.setActive(signUpRequest.getActive());
+		user.setActive(1);
 		user.setEmiratesId(signUpRequest.getEmiratesId());
 		user.setAddress(signUpRequest.getAddress());
-		user.setEidaCopy(signUpRequest.getEidaCopy());
+		//user.setEidaCopy(signUpRequest.getEidaCopy());
 
-		Nationality nationality = nationalityRepository.findById(signUpRequest.getNatId())
+		Countries nationality = nationalityRepository.findById(signUpRequest.getNatId())
 				.orElseThrow(() -> new RuntimeException("Error: Nationality not found."));
-		Company company = companyRepository.findById(signUpRequest.getCompanyId())
-				.orElseThrow(() -> new RuntimeException("Error: Company not found."));
-		user.setNationality(nationality);
-		user.setCompany(company);
+//		Company company = companyRepository.findById(signUpRequest.getCompanyId())
+//				.orElseThrow(() -> new RuntimeException("Error: Company not found."));
+		//user.setNationality(nationality);
+		user.setCountries(nationality);
+		//user.setCompany(company);
 
 		Role role = null;
-
-		if (signUpRequest.getRole() == null) {
-			role = roleRepository.findByName(ERole.ROLE_USER)
+		
+		Set<Role> roles = new HashSet<>();
+		
+		if (signUpRequest.getRole().equals("admin")) {
+			role = roleRepository.findByName(ERole.ROLE_ADMIN)
 					.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-		} else {
+		} else if (signUpRequest.getRole().equals("mgtadmin")) {
+			role = roleRepository.findByName(ERole.ROLE_MGT_ADMIN)
+					.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+			roles.add(role);
+		} 
+		/*else {
 			switch (signUpRequest.getRole()) {
 			case "admin":
 				role = roleRepository.findByName(ERole.ROLE_ADMIN)
@@ -156,8 +167,9 @@ public class AuthController {
 						.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
 			}
 		}
+		*/
 
-		user.setRole(role);
+		user.setRoles(roles);
 		userRepository.save(user);
 
 		return ResponseEntity.ok(new ApiResponse<>(1, "User registered successfully!", null));
@@ -187,16 +199,6 @@ public class AuthController {
 		}
 	}
 
-	@PostMapping("/nationality")
-	public ResponseEntity<ApiResponse<Nationality>> createOrUpdateNationality(@RequestBody Nationality nationality) {
-		try {
-			Nationality savedNationality = nationalityService.saveNationality(nationality);
-			return ResponseEntity.status(HttpStatus.CREATED)
-					.body(new ApiResponse<>(1, "Nationality created or updated successfully!", savedNationality));
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body(new ApiResponse<>(0, "An error occurred while saving the nationality!", null));
-		}
-	}
+	
 
 }

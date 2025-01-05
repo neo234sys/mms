@@ -1,36 +1,67 @@
 package com.sbmtech.mms.models;
 
+import java.io.Serializable;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.*;
 
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	@Id
+	@Column(name = "user_id")
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
-
-	@Column(name = "active")
-	private Boolean active;
-
+	private Long userId;
+	
 	@Column(name = "email")
 	private String email;
-
+	
 	@Column(name = "mobile_no")
-	private String mobileNo;
-
+	private Long mobileNo;
+	
 	@Column(name = "password")
 	private String password;
 
+	@Column(name = "active")
+	private Integer  active;
+
+	
 	@Column(name = "emirates_id")
 	private Long emiratesId;
+	
+	@Column(name = "dob")
+	private Date dob;
+	
+	@Column(name = "gender")
+	private Integer  gender;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "nat_id")
-	private Nationality nationality;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "company_id")
-	private Company company;
+	@OneToOne
+	@JoinColumn(name="nat_id",insertable=false, updatable=false)
+	Countries countries;
+	
+	@OneToOne
+	@JoinColumn(name="user_type_id",insertable=false, updatable=false)
+	UserTypeMaster userTypeMaster;
+	
+	@OneToOne
+	@JoinColumn(name="subscriber_id",insertable=false, updatable=false)
+	Subscriber subscriber;
+	
+	
+	@ManyToMany(fetch = FetchType.EAGER)
+	@JoinTable(	name = "user_roles", 
+				joinColumns = @JoinColumn(name = "user_id"), 
+				inverseJoinColumns = @JoinColumn(name = "role_id"))
+	private Set<Role> roles = new HashSet<>();
+	
+	
 
 	@Column(name = "address")
 	private String address;
@@ -39,24 +70,12 @@ public class User {
 	@Column(name = "eida_copy", columnDefinition = "longblob")
 	private byte[] eidaCopy;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "role_id")
-	private Role role;
-
-	public Long getId() {
-		return id;
+	public Long getUserId() {
+		return userId;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public Boolean getActive() {
-		return active;
-	}
-
-	public void setActive(Boolean active) {
-		this.active = active;
+	public void setUserId(Long userId) {
+		this.userId = userId;
 	}
 
 	public String getEmail() {
@@ -67,11 +86,11 @@ public class User {
 		this.email = email;
 	}
 
-	public String getMobileNo() {
+	public Long getMobileNo() {
 		return mobileNo;
 	}
 
-	public void setMobileNo(String mobileNo) {
+	public void setMobileNo(Long mobileNo) {
 		this.mobileNo = mobileNo;
 	}
 
@@ -83,6 +102,14 @@ public class User {
 		this.password = password;
 	}
 
+	public Integer getActive() {
+		return active;
+	}
+
+	public void setActive(Integer active) {
+		this.active = active;
+	}
+
 	public Long getEmiratesId() {
 		return emiratesId;
 	}
@@ -91,20 +118,52 @@ public class User {
 		this.emiratesId = emiratesId;
 	}
 
-	public Nationality getNationality() {
-		return nationality;
+	public Date getDob() {
+		return dob;
 	}
 
-	public void setNationality(Nationality nationality) {
-		this.nationality = nationality;
+	public void setDob(Date dob) {
+		this.dob = dob;
 	}
 
-	public Company getCompany() {
-		return company;
+	public Integer getGender() {
+		return gender;
 	}
 
-	public void setCompany(Company company) {
-		this.company = company;
+	public void setGender(Integer gender) {
+		this.gender = gender;
+	}
+
+	public Countries getCountries() {
+		return countries;
+	}
+
+	public void setCountries(Countries countries) {
+		this.countries = countries;
+	}
+
+	public UserTypeMaster getUserTypeMaster() {
+		return userTypeMaster;
+	}
+
+	public void setUserTypeMaster(UserTypeMaster userTypeMaster) {
+		this.userTypeMaster = userTypeMaster;
+	}
+
+	public Subscriber getSubscriber() {
+		return subscriber;
+	}
+
+	public void setSubscriber(Subscriber subscriber) {
+		this.subscriber = subscriber;
+	}
+
+	public Set<Role> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(Set<Role> roles) {
+		this.roles = roles;
 	}
 
 	public String getAddress() {
@@ -123,11 +182,8 @@ public class User {
 		this.eidaCopy = eidaCopy;
 	}
 
-	public Role getRole() {
-		return role;
-	}
+	
 
-	public void setRole(Role role) {
-		this.role = role;
-	}
+
+	
 }

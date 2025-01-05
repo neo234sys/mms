@@ -78,10 +78,15 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-ui</artifactId>
+			<version>1.6.12</version>
+		</dependency>
+		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
-			 <version>1.18.30</version>
+			<version>1.18.30</version>
 		</dependency>
 
 		<dependency>
@@ -100,7 +105,6 @@
 		</dependency>
 	</dependencies>
 
-	
 
 	<profiles>
 
@@ -155,7 +159,6 @@
 				</plugins>
 			</build>
 		</profile>
-
 
 
 		<profile>

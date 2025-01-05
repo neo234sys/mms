@@ -6,18 +6,12 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
 
-//@SpringBootApplication
-//public class MMSApplication {
-////https://www.bezkoder.com/spring-boot-jwt-authentication/
-//	public static void main(String[] args) {
-//    SpringApplication.run(MMSApplication.class, args);
-//	}
-//
-//}
-
 
 @SpringBootApplication
 public class MMSApplication extends SpringBootServletInitializer {
+	
+	//Swagger
+	//http://localhost:8080/swagger-ui/index.html
  
 	public static void main(String[] args) {
 		SpringApplication.run(MMSApplication.class, args);

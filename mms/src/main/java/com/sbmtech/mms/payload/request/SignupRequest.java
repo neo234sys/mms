@@ -11,7 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class SignupRequest {
 
-	private String mobileNo;
+	private Long mobileNo;
 
 	private String email;
 
@@ -19,7 +19,7 @@ public class SignupRequest {
 
 	private String password;
 
-	private Boolean active;
+	//private Boolean active;
 
 	private Long emiratesId;
 
@@ -29,5 +29,5 @@ public class SignupRequest {
 
 	private String address;
 
-	private byte[] eidaCopy;
+	//private byte[] eidaCopy;
 }

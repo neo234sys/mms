@@ -1,13 +1,21 @@
 package com.sbmtech.mms.models;
 
+import java.io.Serializable;
+
 import javax.persistence.*;
 
 @Entity
 @Table(name = "roles")
-public class Role {
+public class Role implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	@Id
+	@Column(name = "role_id")
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
+	private Integer roleId;
 
 	@Enumerated(EnumType.STRING)
 	private ERole name;
@@ -15,12 +23,14 @@ public class Role {
 	@Column(name = "permissions")
 	private String permissions;
 
-	public Integer getId() {
-		return id;
+	
+
+	public Integer getRoleId() {
+		return roleId;
 	}
 
-	public void setId(Integer id) {
-		this.id = id;
+	public void setRoleId(Integer roleId) {
+		this.roleId = roleId;
 	}
 
 	public ERole getName() {

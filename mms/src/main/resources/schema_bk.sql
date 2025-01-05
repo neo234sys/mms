@@ -1,15 +1,19 @@
+DROP TABLE IF EXISTS `cities`;
+DROP TABLE IF EXISTS `states`;
+DROP TABLE IF EXISTS `countries`;
+DROP TABLE IF EXISTS `subregions`;
 DROP TABLE IF EXISTS `regions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `regions` (
-  `id` mediumint unsigned NOT NULL AUTO_INCREMENT,
+  `region_id` INT NOT NULL AUTO_INCREMENT,
   `name` varchar(100)  NOT NULL,
   `translations` text ,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `flag` tinyint(1) NOT NULL DEFAULT '1',
   `wikiDataId` varchar(255)  DEFAULT NULL COMMENT 'Rapid API GeoDB Cities',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`region_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=7;
 
 
@@ -17,17 +21,17 @@ DROP TABLE IF EXISTS `subregions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `subregions` (
-  `id` mediumint unsigned NOT NULL AUTO_INCREMENT,
+  `subregion_id` INT NOT NULL AUTO_INCREMENT,
   `name` varchar(100)  NOT NULL,
   `translations` text ,
-  `region_id` mediumint unsigned NOT NULL,
+  `region_id` INT NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `flag` tinyint(1) NOT NULL DEFAULT '1',
   `wikiDataId` varchar(255)  DEFAULT NULL COMMENT 'Rapid API GeoDB Cities',
-  PRIMARY KEY (`id`),
+  PRIMARY KEY (`subregion_id`),
   KEY `subregion_continent` (`region_id`),
-  CONSTRAINT `subregion_continent_final` FOREIGN KEY (`region_id`) REFERENCES `regions` (`id`)
+  CONSTRAINT `subregion_continent_final` FOREIGN KEY (`region_id`) REFERENCES `regions` (`region_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=23 ;
 
 
@@ -35,7 +39,7 @@ DROP TABLE IF EXISTS `countries`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `countries` (
-  `id` mediumint unsigned NOT NULL AUTO_INCREMENT,
+  `country_id` INT NOT NULL AUTO_INCREMENT,
   `name` varchar(100)  NOT NULL,
   `iso3` char(3)  DEFAULT NULL,
   `numeric_code` char(3)  DEFAULT NULL,
@@ -48,9 +52,9 @@ CREATE TABLE `countries` (
   `tld` varchar(255)  DEFAULT NULL,
   `native` varchar(255)  DEFAULT NULL,
   `region` varchar(255)  DEFAULT NULL,
-  `region_id` mediumint unsigned DEFAULT NULL,
+  `region_id` INT DEFAULT NULL,
   `subregion` varchar(255)  DEFAULT NULL,
-  `subregion_id` mediumint unsigned DEFAULT NULL,
+  `subregion_id` INT DEFAULT NULL,
   `nationality` varchar(255)  DEFAULT NULL,
   `timezones` text ,
   `translations` text ,
@@ -62,11 +66,11 @@ CREATE TABLE `countries` (
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `flag` tinyint(1) NOT NULL DEFAULT '1',
   `wikiDataId` varchar(255)  DEFAULT NULL COMMENT 'Rapid API GeoDB Cities',
-  PRIMARY KEY (`id`),
+  PRIMARY KEY (`country_id`),
   KEY `country_continent` (`region_id`),
   KEY `country_subregion` (`subregion_id`),
-  CONSTRAINT `country_continent_final` FOREIGN KEY (`region_id`) REFERENCES `regions` (`id`),
-  CONSTRAINT `country_subregion_final` FOREIGN KEY (`subregion_id`) REFERENCES `subregions` (`id`)
+  CONSTRAINT `country_continent_final` FOREIGN KEY (`region_id`) REFERENCES `regions` (`region_id`),
+  CONSTRAINT `country_subregion_final` FOREIGN KEY (`subregion_id`) REFERENCES `subregions` (`subregion_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=251 ;
 
 
@@ -75,9 +79,9 @@ DROP TABLE IF EXISTS `states`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `states` (
-  `id` mediumint unsigned NOT NULL AUTO_INCREMENT,
+  `state_id` INT NOT NULL AUTO_INCREMENT,
   `name` varchar(255)  NOT NULL,
-  `country_id` mediumint unsigned NOT NULL,
+  `country_id` INT NOT NULL,
   `country_code` char(2)  NOT NULL,
   `fips_code` varchar(255)  DEFAULT NULL,
   `iso2` varchar(255)  DEFAULT NULL,
@@ -88,9 +92,9 @@ CREATE TABLE `states` (
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `flag` tinyint(1) NOT NULL DEFAULT '1',
   `wikiDataId` varchar(255)  DEFAULT NULL COMMENT 'Rapid API GeoDB Cities',
-  PRIMARY KEY (`id`),
+  PRIMARY KEY (`state_id`),
   KEY `country_region` (`country_id`),
-  CONSTRAINT `country_region_final` FOREIGN KEY (`country_id`) REFERENCES `countries` (`id`)
+  CONSTRAINT `country_region_final` FOREIGN KEY (`country_id`) REFERENCES `countries` (`country_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5324 ;
 
 
@@ -101,11 +105,11 @@ DROP TABLE IF EXISTS `cities`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cities` (
-  `id` mediumint unsigned NOT NULL AUTO_INCREMENT,
+  `city_id` INT NOT NULL AUTO_INCREMENT,
   `name` varchar(255)  NOT NULL,
-  `state_id` mediumint unsigned NOT NULL,
+  `state_id` INT NOT NULL,
   `state_code` varchar(255)  NOT NULL,
-  `country_id` mediumint unsigned NOT NULL,
+  `country_id`INT NOT NULL,
   `country_code` char(2)  NOT NULL,
   `latitude` decimal(10,8) NOT NULL,
   `longitude` decimal(11,8) NOT NULL,
@@ -113,9 +117,9 @@ CREATE TABLE `cities` (
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `flag` tinyint(1) NOT NULL DEFAULT '1',
   `wikiDataId` varchar(255)  DEFAULT NULL COMMENT 'Rapid API GeoDB Cities',
-  PRIMARY KEY (`id`),
+  PRIMARY KEY (`city_id`),
   KEY `cities_test_ibfk_1` (`state_id`),
   KEY `cities_test_ibfk_2` (`country_id`),
-  CONSTRAINT `cities_ibfk_1` FOREIGN KEY (`state_id`) REFERENCES `states` (`id`),
-  CONSTRAINT `cities_ibfk_2` FOREIGN KEY (`country_id`) REFERENCES `countries` (`id`)
+  CONSTRAINT `cities_ibfk_1` FOREIGN KEY (`state_id`) REFERENCES `states` (`state_id`),
+  CONSTRAINT `cities_ibfk_2` FOREIGN KEY (`country_id`) REFERENCES `countries` (`country_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=154475 ;

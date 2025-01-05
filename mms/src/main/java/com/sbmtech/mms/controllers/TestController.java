@@ -1,13 +1,15 @@
 package com.sbmtech.mms.controllers;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.security.access.prepost.PreAuthorize;
-
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -20,28 +22,26 @@ public class TestController {
 	public String allAccess() {
 		logger.debug("Debug Message Logged !!!");
 		logger.info("Info Message Logged !!!");
-		// logger.error("Error Message Logged !!!", new
-		// NullPointerException("NullError"));
-		@SuppressWarnings("unused")
-		int a = 9 / 0;
+		
 		return "Public Content.";
 	}
 
-	@GetMapping("/user")
-	@PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
+	@Operation(summary = "mms endpoint", security = @SecurityRequirement(name = "bearerAuth"))
+	@GetMapping("/mgtAdmin")
+	@PreAuthorize("hasRole('MGT_ADMIN') or hasRole('MODERATOR') or hasRole('ADMIN')")
 	public String userAccess() {
-		return "User Content.";
+		return "Mangament Admin Content.";
 	}
 
-	@GetMapping("/mod")
-	@PreAuthorize("hasRole('MODERATOR')")
+	@GetMapping("/mgtManager")
+	@PreAuthorize("hasRole('MGT_MANAGER')")
 	public String moderatorAccess() {
-		return "Moderator Board.";
+		return "Management manager Content.";
 	}
 
 	@GetMapping("/admin")
 	@PreAuthorize("hasRole('ADMIN')")
 	public String adminAccess() {
-		return "Admin Board.";
+		return "Admin.";
 	}
 }

@@ -1,5 +1,7 @@
 package com.sbmtech.mms.models;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -8,23 +10,28 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "nationality")
-public class Nationality {
+@Table(name = "regions")
+public class Regions implements Serializable {
+
+	
+	private static final long serialVersionUID = 1L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "nat_id")
-	private Integer id;
+	@Column(name = "region_id")
+	private Integer regionId;
 
 	@Column(name = "name")
 	private String name;
 
-	public Integer getId() {
-		return id;
+	
+
+	public Integer getRegionId() {
+		return regionId;
 	}
 
-	public void setId(Integer id) {
-		this.id = id;
+	public void setRegionId(Integer regionId) {
+		this.regionId = regionId;
 	}
 
 	public String getName() {
@@ -34,5 +41,6 @@ public class Nationality {
 	public void setName(String name) {
 		this.name = name;
 	}
-
+	
+	
 }

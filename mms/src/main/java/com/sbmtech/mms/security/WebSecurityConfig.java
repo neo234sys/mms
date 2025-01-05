@@ -37,6 +37,33 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
   public AuthTokenFilter authenticationJwtTokenFilter() {
     return new AuthTokenFilter();
   }
+  
+  private static final String[] PUBLIC_URLS= {
+			"/v2/api-docs",
+			"/v3/api-docs/**",
+          "/configuration/ui",
+          "/swagger-resources/**",
+          "/configuration/security",
+          "/swagger-ui/**",
+          "/webjars/**",
+          "/static/**",
+          "/static/static/**",
+          "/static/static/css/**",
+          "/static/static/js/**",
+          "/static/static/media/**",
+          "/index.html",
+          //"/asset-manifest.json",
+          //"/manifest.json",
+          "/favicon.ico",
+          "/public/**",
+          "/css/**",
+          "/js/**",
+          "/ssui/**",
+          "/inquiry/**",
+          "/ssui/public/**"
+         
+			
+	};
 
 //  @Override
 //  public void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
@@ -87,8 +114,10 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
         .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> 
+        
           auth.antMatchers("/api/auth/**").permitAll()
               .antMatchers("/api/test/**").permitAll()
+              .antMatchers(PUBLIC_URLS).permitAll()
               .anyRequest().authenticated()
         );
     

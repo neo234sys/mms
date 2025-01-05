@@ -11,8 +11,10 @@ import com.sbmtech.mms.models.User;
 public interface UserRepository extends JpaRepository<User, Long> {
 
 	Optional<User> findByMobileNo(String mobileNo);
+	
+	Optional<User> findByEmail(String email);
 
-	boolean existsByMobileNo(String mobileNo);
+	boolean existsByMobileNo(Long mobileNo);
 
 	boolean existsByEmail(String email);
 

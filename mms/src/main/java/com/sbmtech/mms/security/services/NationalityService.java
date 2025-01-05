@@ -3,16 +3,16 @@ package com.sbmtech.mms.security.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.sbmtech.mms.models.Nationality;
-import com.sbmtech.mms.repository.NationalityRepository;
+import com.sbmtech.mms.models.Countries;
+import com.sbmtech.mms.repository.CountriesRepository;
 
 @Service
 public class NationalityService {
 
 	@Autowired
-	private NationalityRepository nationalityRepository;
+	private CountriesRepository nationalityRepository;
 
-	public Nationality saveNationality(Nationality nationality) {
+	public Countries saveNationality(Countries nationality) {
 		return nationalityRepository.save(nationality);
 	}
 
