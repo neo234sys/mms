@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.sbmtech.mms.dto.NotifEmailDTO;
 import com.sbmtech.mms.service.EmailService;
+import com.sbmtech.mms.service.NotificationService;
+
 import java.util.Date;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -22,6 +24,9 @@ public class TestController {
 	
 	@Autowired
 	EmailService emailService;
+	
+	@Autowired
+	NotificationService notificationService;
 
 	private static final Logger logger = LogManager.getLogger(TestController.class);
 
@@ -57,9 +62,12 @@ public class TestController {
 	public String testMail() throws Exception{
 		NotifEmailDTO dto=new NotifEmailDTO();
 		dto.setEmailTo("hasan234abu@gmail.com");
-		dto.setSubject("test mail subject "+new Date());
-		dto.setEmailBody("This is test body "+new Date());
-		emailService.sendEmailWithMultiAttachments(dto);
+		dto.setCustomerName("Hasan");
+		dto.setOtpCode(12345L);
+		//dto.setSubject("test mail subject "+new Date());
+		//dto.setEmailBody("This is test body "+new Date());
+		//emailService.sendEmailWithMultiAttachments(dto);
+		notificationService.sendOTPEmail(dto);
 		return "email send successfully";
 	}
 }
