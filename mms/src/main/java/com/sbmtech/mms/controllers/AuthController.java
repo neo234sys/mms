@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sbmtech.mms.models.Company;
 import com.sbmtech.mms.models.Countries;
 import com.sbmtech.mms.models.ERole;
 import com.sbmtech.mms.models.Role;
@@ -29,13 +28,10 @@ import com.sbmtech.mms.payload.request.ApiResponse;
 import com.sbmtech.mms.payload.request.LoginRequest;
 import com.sbmtech.mms.payload.request.SignupRequest;
 import com.sbmtech.mms.payload.response.JwtResponse;
-import com.sbmtech.mms.repository.CompanyRepository;
 import com.sbmtech.mms.repository.CountriesRepository;
 import com.sbmtech.mms.repository.RoleRepository;
 import com.sbmtech.mms.repository.UserRepository;
 import com.sbmtech.mms.security.jwt.JwtUtils;
-import com.sbmtech.mms.security.services.CompanyService;
-import com.sbmtech.mms.security.services.NationalityService;
 import com.sbmtech.mms.security.services.RoleService;
 import com.sbmtech.mms.security.services.UserDetailsImpl;
 
@@ -54,15 +50,6 @@ public class AuthController {
 
 	@Autowired
 	private CountriesRepository nationalityRepository;
-
-	@Autowired
-	private CompanyRepository companyRepository;
-
-	@Autowired
-	private CompanyService companyService;
-
-	@Autowired
-	private NationalityService nationalityService;
 
 	@Autowired
 	PasswordEncoder encoder;
@@ -118,11 +105,7 @@ public class AuthController {
 			return ResponseEntity.ok(new ApiResponse<>(0, "Invalid Nationality ID!", null));
 		}
 
-//		if (signUpRequest.getCompanyId() == null || !companyRepository.existsById(signUpRequest.getCompanyId())) {
-//			return ResponseEntity.ok(new ApiResponse<>(0, "Invalid Company ID!", null));
-//		}
-
-		System.out.println("pwd="+encoder.encode(signUpRequest.getPassword()));
+		System.out.println("pwd=" + encoder.encode(signUpRequest.getPassword()));
 		User user = new User();
 		user.setMobileNo(signUpRequest.getMobileNo());
 		user.setEmail(signUpRequest.getEmail());
@@ -130,20 +113,15 @@ public class AuthController {
 		user.setActive(1);
 		user.setEmiratesId(signUpRequest.getEmiratesId());
 		user.setAddress(signUpRequest.getAddress());
-		//user.setEidaCopy(signUpRequest.getEidaCopy());
 
 		Countries nationality = nationalityRepository.findById(signUpRequest.getNatId())
 				.orElseThrow(() -> new RuntimeException("Error: Nationality not found."));
-//		Company company = companyRepository.findById(signUpRequest.getCompanyId())
-//				.orElseThrow(() -> new RuntimeException("Error: Company not found."));
-		//user.setNationality(nationality);
 		user.setCountries(nationality);
-		//user.setCompany(company);
 
 		Role role = null;
-		
+
 		Set<Role> roles = new HashSet<>();
-		
+
 		if (signUpRequest.getRole().equals("admin")) {
 			role = roleRepository.findByName(ERole.ROLE_ADMIN)
 					.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
@@ -151,23 +129,7 @@ public class AuthController {
 			role = roleRepository.findByName(ERole.ROLE_MGT_ADMIN)
 					.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
 			roles.add(role);
-		} 
-		/*else {
-			switch (signUpRequest.getRole()) {
-			case "admin":
-				role = roleRepository.findByName(ERole.ROLE_ADMIN)
-						.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-				break;
-			case "mod":
-				role = roleRepository.findByName(ERole.ROLE_MODERATOR)
-						.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-				break;
-			default:
-				role = roleRepository.findByName(ERole.ROLE_USER)
-						.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-			}
 		}
-		*/
 
 		user.setRoles(roles);
 		userRepository.save(user);
@@ -186,19 +148,5 @@ public class AuthController {
 					.body(new ApiResponse<>(0, "An error occurred while saving the role!", null));
 		}
 	}
-
-	@PostMapping("/company")
-	public ResponseEntity<ApiResponse<Company>> createOrUpdateCompany(@RequestBody Company company) {
-		try {
-			Company savedCompany = companyService.saveCompany(company);
-			return ResponseEntity.status(HttpStatus.CREATED)
-					.body(new ApiResponse<>(1, "Company created or updated successfully!", savedCompany));
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body(new ApiResponse<>(0, "An error occurred while saving the company!", null));
-		}
-	}
-
-	
 
 }

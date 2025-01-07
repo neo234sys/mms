@@ -6,7 +6,7 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "roles")
-public class Role implements Serializable{
+public class Role implements Serializable {
 	/**
 	 * 
 	 */
@@ -22,8 +22,6 @@ public class Role implements Serializable{
 
 	@Column(name = "permissions")
 	private String permissions;
-
-	
 
 	public Integer getRoleId() {
 		return roleId;

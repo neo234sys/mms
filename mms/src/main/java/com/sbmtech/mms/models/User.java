@@ -9,7 +9,7 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "users")
-public class User implements Serializable{
+public class User implements Serializable {
 	/**
 	 * 
 	 */
@@ -19,49 +19,43 @@ public class User implements Serializable{
 	@Column(name = "user_id")
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long userId;
-	
+
 	@Column(name = "email")
 	private String email;
-	
+
 	@Column(name = "mobile_no")
 	private Long mobileNo;
-	
+
 	@Column(name = "password")
 	private String password;
 
 	@Column(name = "active")
-	private Integer  active;
+	private Integer active;
 
-	
 	@Column(name = "emirates_id")
 	private Long emiratesId;
-	
+
 	@Column(name = "dob")
 	private Date dob;
-	
+
 	@Column(name = "gender")
-	private Integer  gender;
+	private Integer gender;
 
 	@OneToOne
-	@JoinColumn(name="nat_id",insertable=false, updatable=false)
+	@JoinColumn(name = "nat_id", insertable = false, updatable = false)
 	Countries countries;
-	
+
 	@OneToOne
-	@JoinColumn(name="user_type_id",insertable=false, updatable=false)
+	@JoinColumn(name = "user_type_id", insertable = false, updatable = false)
 	UserTypeMaster userTypeMaster;
-	
+
 	@OneToOne
-	@JoinColumn(name="subscriber_id",insertable=false, updatable=false)
+	@JoinColumn(name = "subscriber_id", insertable = false, updatable = false)
 	Subscriber subscriber;
-	
-	
+
 	@ManyToMany(fetch = FetchType.EAGER)
-	@JoinTable(	name = "user_roles", 
-				joinColumns = @JoinColumn(name = "user_id"), 
-				inverseJoinColumns = @JoinColumn(name = "role_id"))
+	@JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
 	private Set<Role> roles = new HashSet<>();
-	
-	
 
 	@Column(name = "address")
 	private String address;
@@ -182,8 +176,4 @@ public class User implements Serializable{
 		this.eidaCopy = eidaCopy;
 	}
 
-	
-
-
-	
 }

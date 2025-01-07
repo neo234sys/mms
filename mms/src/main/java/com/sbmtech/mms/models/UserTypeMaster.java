@@ -13,7 +13,6 @@ import javax.persistence.Table;
 @Table(name = "user_type_master")
 public class UserTypeMaster implements Serializable {
 
-	
 	private static final long serialVersionUID = 1L;
 
 	@Id
@@ -39,8 +38,5 @@ public class UserTypeMaster implements Serializable {
 	public void setUserTypeName(String userTypeName) {
 		this.userTypeName = userTypeName;
 	}
-
-	
-
 
 }

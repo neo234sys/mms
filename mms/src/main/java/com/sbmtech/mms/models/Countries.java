@@ -13,7 +13,6 @@ import javax.persistence.Table;
 @Table(name = "countries")
 public class Countries implements Serializable {
 
-	
 	private static final long serialVersionUID = 1L;
 
 	@Id
@@ -23,10 +22,6 @@ public class Countries implements Serializable {
 
 	@Column(name = "name")
 	private String name;
-
-	
-
-
 
 	public Integer getCountryId() {
 		return countryId;
@@ -43,6 +38,5 @@ public class Countries implements Serializable {
 	public void setName(String name) {
 		this.name = name;
 	}
-	
-	
+
 }
