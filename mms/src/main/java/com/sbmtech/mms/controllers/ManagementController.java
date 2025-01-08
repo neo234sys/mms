@@ -13,6 +13,9 @@ import com.sbmtech.mms.payload.request.ApiResponse;
 import com.sbmtech.mms.payload.request.SubscriberRequest;
 import com.sbmtech.mms.security.services.SubscriberService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/mgt")
@@ -22,6 +25,7 @@ public class ManagementController {
 	private SubscriberService subscriberService;
 
 	@PostMapping("/create")
+	@Operation(summary = "mms endpoint", security = @SecurityRequirement(name = "bearerAuth"))
 	public ResponseEntity<ApiResponse<String>> createSubscriber(@RequestBody SubscriberRequest requestDTO) {
 		try {
 			subscriberService.createSubscriber(requestDTO);
