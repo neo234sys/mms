@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sbmtech.mms.dto.NotifEmailDTO;
+import com.sbmtech.mms.dto.NotificationEmailResponseDTO;
 import com.sbmtech.mms.service.EmailService;
 import com.sbmtech.mms.service.NotificationService;
 
@@ -67,7 +68,7 @@ public class TestController {
 		//dto.setSubject("test mail subject "+new Date());
 		//dto.setEmailBody("This is test body "+new Date());
 		//emailService.sendEmailWithMultiAttachments(dto);
-		notificationService.sendOTPEmail(dto);
-		return "email send successfully";
+		NotificationEmailResponseDTO resp=notificationService.sendOTPEmail(dto);
+		return "email send successfully "+resp.isEmailSent();
 	}
 }
