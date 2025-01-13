@@ -30,18 +30,19 @@ public class UserDetailsImpl implements UserDetails {
 			Collection<? extends GrantedAuthority> authorities) {
 		this.userId = userId;
 		this.username = username;
-		this.mobileNo =  mobileNo;
+		this.mobileNo = mobileNo;
 		this.password = password;
 		this.authorities = authorities;
 	}
 
 	public static UserDetailsImpl build(User user) {
-		
-		//List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(user.getRole().getName().name()));
+
+		// List<GrantedAuthority> authorities = List.of(new
+		// SimpleGrantedAuthority(user.getRole().getName().name()));
 		List<GrantedAuthority> authorities = user.getRoles().stream()
-				.map(role -> new SimpleGrantedAuthority(role.getName().name()))
-				.collect(Collectors.toList());
-		return new UserDetailsImpl(user.getUserId(), user.getEmail(),user.getMobileNo(), user.getPassword(), authorities);
+				.map(role -> new SimpleGrantedAuthority(role.getName().name())).collect(Collectors.toList());
+		return new UserDetailsImpl(user.getUserId(), user.getEmail(), user.getMobileNo(), user.getPassword(),
+				authorities);
 	}
 
 	@Override
@@ -49,14 +50,9 @@ public class UserDetailsImpl implements UserDetails {
 		return authorities;
 	}
 
-	
-
 	public Long getUserId() {
 		return userId;
 	}
-
-	
-	
 
 	public Long getMobileNo() {
 		return mobileNo;

@@ -14,7 +14,6 @@ import com.sbmtech.mms.dto.NotificationEmailResponseDTO;
 import com.sbmtech.mms.service.EmailService;
 import com.sbmtech.mms.service.NotificationService;
 
-import java.util.Date;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
@@ -22,10 +21,10 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 @RestController
 @RequestMapping("/api/test")
 public class TestController {
-	
+
 	@Autowired
 	EmailService emailService;
-	
+
 	@Autowired
 	NotificationService notificationService;
 
@@ -35,7 +34,7 @@ public class TestController {
 	public String allAccess() {
 		logger.debug("Debug Message Logged !!!");
 		logger.info("Info Message Logged !!!");
-		
+
 		return "Public Content.";
 	}
 
@@ -57,18 +56,18 @@ public class TestController {
 	public String adminAccess() {
 		return "Admin.";
 	}
-	
+
 	@GetMapping("/testMail")
-	//@PreAuthorize("hasRole('MGT_ADMIN') or  hasRole('ADMIN')")
-	public String testMail() throws Exception{
-		NotifEmailDTO dto=new NotifEmailDTO();
+	// @PreAuthorize("hasRole('MGT_ADMIN') or hasRole('ADMIN')")
+	public String testMail() throws Exception {
+		NotifEmailDTO dto = new NotifEmailDTO();
 		dto.setEmailTo("hasan234abu@gmail.com");
 		dto.setCustomerName("Hasan");
 		dto.setOtpCode(12345L);
-		//dto.setSubject("test mail subject "+new Date());
-		//dto.setEmailBody("This is test body "+new Date());
-		//emailService.sendEmailWithMultiAttachments(dto);
-		NotificationEmailResponseDTO resp=notificationService.sendOTPEmail(dto);
-		return "email send successfully "+resp.isEmailSent();
+		// dto.setSubject("test mail subject "+new Date());
+		// dto.setEmailBody("This is test body "+new Date());
+		// emailService.sendEmailWithMultiAttachments(dto);
+		NotificationEmailResponseDTO resp = notificationService.sendOTPEmail(dto);
+		return "email send successfully " + resp.isEmailSent();
 	}
 }

@@ -10,14 +10,12 @@ import javax.persistence.*;
 @Entity
 @Table(name = "users")
 public class User implements Serializable {
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 1L;
 
 	@Id
-	@Column(name = "user_id")
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "user_id")
 	private Long userId;
 
 	@Column(name = "email")
@@ -30,32 +28,17 @@ public class User implements Serializable {
 	private String password;
 
 	@Column(name = "active")
-	private Integer active;
+	private Boolean active;
 
 	@Column(name = "emirates_id")
 	private Long emiratesId;
 
 	@Column(name = "dob")
+	@Temporal(TemporalType.DATE)
 	private Date dob;
 
 	@Column(name = "gender")
 	private Integer gender;
-
-	@OneToOne
-	@JoinColumn(name = "nat_id", insertable = false, updatable = false)
-	Countries countries;
-
-	@OneToOne
-	@JoinColumn(name = "user_type_id", insertable = false, updatable = false)
-	UserTypeMaster userTypeMaster;
-
-	@OneToOne
-	@JoinColumn(name = "subscriber_id", insertable = false, updatable = false)
-	Subscriber subscriber;
-
-	@ManyToMany(fetch = FetchType.EAGER)
-	@JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
-	private Set<Role> roles = new HashSet<>();
 
 	@Column(name = "address")
 	private String address;
@@ -63,6 +46,41 @@ public class User implements Serializable {
 	@Lob
 	@Column(name = "eida_copy", columnDefinition = "longblob")
 	private byte[] eidaCopy;
+
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "nat_id", referencedColumnName = "country_id")
+	private Countries nationality;
+
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_type_id", referencedColumnName = "user_type_id")
+	private UserTypeMaster userType;
+
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "subscriber_id", referencedColumnName = "subscriber_id")
+	private Subscriber subscriber;
+
+	@ManyToMany(fetch = FetchType.EAGER)
+	@JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+	private Set<Role> roles = new HashSet<>();
+
+	@Column(name = "tenent_id")
+	private Integer tenantId;
+
+	@Column(name = "employee_id")
+	private Integer employeeId;
+
+	@Column(name = "created_by")
+	private Integer createdBy;
+
+	@Column(name = "created_date")
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date createdDate;
+
+	@Column(name = "company_id")
+	private Integer companyId;
+
+	@Column(name = "country_id")
+	private Integer countryId;
 
 	public Long getUserId() {
 		return userId;
@@ -96,11 +114,11 @@ public class User implements Serializable {
 		this.password = password;
 	}
 
-	public Integer getActive() {
+	public Boolean getActive() {
 		return active;
 	}
 
-	public void setActive(Integer active) {
+	public void setActive(Boolean active) {
 		this.active = active;
 	}
 
@@ -128,20 +146,36 @@ public class User implements Serializable {
 		this.gender = gender;
 	}
 
-	public Countries getCountries() {
-		return countries;
+	public String getAddress() {
+		return address;
 	}
 
-	public void setCountries(Countries countries) {
-		this.countries = countries;
+	public void setAddress(String address) {
+		this.address = address;
 	}
 
-	public UserTypeMaster getUserTypeMaster() {
-		return userTypeMaster;
+	public byte[] getEidaCopy() {
+		return eidaCopy;
 	}
 
-	public void setUserTypeMaster(UserTypeMaster userTypeMaster) {
-		this.userTypeMaster = userTypeMaster;
+	public void setEidaCopy(byte[] eidaCopy) {
+		this.eidaCopy = eidaCopy;
+	}
+
+	public Countries getNationality() {
+		return nationality;
+	}
+
+	public void setNationality(Countries nationality) {
+		this.nationality = nationality;
+	}
+
+	public UserTypeMaster getUserType() {
+		return userType;
+	}
+
+	public void setUserType(UserTypeMaster userType) {
+		this.userType = userType;
 	}
 
 	public Subscriber getSubscriber() {
@@ -160,20 +194,56 @@ public class User implements Serializable {
 		this.roles = roles;
 	}
 
-	public String getAddress() {
-		return address;
+	public Integer getTenantId() {
+		return tenantId;
 	}
 
-	public void setAddress(String address) {
-		this.address = address;
+	public void setTenantId(Integer tenantId) {
+		this.tenantId = tenantId;
 	}
 
-	public byte[] getEidaCopy() {
-		return eidaCopy;
+	public Integer getEmployeeId() {
+		return employeeId;
 	}
 
-	public void setEidaCopy(byte[] eidaCopy) {
-		this.eidaCopy = eidaCopy;
+	public void setEmployeeId(Integer employeeId) {
+		this.employeeId = employeeId;
+	}
+
+	public Integer getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(Integer createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	public Integer getCompanyId() {
+		return companyId;
+	}
+
+	public void setCompanyId(Integer companyId) {
+		this.companyId = companyId;
+	}
+
+	public Integer getCountryId() {
+		return countryId;
+	}
+
+	public void setCountryId(Integer countryId) {
+		this.countryId = countryId;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
 	}
 
 }

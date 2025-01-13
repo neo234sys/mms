@@ -1,12 +1,10 @@
 package com.sbmtech.mms.controllers;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -20,19 +18,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sbmtech.mms.models.Countries;
-import com.sbmtech.mms.models.ERole;
-import com.sbmtech.mms.models.Role;
+import com.sbmtech.mms.models.Subscriber;
 import com.sbmtech.mms.models.User;
 import com.sbmtech.mms.payload.request.ApiResponse;
 import com.sbmtech.mms.payload.request.LoginRequest;
-import com.sbmtech.mms.payload.request.SignupRequest;
 import com.sbmtech.mms.payload.response.JwtResponse;
-import com.sbmtech.mms.repository.CountriesRepository;
 import com.sbmtech.mms.repository.RoleRepository;
 import com.sbmtech.mms.repository.UserRepository;
 import com.sbmtech.mms.security.jwt.JwtUtils;
-import com.sbmtech.mms.security.services.RoleService;
 import com.sbmtech.mms.security.services.UserDetailsImpl;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -49,16 +42,10 @@ public class AuthController {
 	RoleRepository roleRepository;
 
 	@Autowired
-	private CountriesRepository nationalityRepository;
-
-	@Autowired
 	PasswordEncoder encoder;
 
 	@Autowired
 	JwtUtils jwtUtils;
-
-	@Autowired
-	private RoleService roleService;
 
 	@PostMapping("/signin")
 	public ResponseEntity<ApiResponse<Object>> authenticateUser(@RequestBody LoginRequest loginRequest) {
@@ -74,78 +61,32 @@ public class AuthController {
 			List<String> roles = userDetails.getAuthorities().stream().map(item -> item.getAuthority())
 					.collect(Collectors.toList());
 
-			JwtResponse jwtResponse = new JwtResponse(jwt, userDetails.getUserId(), userDetails.getUsername(),
-					userDetails.getMobileNo(), roles);
-			return ResponseEntity.ok(new ApiResponse<>(1, "Authentication successful!", jwtResponse));
+			Optional<User> userOptional = userRepository.findByEmail(loginRequest.getEmail());
+
+			if (userOptional.isPresent()) {
+				User user = userOptional.get();
+				Subscriber subscriber = user.getSubscriber();
+
+				if (subscriber != null && subscriber.getOtpVerified() == 1) {
+					JwtResponse jwtResponse = new JwtResponse(jwt, userDetails.getUserId(), userDetails.getUsername(),
+							userDetails.getMobileNo(), roles);
+					return ResponseEntity.ok(new ApiResponse<>(1, "Authentication successful!", jwtResponse,
+							user.getUserId(), subscriber.getSubscriberId()));
+				} else {
+					return ResponseEntity.ok(new ApiResponse<>(0, "OTP not verified. Please verify your OTP to login.",
+							null, null, null));
+				}
+			} else {
+				return ResponseEntity.ok(new ApiResponse<>(0, "User not found with email: " + loginRequest.getEmail(),
+						null, null, null));
+			}
 
 		} catch (BadCredentialsException e) {
-			return ResponseEntity.ok(new ApiResponse<>(0, "Invalid username or password!", null));
+			return ResponseEntity.ok(new ApiResponse<>(0, "Invalid username or password!", null, null, null));
 
 		} catch (Exception e) {
-			return ResponseEntity.ok(new ApiResponse<>(0, "An error occurred during authentication!", null));
-		}
-	}
-
-	@PostMapping("/signup")
-	public ResponseEntity<ApiResponse<Object>> registerUser(@RequestBody SignupRequest signUpRequest) {
-
-		if (userRepository.existsByMobileNo(signUpRequest.getMobileNo())) {
-			return ResponseEntity.ok(new ApiResponse<>(0, "Mobile number is already taken!", null));
-		}
-
-		if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-			return ResponseEntity.ok(new ApiResponse<>(0, "Email is already in use!", null));
-		}
-
-		if (userRepository.existsByEmiratesId(signUpRequest.getEmiratesId())) {
-			return ResponseEntity.ok(new ApiResponse<>(0, "Emirates ID is already registered!", null));
-		}
-
-		if (signUpRequest.getNatId() == null || !nationalityRepository.existsById(signUpRequest.getNatId())) {
-			return ResponseEntity.ok(new ApiResponse<>(0, "Invalid Nationality ID!", null));
-		}
-
-		System.out.println("pwd=" + encoder.encode(signUpRequest.getPassword()));
-		User user = new User();
-		user.setMobileNo(signUpRequest.getMobileNo());
-		user.setEmail(signUpRequest.getEmail());
-		user.setPassword(encoder.encode(signUpRequest.getPassword()));
-		user.setActive(1);
-		user.setEmiratesId(signUpRequest.getEmiratesId());
-		user.setAddress(signUpRequest.getAddress());
-
-		Countries nationality = nationalityRepository.findById(signUpRequest.getNatId())
-				.orElseThrow(() -> new RuntimeException("Error: Nationality not found."));
-		user.setCountries(nationality);
-
-		Role role = null;
-
-		Set<Role> roles = new HashSet<>();
-
-		if (signUpRequest.getRole().equals("admin")) {
-			role = roleRepository.findByName(ERole.ROLE_ADMIN)
-					.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-		} else if (signUpRequest.getRole().equals("mgtadmin")) {
-			role = roleRepository.findByName(ERole.ROLE_MGT_ADMIN)
-					.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-			roles.add(role);
-		}
-
-		user.setRoles(roles);
-		userRepository.save(user);
-
-		return ResponseEntity.ok(new ApiResponse<>(1, "User registered successfully!", null));
-	}
-
-	@PostMapping("/role")
-	public ResponseEntity<ApiResponse<Role>> createOrUpdateRole(@RequestBody Role role) {
-		try {
-			Role savedRole = roleService.saveRole(role);
-			return ResponseEntity.status(HttpStatus.CREATED)
-					.body(new ApiResponse<>(1, "Role created or updated successfully!", savedRole));
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body(new ApiResponse<>(0, "An error occurred while saving the role!", null));
+			return ResponseEntity
+					.ok(new ApiResponse<>(0, "An error occurred during authentication!", null, null, null));
 		}
 	}
 

@@ -1,14 +1,19 @@
 package com.sbmtech.mms.models;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 @Entity
 @Table(name = "subscriber")
@@ -43,18 +48,15 @@ public class Subscriber implements Serializable {
 	private String companyName;
 
 	@Column(name = "company_tradelicense")
-	private String companyTradeLincense;
+	private String companyTradeLicense;
 
 	@Lob
 	@Column(name = "company_tradelicense_copy")
-	private byte[] companyTradecopy;
+	private byte[] companyTradeLicenseCopy;
 
 	@Lob
 	@Column(name = "company_logo")
 	private byte[] companyLogo;
-
-	@Column(name = "channel_id")
-	private Integer channelId;
 
 	@Column(name = "otp_verified")
 	private Integer otpVerified;
@@ -62,8 +64,9 @@ public class Subscriber implements Serializable {
 	@Column(name = "created_by")
 	private Long createdBy;
 
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "created_date")
-	private String createdDate;
+	private Date createdDate;
 
 	@Column(name = "active")
 	private Integer active;
@@ -71,8 +74,13 @@ public class Subscriber implements Serializable {
 	@Column(name = "updated_by")
 	private Long updatedBy;
 
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "updated_date")
-	private String updatedDate;
+	private Date updatedDate;
+
+	@ManyToOne
+	@JoinColumn(name = "channel_id", referencedColumnName = "channel_id")
+	private ChannelMaster channelMaster;
 
 	public Integer getSubscriberId() {
 		return subscriberId;
@@ -138,20 +146,20 @@ public class Subscriber implements Serializable {
 		this.companyName = companyName;
 	}
 
-	public String getCompanyTradeLincense() {
-		return companyTradeLincense;
+	public String getCompanyTradeLicense() {
+		return companyTradeLicense;
 	}
 
-	public void setCompanyTradeLincense(String companyTradeLincense) {
-		this.companyTradeLincense = companyTradeLincense;
+	public void setCompanyTradeLicense(String companyTradeLicense) {
+		this.companyTradeLicense = companyTradeLicense;
 	}
 
-	public byte[] getCompanyTradecopy() {
-		return companyTradecopy;
+	public byte[] getCompanyTradeLicenseCopy() {
+		return companyTradeLicenseCopy;
 	}
 
-	public void setCompanyTradecopy(byte[] companyTradecopy) {
-		this.companyTradecopy = companyTradecopy;
+	public void setCompanyTradeLicenseCopy(byte[] companyTradeLicenseCopy) {
+		this.companyTradeLicenseCopy = companyTradeLicenseCopy;
 	}
 
 	public byte[] getCompanyLogo() {
@@ -160,14 +168,6 @@ public class Subscriber implements Serializable {
 
 	public void setCompanyLogo(byte[] companyLogo) {
 		this.companyLogo = companyLogo;
-	}
-
-	public Integer getChannelId() {
-		return channelId;
-	}
-
-	public void setChannelId(Integer channelId) {
-		this.channelId = channelId;
 	}
 
 	public Integer getOtpVerified() {
@@ -186,11 +186,11 @@ public class Subscriber implements Serializable {
 		this.createdBy = createdBy;
 	}
 
-	public String getCreatedDate() {
+	public Date getCreatedDate() {
 		return createdDate;
 	}
 
-	public void setCreatedDate(String createdDate) {
+	public void setCreatedDate(Date createdDate) {
 		this.createdDate = createdDate;
 	}
 
@@ -210,12 +210,20 @@ public class Subscriber implements Serializable {
 		this.updatedBy = updatedBy;
 	}
 
-	public String getUpdatedDate() {
+	public Date getUpdatedDate() {
 		return updatedDate;
 	}
 
-	public void setUpdatedDate(String updatedDate) {
+	public void setUpdatedDate(Date updatedDate) {
 		this.updatedDate = updatedDate;
+	}
+
+	public ChannelMaster getChannelMaster() {
+		return channelMaster;
+	}
+
+	public void setChannelMaster(ChannelMaster channelMaster) {
+		this.channelMaster = channelMaster;
 	}
 
 	public static long getSerialversionuid() {

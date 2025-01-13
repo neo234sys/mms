@@ -6,8 +6,9 @@ public class SubscriberRequest {
 	private String companyEmail;
 	private String companyMobileNo;
 	private String companyName;
-	private Integer natId;
 	private Integer channelId;
+	private Integer natId;
+	private String password;
 
 	public String getSubscriberName() {
 		return subscriberName;
@@ -41,6 +42,14 @@ public class SubscriberRequest {
 		this.companyName = companyName;
 	}
 
+	public Integer getChannelId() {
+		return channelId;
+	}
+
+	public void setChannelId(Integer channelId) {
+		this.channelId = channelId;
+	}
+
 	public Integer getNatId() {
 		return natId;
 	}
@@ -49,12 +58,12 @@ public class SubscriberRequest {
 		this.natId = natId;
 	}
 
-	public Integer getChannelId() {
-		return channelId;
+	public String getPassword() {
+		return password;
 	}
 
-	public void setChannelId(Integer channelId) {
-		this.channelId = channelId;
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 }
