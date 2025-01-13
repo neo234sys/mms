@@ -3,6 +3,7 @@ package com.sbmtech.mms.service.impl;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,15 +15,18 @@ import com.sbmtech.mms.dto.NotificationEmailResponseDTO;
 import com.sbmtech.mms.models.ChannelMaster;
 import com.sbmtech.mms.models.Countries;
 import com.sbmtech.mms.models.Otp;
+import com.sbmtech.mms.models.Role;
 import com.sbmtech.mms.models.Subscriber;
 import com.sbmtech.mms.models.User;
 import com.sbmtech.mms.models.UserTypeMaster;
 import com.sbmtech.mms.payload.request.ApiResponse;
+import com.sbmtech.mms.payload.request.ResendOtpRequest;
 import com.sbmtech.mms.payload.request.SubscriberRequest;
 import com.sbmtech.mms.payload.request.VerifyOtpRequest;
 import com.sbmtech.mms.repository.ChannelMasterRepository;
 import com.sbmtech.mms.repository.CountriesRepository;
 import com.sbmtech.mms.repository.OtpRepository;
+import com.sbmtech.mms.repository.RoleRepository;
 import com.sbmtech.mms.repository.SubscriberRepository;
 import com.sbmtech.mms.repository.UserRepository;
 import com.sbmtech.mms.repository.UserTypeMasterRepository;
@@ -55,6 +59,9 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	@Autowired
 	PasswordEncoder encoder;
+
+	@Autowired
+	private RoleRepository roleRepository;
 
 	@Transactional
 	@Override
@@ -142,6 +149,9 @@ public class SubscriberServiceImpl implements SubscriberService {
 		user.setSubscriber(subscriber);
 		user.setUserType(userType);
 		user.setCreatedDate(new Date());
+		Role defaultRole = roleRepository.findById(2)
+				.orElseThrow(() -> new RuntimeException("Role not found for ID 2"));
+		user.getRoles().add(defaultRole);
 		userRepository.save(user);
 
 		Long otpCode = generateOtp();
@@ -201,6 +211,66 @@ public class SubscriberServiceImpl implements SubscriberService {
 		}
 
 		return new ApiResponse<String>(1, "success", "OTP verified successfully.", null, request.getSubscriberId());
+	}
+
+	@Transactional
+	public ApiResponse<String> resendOtp(ResendOtpRequest request) {
+		try {
+			Subscriber subscriber = subscriberRepository.findById(request.getSubscriberId()).orElseThrow(
+					() -> new RuntimeException("Subscriber not found with ID: " + request.getSubscriberId()));
+
+			if (subscriber.getOtpVerified() != null && subscriber.getOtpVerified() == 1) {
+				return new ApiResponse<>(0, "failure", "OTP is already verified. Resending is not allowed.", null,
+						null);
+			}
+
+			Long newOtpCode = generateOtp();
+			Timestamp expiryTime = new Timestamp(calculateOtpExpiryTime().getTime());
+
+			Otp otp = otpRepository.findByReferenceId(request.getSubscriberId());
+			if (otp == null) {
+				otp = new Otp();
+				otp.setReferenceId(request.getSubscriberId());
+			}
+			otp.setOtpCode(newOtpCode);
+			otp.setOtpType("S");
+			otp.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+			otp.setExpiresAt(expiryTime);
+			otp.setVerified(false);
+			otpRepository.save(otp);
+
+			NotifEmailDTO dto = new NotifEmailDTO();
+			dto.setEmailTo(subscriber.getCompanyEmail());
+			dto.setCustomerName(subscriber.getSubscriberName());
+			dto.setOtpCode(newOtpCode);
+
+			NotificationEmailResponseDTO resp = notificationService.sendOTPEmail(dto);
+
+			if (resp != null && resp.isEmailSent()) {
+				return new ApiResponse<>(1, "success", "OTP resent successfully.", null, subscriber.getSubscriberId());
+			} else {
+				return new ApiResponse<>(0, "failure", "Failed to send OTP email.", null, null);
+			}
+
+		} catch (Exception e) {
+			return new ApiResponse<>(0, "failure", "An error occurred: " + e.getMessage(), null, null);
+		}
+	}
+
+	public ApiResponse<List<ChannelMaster>> getAllChannels() {
+		List<ChannelMaster> channels = channelMasterRepository.findAll();
+		if (channels.isEmpty()) {
+			return new ApiResponse<>(0, "failure", null, null, null);
+		}
+		return new ApiResponse<>(1, "success", channels, null, null);
+	}
+
+	public ApiResponse<List<Countries>> getAllCountries() {
+		List<Countries> countries = countriesRepository.findAll();
+		if (countries.isEmpty()) {
+			return new ApiResponse<>(0, "failure", null, null, null);
+		}
+		return new ApiResponse<>(1, "Success", countries, null, null);
 	}
 
 }
