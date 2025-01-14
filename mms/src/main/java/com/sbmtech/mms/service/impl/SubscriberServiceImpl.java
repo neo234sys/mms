@@ -1,6 +1,7 @@
 package com.sbmtech.mms.service.impl;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -15,19 +16,29 @@ import com.sbmtech.mms.dto.NotificationEmailResponseDTO;
 import com.sbmtech.mms.models.ChannelMaster;
 import com.sbmtech.mms.models.Countries;
 import com.sbmtech.mms.models.Otp;
+import com.sbmtech.mms.models.PaymentMethod;
 import com.sbmtech.mms.models.Role;
 import com.sbmtech.mms.models.Subscriber;
+import com.sbmtech.mms.models.SubscriptionPayment;
+import com.sbmtech.mms.models.SubscriptionPlanMaster;
+import com.sbmtech.mms.models.Subscriptions;
 import com.sbmtech.mms.models.User;
 import com.sbmtech.mms.models.UserTypeMaster;
+import com.sbmtech.mms.payload.request.AdditionalDetailsRequest;
 import com.sbmtech.mms.payload.request.ApiResponse;
 import com.sbmtech.mms.payload.request.ResendOtpRequest;
 import com.sbmtech.mms.payload.request.SubscriberRequest;
+import com.sbmtech.mms.payload.request.SubscriptionPaymentRequest;
+import com.sbmtech.mms.payload.request.SubscriptionRequest;
 import com.sbmtech.mms.payload.request.VerifyOtpRequest;
 import com.sbmtech.mms.repository.ChannelMasterRepository;
 import com.sbmtech.mms.repository.CountriesRepository;
 import com.sbmtech.mms.repository.OtpRepository;
 import com.sbmtech.mms.repository.RoleRepository;
 import com.sbmtech.mms.repository.SubscriberRepository;
+import com.sbmtech.mms.repository.SubscriptionPaymentRepository;
+import com.sbmtech.mms.repository.SubscriptionPlanMasterRepository;
+import com.sbmtech.mms.repository.SubscriptionRepository;
 import com.sbmtech.mms.repository.UserRepository;
 import com.sbmtech.mms.repository.UserTypeMasterRepository;
 import com.sbmtech.mms.service.NotificationService;
@@ -62,6 +73,15 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	@Autowired
 	private RoleRepository roleRepository;
+
+	@Autowired
+	private SubscriptionRepository subscriptionRepository;
+
+	@Autowired
+	private SubscriptionPlanMasterRepository planMasterRepository;
+
+	@Autowired
+	private SubscriptionPaymentRepository paymentRepository;
 
 	@Transactional
 	@Override
@@ -271,6 +291,135 @@ public class SubscriberServiceImpl implements SubscriberService {
 			return new ApiResponse<>(0, "failure", null, null, null);
 		}
 		return new ApiResponse<>(1, "Success", countries, null, null);
+	}
+
+	@Transactional
+	public ApiResponse<String> addAdditionalDetails(AdditionalDetailsRequest request) {
+		Subscriber subscriber = subscriberRepository.findById(request.getSubscriberId())
+				.orElseThrow(() -> new RuntimeException("Subscriber not found with id: " + request.getSubscriberId()));
+
+		if (request.getCompanyAddress() != null) {
+			subscriber.setCompanyAddress(request.getCompanyAddress());
+		}
+		if (request.getCompanyContactName() != null) {
+			subscriber.setCompanyContactName(request.getCompanyContactName());
+		}
+		if (request.getCompanyLandlineNo() != null) {
+			subscriber.setCompanyLandlineNo(request.getCompanyLandlineNo());
+		}
+		if (request.getCompanyTradeLicense() != null) {
+			subscriber.setCompanyTradeLicense(request.getCompanyTradeLicense());
+		}
+		if (request.getCompanyTradeLicenseCopy() != null) {
+			subscriber.setCompanyTradeLicenseCopy(request.getCompanyTradeLicenseCopy());
+		}
+		if (request.getCompanyLogo() != null) {
+			subscriber.setCompanyLogo(request.getCompanyLogo());
+		}
+
+		subscriber.setUpdatedDate(new Date());
+		subscriberRepository.save(subscriber);
+
+		return new ApiResponse<>(1, "success", "Additional details added successfully.", null,
+				subscriber.getSubscriberId());
+	}
+
+	@Transactional
+	public ApiResponse<String> saveSubscription(SubscriptionRequest subscriptionRequest) {
+		if (subscriptionRequest.getPlanId() == null
+				|| !planMasterRepository.existsById(subscriptionRequest.getPlanId())) {
+			return new ApiResponse<>(0, "Invalid plan_id", null, null, null);
+		}
+
+		if (subscriptionRequest.getSubscriberId() == null
+				|| !subscriberRepository.existsById(subscriptionRequest.getSubscriberId())) {
+			return new ApiResponse<>(0, "Invalid subscriber_id", null, null, null);
+		}
+
+		if (subscriptionRequest.getChannelId() == null
+				|| !channelMasterRepository.existsById(subscriptionRequest.getChannelId())) {
+			return new ApiResponse<>(0, "Invalid channel_id", null, null, null);
+		}
+
+		Subscriptions existingSubscription = subscriptionRepository
+				.findTopBySubscriber_SubscriberIdAndStatusOrderByStartDateDesc(subscriptionRequest.getSubscriberId(),
+						"ACTIVE");
+
+		if (existingSubscription != null) {
+			return new ApiResponse<>(0, "Subscriber already has an active subscription", null, null, null);
+		}
+
+		existingSubscription = subscriptionRepository.findTopBySubscriber_SubscriberIdAndStatusOrderByStartDateDesc(
+				subscriptionRequest.getSubscriberId(), "PAYMENT_PROCEEDED");
+
+		if (existingSubscription != null) {
+			return new ApiResponse<>(0, "Subscriber already has a subscription with status PAYMENT_PROCEEDED", null,
+					null, null);
+		}
+
+		Subscriptions subscription = new Subscriptions();
+
+		subscription.setStartDate(subscriptionRequest.getStartDate());
+		subscription.setEndDate(subscriptionRequest.getEndDate());
+		subscription.setStatus("PAYMENT_PROCEEDED"); // Status is set as PaymentProceeded initially
+		subscription.setIsFree(subscriptionRequest.getIsFree());
+
+		SubscriptionPlanMaster plan = new SubscriptionPlanMaster();
+		plan.setPlanId(subscriptionRequest.getPlanId());
+		subscription.setPlan(plan);
+
+		Subscriber subscriber = new Subscriber();
+		subscriber.setSubscriberId(subscriptionRequest.getSubscriberId());
+		subscription.setSubscriber(subscriber);
+
+		subscription.setChannelId(subscriptionRequest.getChannelId());
+		subscription.setCreatedDate(LocalDateTime.now());
+
+		subscriptionRepository.save(subscription);
+
+		return new ApiResponse<>(1, "success", "Subscription saved successfully", null,
+				subscription.getSubscriber().getSubscriberId());
+	}
+
+	public ApiResponse<List<SubscriptionPlanMaster>> getAllSubscriptionPlans() {
+		List<SubscriptionPlanMaster> plans = planMasterRepository.findAll();
+		if (plans.isEmpty()) {
+			return new ApiResponse<>(0, "failure", null, null, null);
+		}
+		return new ApiResponse<>(1, "success", plans, null, null);
+	}
+
+	@Transactional
+	public ApiResponse<String> makePayment(SubscriptionPaymentRequest paymentRequest) {
+		Subscriptions subscription = subscriptionRepository
+				.findTopBySubscriber_SubscriberIdAndStatusOrderByStartDateDesc(paymentRequest.getSubscriberId(),
+						"PAYMENT_PROCEEDED");
+
+		if (subscription == null) {
+			return new ApiResponse<>(0, "No payment proceeded subscription found for this subscriber", null, null,
+					null);
+		}
+
+		SubscriptionPayment payment = new SubscriptionPayment();
+		payment.setAmount(paymentRequest.getAmount());
+
+		PaymentMethod paymentMethod = PaymentMethod.fromValue(paymentRequest.getPaymentMethod());
+		payment.setPaymentMethod(paymentMethod);
+
+		payment.setTransactionId(paymentRequest.getTransactionId());
+		payment.setPaymentDate(Timestamp.valueOf(LocalDateTime.now()));
+		payment.setStatus("SUCCESS");
+
+		payment.setSubscription(subscription);
+		payment.setSubscriber(subscription.getSubscriber());
+
+		paymentRepository.save(payment);
+
+		subscription.setStatus("ACTIVE");
+		subscriptionRepository.save(subscription);
+
+		return new ApiResponse<>(1, "success", "Payment processed and subscription activated", null,
+				paymentRequest.getSubscriberId());
 	}
 
 }

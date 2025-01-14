@@ -99,7 +99,6 @@ public class EmailServiceImpl implements EmailService {
 	 */
 
 	private void sendEmail(NotifEmailDTO dto) throws Exception {
-		System.out.println("Test by thaj " + gmail_OR_domain);
 		Boolean gmailOrDomain = (gmail_OR_domain.equalsIgnoreCase("gmail")) ? true : false;
 		String fromEmail = (gmailOrDomain) ? fromMailGmail : fromMailDomain;
 		MimeMessage message = new MimeMessage(getEmailSession());
