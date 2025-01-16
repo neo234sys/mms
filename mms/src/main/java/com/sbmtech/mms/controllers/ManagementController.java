@@ -15,11 +15,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.sbmtech.mms.models.Subscriptions;
 import com.sbmtech.mms.payload.request.AdditionalDetailsRequest;
-import com.sbmtech.mms.payload.request.ResendOtpRequest;
-import com.sbmtech.mms.payload.request.SubscriberRequest;
+import com.sbmtech.mms.payload.request.BuildingRequest;
+import com.sbmtech.mms.payload.request.CommunityRequest;
+import com.sbmtech.mms.payload.request.CreateUserRequest;
+import com.sbmtech.mms.payload.request.FloorRequest;
+import com.sbmtech.mms.payload.request.KeyMasterRequest;
+import com.sbmtech.mms.payload.request.ParkingRequest;
+import com.sbmtech.mms.payload.request.ParkingZoneRequest;
+import com.sbmtech.mms.payload.request.SubscriberLocationRequest;
 import com.sbmtech.mms.payload.request.SubscriptionPaymentRequest;
 import com.sbmtech.mms.payload.request.SubscriptionRequest;
-import com.sbmtech.mms.payload.request.VerifyOtpRequest;
+import com.sbmtech.mms.payload.request.TenantUnitRequest;
+import com.sbmtech.mms.payload.request.UnitKeysRequest;
+import com.sbmtech.mms.payload.request.UnitRequest;
 import com.sbmtech.mms.repository.SubscriptionRepository;
 import com.sbmtech.mms.service.SubscriberService;
 
@@ -33,31 +41,6 @@ public class ManagementController {
 
 	@Autowired
 	private SubscriptionRepository subscriptionRepository;
-
-	@PostMapping("/createSubscriber")
-	public ResponseEntity<?> createSubscriber(@RequestBody SubscriberRequest request) throws Exception {
-		return ResponseEntity.ok(subscriberService.createSubscriber(request));
-	}
-
-	@PostMapping("/verifyOtp")
-	public ResponseEntity<?> verifyOtp(@RequestBody VerifyOtpRequest request) {
-		return ResponseEntity.ok(subscriberService.verifyOtp(request));
-	}
-
-	@PostMapping("/resendOtp")
-	public ResponseEntity<?> resendOtp(@RequestBody ResendOtpRequest request) {
-		return ResponseEntity.ok(subscriberService.resendOtp(request));
-	}
-
-	@GetMapping("/channels")
-	public ResponseEntity<?> getAllChannels() {
-		return ResponseEntity.ok(subscriberService.getAllChannels());
-	}
-
-	@GetMapping("/countries")
-	public ResponseEntity<?> getAllCountries() {
-		return ResponseEntity.ok(subscriberService.getAllCountries());
-	}
 
 	@PostMapping("/addAdditionalDetails")
 	public ResponseEntity<?> addAdditionalDetails(@RequestBody AdditionalDetailsRequest request) {
@@ -77,6 +60,61 @@ public class ManagementController {
 	@PostMapping("/makePayment")
 	public ResponseEntity<?> makePayment(@RequestBody SubscriptionPaymentRequest subscriptionPayment) {
 		return ResponseEntity.ok(subscriberService.makePayment(subscriptionPayment));
+	}
+
+	@PostMapping("/addSubscriberLocation")
+	public ResponseEntity<?> addSubscriberLocation(@RequestBody SubscriberLocationRequest request) {
+		return ResponseEntity.ok(subscriberService.addSubscriberLocation(request));
+	}
+
+	@PostMapping("/addCommunity")
+	public ResponseEntity<?> addCommunity(@RequestBody CommunityRequest request) {
+		return ResponseEntity.ok(subscriberService.addCommunity(request));
+	}
+
+	@PostMapping("/addBuilding")
+	public ResponseEntity<?> addBuilding(@RequestBody BuildingRequest request) {
+		return ResponseEntity.ok(subscriberService.addBuilding(request));
+	}
+
+	@PostMapping("/addFloor")
+	public ResponseEntity<?> addFloor(@RequestBody FloorRequest request) {
+		return ResponseEntity.ok(subscriberService.addFloor(request));
+	}
+
+	@PostMapping("/addUnit")
+	public ResponseEntity<?> addUnit(@RequestBody UnitRequest request) {
+		return ResponseEntity.ok(subscriberService.addUnit(request));
+	}
+
+	@PostMapping("/createTenant")
+	public ResponseEntity<?> createUserAndMergeTenant(@RequestBody CreateUserRequest request) {
+		return ResponseEntity.ok(subscriberService.createUserAndMergeTenant(request));
+	}
+
+	@PostMapping("/addParkingZone")
+	public ResponseEntity<?> addParkingZone(@RequestBody ParkingZoneRequest request) {
+		return ResponseEntity.ok(subscriberService.createParkingZone(request));
+	}
+
+	@PostMapping("/addParking")
+	public ResponseEntity<?> addParking(@RequestBody ParkingRequest request) {
+		return ResponseEntity.ok(subscriberService.createParking(request));
+	}
+
+	@PostMapping("/addKey")
+	public ResponseEntity<?> addKey(@RequestBody KeyMasterRequest request) {
+		return ResponseEntity.ok(subscriberService.addKey(request));
+	}
+
+	@PostMapping("/addUnitKey")
+	public ResponseEntity<?> addUnitKey(@RequestBody UnitKeysRequest request) {
+		return ResponseEntity.ok(subscriberService.addUnitKey(request));
+	}
+
+	@PostMapping("/addTenantUnit")
+	public ResponseEntity<?> addTenantUnit(@RequestBody TenantUnitRequest request) {
+		return ResponseEntity.ok(subscriberService.addTenantUnit(request));
 	}
 
 	@Scheduled(cron = "0/5 * * * * ?")

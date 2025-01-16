@@ -13,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,11 +23,15 @@ import com.sbmtech.mms.models.Subscriber;
 import com.sbmtech.mms.models.User;
 import com.sbmtech.mms.payload.request.ApiResponse;
 import com.sbmtech.mms.payload.request.LoginRequest;
+import com.sbmtech.mms.payload.request.ResendOtpRequest;
+import com.sbmtech.mms.payload.request.SubscriberRequest;
+import com.sbmtech.mms.payload.request.VerifyOtpRequest;
 import com.sbmtech.mms.payload.response.JwtResponse;
 import com.sbmtech.mms.repository.RoleRepository;
 import com.sbmtech.mms.repository.UserRepository;
 import com.sbmtech.mms.security.jwt.JwtUtils;
 import com.sbmtech.mms.security.services.UserDetailsImpl;
+import com.sbmtech.mms.service.SubscriberService;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -46,6 +51,9 @@ public class AuthController {
 
 	@Autowired
 	JwtUtils jwtUtils;
+
+	@Autowired
+	private SubscriberService subscriberService;
 
 	@PostMapping("/signin")
 	public ResponseEntity<ApiResponse<Object>> authenticateUser(@RequestBody LoginRequest loginRequest) {
@@ -88,6 +96,31 @@ public class AuthController {
 			return ResponseEntity
 					.ok(new ApiResponse<>(0, "An error occurred during authentication!", null, null, null));
 		}
+	}
+
+	@PostMapping("/createSubscriber")
+	public ResponseEntity<?> createSubscriber(@RequestBody SubscriberRequest request) throws Exception {
+		return ResponseEntity.ok(subscriberService.createSubscriber(request));
+	}
+
+	@PostMapping("/verifyOtp")
+	public ResponseEntity<?> verifyOtp(@RequestBody VerifyOtpRequest request) {
+		return ResponseEntity.ok(subscriberService.verifyOtp(request));
+	}
+
+	@PostMapping("/resendOtp")
+	public ResponseEntity<?> resendOtp(@RequestBody ResendOtpRequest request) {
+		return ResponseEntity.ok(subscriberService.resendOtp(request));
+	}
+
+	@GetMapping("/channels")
+	public ResponseEntity<?> getAllChannels() {
+		return ResponseEntity.ok(subscriberService.getAllChannels());
+	}
+
+	@GetMapping("/countries")
+	public ResponseEntity<?> getAllCountries() {
+		return ResponseEntity.ok(subscriberService.getAllCountries());
 	}
 
 }
