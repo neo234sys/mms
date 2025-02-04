@@ -22,6 +22,12 @@ public class Countries implements Serializable {
 
 	@Column(name = "name")
 	private String name;
+	
+	@Column(name = "phonecode")
+	private String phonecode;
+	
+	
+	
 
 	public Integer getCountryId() {
 		return countryId;
@@ -38,5 +44,14 @@ public class Countries implements Serializable {
 	public void setName(String name) {
 		this.name = name;
 	}
+
+	public String getPhonecode() {
+		return "+"+phonecode;
+	}
+
+	public void setPhonecode(String phonecode) {
+		this.phonecode = phonecode;
+	}
+	
 
 }

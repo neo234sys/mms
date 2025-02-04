@@ -35,8 +35,8 @@ import com.sbmtech.mms.service.SubscriberService;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api/auth")
-public class AuthController {
+@RequestMapping("/api/public")
+public class PublicController {
 	@Autowired
 	AuthenticationManager authenticationManager;
 

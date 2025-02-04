@@ -175,6 +175,7 @@ public class EmailServiceImpl implements EmailService {
 				props.put("mail.smtp.port", gMailPort);
 				props.put("mail.smtp.auth", gMailAuth);
 				props.put("mail.smtp.starttls.enable", gMailAuth);
+				props.put("mail.smtp.ssl.trust", "smtp.gmail.com");
 				session = Session.getInstance(props, new javax.mail.Authenticator() {
 					protected PasswordAuthentication getPasswordAuthentication() {
 						return new PasswordAuthentication(gEmailUsername, gEmailPwd);
