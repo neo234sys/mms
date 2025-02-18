@@ -36,6 +36,7 @@ public class NotificationServiceImpl implements NotificationService {
 		
 		isEmailSent =emailService.sendEmailWithMultiAttachments(emailSenderDTO);
 		
+		
 		emailResponseDTO.setEmailSent(isEmailSent);
 		emailResponseDTO.setEmail(emailSenderDTO.getEmailTo());
 		

@@ -15,8 +15,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.sbmtech.mms.constant.CommonConstants;
 import com.sbmtech.mms.dto.NotifEmailDTO;
 import com.sbmtech.mms.dto.NotificationEmailResponseDTO;
+import com.sbmtech.mms.exception.SubscriptionException;
 import com.sbmtech.mms.models.Building;
 import com.sbmtech.mms.models.ChannelMaster;
 import com.sbmtech.mms.models.City;
@@ -88,6 +90,7 @@ import com.sbmtech.mms.service.NotificationService;
 import com.sbmtech.mms.service.SubscriberService;
 
 @Service
+@Transactional
 public class SubscriberServiceImpl implements SubscriberService {
 
 	@Autowired
@@ -165,36 +168,20 @@ public class SubscriberServiceImpl implements SubscriberService {
 	@Autowired
 	private TenantUnitRepository tenantUnitRepository;
 
-	@Transactional
+
 	@Override
 	public ApiResponse<String> createSubscriber(SubscriberRequest request) throws Exception {
-		if (request.getNatId() == null || !countriesRepository.existsById(request.getNatId())) {
-			return new ApiResponse<>(0, "failure", "Invalid natId: " + request.getNatId(), null, null);
-		}
-
-		boolean channelExists = channelMasterRepository.existsById(request.getChannelId());
-		if (!channelExists) {
-			return new ApiResponse<>(0, "failure", "Invalid channelId: " + request.getChannelId(), null, null);
-		}
 
 		ChannelMaster channelMaster = channelMasterRepository.findById(request.getChannelId()).orElse(null);
-		if (channelMaster == null) {
-			return new ApiResponse<>(0, "failure", "ChannelMaster not found for channelId: " + request.getChannelId(),
-					null, null);
-		}
-
 		Countries country = countriesRepository.findById(request.getNatId()).orElse(null);
-		if (country == null) {
-			return new ApiResponse<>(0, "failure", "Country with id " + request.getNatId() + " not found.", null, null);
-		}
 
-		UserTypeMaster userType = userTypeMasterRepository.findById(2)
+		UserTypeMaster userType = userTypeMasterRepository.findById(CommonConstants.USERTYPE_SUBSCRIBER)
 				.orElseThrow(() -> new RuntimeException("Default UserTypeMaster not found"));
 
 		Subscriber existingSubscriber = subscriberRepository.findByCompanyEmail(request.getCompanyEmail());
 		if (existingSubscriber != null) {
 			if (existingSubscriber.getOtpVerified() != null && existingSubscriber.getOtpVerified() == 1) {
-				return new ApiResponse<>(0, "failure",
+				return new ApiResponse<>(CommonConstants.FAILURE_CODE, CommonConstants.FAILURE_DESC,
 						"Email is already registered and OTP is verified. Cannot register again.", null,
 						existingSubscriber.getSubscriberId());
 			}
@@ -218,10 +205,10 @@ public class SubscriberServiceImpl implements SubscriberService {
 			NotificationEmailResponseDTO resp = notificationService.sendOTPEmail(dto);
 
 			if (resp != null && resp.isEmailSent()) {
-				return new ApiResponse<>(1, "success", "OTP sent to the registered email.", null,
+				return new ApiResponse<>(CommonConstants.SUCCESS_CODE, CommonConstants.SUCCESS_DESC, "OTP sent to the registered email.", null,
 						existingSubscriber.getSubscriberId());
 			} else {
-				return new ApiResponse<>(0, "failure", "Failed to send OTP email.", null, null);
+				return new ApiResponse<>(CommonConstants.FAILURE_CODE, CommonConstants.FAILURE_DESC, "Failed to send OTP email.", null, null);
 			}
 		}
 
@@ -242,7 +229,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			Long mobileNo = Long.parseLong(request.getCompanyMobileNo());
 			user.setMobileNo(mobileNo);
 		} catch (NumberFormatException e) {
-			return new ApiResponse<>(0, "failure", "Invalid mobile number format.", null, subscriber.getSubscriberId());
+			return new ApiResponse<>(CommonConstants.FAILURE_CODE, CommonConstants.FAILURE_DESC, "Invalid mobile number format.", null, subscriber.getSubscriberId());
 		}
 
 		user.setPassword(request.getPassword());
@@ -254,6 +241,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		Role defaultRole = roleRepository.findById(2)
 				.orElseThrow(() -> new RuntimeException("Role not found for ID 2"));
 		user.getRoles().add(defaultRole);
+		user.setNationality(country);
 		userRepository.save(user);
 
 		Long otpCode = generateOtp();
@@ -273,12 +261,11 @@ public class SubscriberServiceImpl implements SubscriberService {
 		dto.setOtpCode(otpCode);
 
 		NotificationEmailResponseDTO resp = notificationService.sendOTPEmail(dto);
-
 		if (resp != null && resp.isEmailSent()) {
-			return new ApiResponse<>(1, "success", "Subscriber and user created successfully. OTP sent.",
+			return new ApiResponse<>(CommonConstants.SUCCESS_CODE, CommonConstants.SUCCESS_DESC, "Subscriber and user created successfully. OTP sent.",
 					user.getUserId(), subscriber.getSubscriberId());
 		} else {
-			return new ApiResponse<>(0, "failure", "Failed to send OTP email.", null, subscriber.getSubscriberId());
+			throw new SubscriptionException("Subscription Not created");
 		}
 	}
 

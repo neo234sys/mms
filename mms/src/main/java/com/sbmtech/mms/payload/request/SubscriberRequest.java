@@ -1,13 +1,33 @@
 package com.sbmtech.mms.payload.request;
 
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
+
+import com.sbmtech.mms.validator.ValidChannelId;
+import com.sbmtech.mms.validator.ValidCountryId;
+
 public class SubscriberRequest {
 
+	@NotEmpty(message = "subscriberName Must not be Empty and NULL")
 	private String subscriberName;
+	
+	@Email(message = "Please enter a valid email Id")
+	@NotEmpty(message = "Email cannot be NULL")
 	private String companyEmail;
+	
+	
 	private String companyMobileNo;
+	
 	private String companyName;
+	
+
+	@ValidChannelId
 	private Integer channelId;
+
+	@ValidCountryId
 	private Integer natId;
+	
+	
 	private String password;
 
 	public String getSubscriberName() {

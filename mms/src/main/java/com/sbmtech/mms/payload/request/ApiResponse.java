@@ -1,5 +1,9 @@
 package com.sbmtech.mms.payload.request;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+@JsonInclude(Include.NON_NULL)
 public class ApiResponse<T> {
 	private int responseCode;
 	private String responseMessage;
