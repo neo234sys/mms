@@ -106,7 +106,7 @@ public class PublicController {
 	}
 
 	@PostMapping("/verifyOtp")
-	public ResponseEntity<?> verifyOtp(@RequestBody VerifyOtpRequest request) {
+	public ResponseEntity<?> verifyOtp(@Valid @RequestBody VerifyOtpRequest request) {
 		return ResponseEntity.ok(subscriberService.verifyOtp(request));
 	}
 

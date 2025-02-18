@@ -1,8 +1,20 @@
 package com.sbmtech.mms.payload.request;
 
+import javax.validation.constraints.Digits;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Positive;
+
 public class VerifyOtpRequest {
 
+	
+	//@Positive
+	//@Digits(integer=5, fraction=0,message = "subscriberId cannot be null" )
+	@Min(value=1, message="subscriberId can not be 0")
 	private Integer subscriberId;
+	
+	
+	@Min(value=1, message="otpCode can not be 0")
 	private Long otpCode;
 
 	public Integer getSubscriberId() {

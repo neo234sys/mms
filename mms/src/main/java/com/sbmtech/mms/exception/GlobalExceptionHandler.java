@@ -42,8 +42,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler{
 
     	HttpStatus httpStatus=HttpStatus.OK;
         Map<String, Object> objectBody = new LinkedHashMap<>();
-        objectBody.put("Current Timestamp", new Date());
-        objectBody.put("Status", 200);
+        objectBody.put("timestamp", new Date());
+        objectBody.put("status", 200);
         objectBody.put("responseCode", CommonConstants.FAILURE_CODE);
         objectBody.put("responseMessage", CommonConstants.FAILURE_DESC);
       
@@ -71,8 +71,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler{
                     WebRequest webRequest){
     	httpStatus=HttpStatus.OK;
         Map<String, Object> objectBody = new LinkedHashMap<>();
-        objectBody.put("Current Timestamp", new Date());
-        objectBody.put("Status", 200);
+        objectBody.put("timestamp", new Date());
+        objectBody.put("status", 200);
         
         objectBody.put("responseCode",  CommonConstants.FAILURE_CODE);
         objectBody.put("responseMessage",  CommonConstants.FAILURE_DESC);

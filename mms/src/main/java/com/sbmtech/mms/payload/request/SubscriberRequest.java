@@ -8,18 +8,18 @@ import com.sbmtech.mms.validator.ValidCountryId;
 
 public class SubscriberRequest {
 
-	@NotEmpty(message = "subscriberName Must not be Empty and NULL")
+	@NotEmpty(message = "subscriberName must not be empty and null")
 	private String subscriberName;
 	
 	@Email(message = "Please enter a valid email Id")
-	@NotEmpty(message = "Email cannot be NULL")
+	@NotEmpty(message = "Email cannot be null")
 	private String companyEmail;
 	
-	
+	@NotEmpty(message = "companyMobileNo cannot be null")
 	private String companyMobileNo;
 	
+	@NotEmpty(message = "companyName cannot be null")
 	private String companyName;
-	
 
 	@ValidChannelId
 	private Integer channelId;
@@ -27,7 +27,7 @@ public class SubscriberRequest {
 	@ValidCountryId
 	private Integer natId;
 	
-	
+	@NotEmpty(message = "password cannot be null")
 	private String password;
 
 	public String getSubscriberName() {
