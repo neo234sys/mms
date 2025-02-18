@@ -10,8 +10,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import javax.validation.Valid;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.sbmtech.mms.constant.CommonConstants;
 import com.sbmtech.mms.dto.NotifEmailDTO;
 import com.sbmtech.mms.dto.NotificationEmailResponseDTO;
-import com.sbmtech.mms.exception.SubscriptionException;
+import com.sbmtech.mms.exception.BusinessException;
 import com.sbmtech.mms.models.Building;
 import com.sbmtech.mms.models.ChannelMaster;
 import com.sbmtech.mms.models.City;
@@ -267,7 +265,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			return new ApiResponse<>(CommonConstants.SUCCESS_CODE, CommonConstants.SUCCESS_DESC, "Subscriber and user created successfully. OTP sent.",
 					user.getUserId(), subscriber.getSubscriberId());
 		} else {
-			throw new SubscriptionException("Subscription Not created");
+			throw new BusinessException("Subscription Not created");
 		}
 	}
 
@@ -285,11 +283,11 @@ public class SubscriberServiceImpl implements SubscriberService {
 		Otp otp = otpRepository.findByReferenceIdAndOtpCode(request.getSubscriberId(), request.getOtpCode());
 
 		if (otp == null) {
-			return new ApiResponse<String>(0, "failure", "Invalid OTP code.", null, null);
+			throw new BusinessException("Invalid OTP code");
 		}
 
 		if (otp.getExpiresAt().before(new Timestamp(System.currentTimeMillis()))) {
-			return new ApiResponse<String>(0, "failure", "OTP has expired.", null, null);
+			throw new BusinessException("OTP has expired");
 		}
 
 		otp.setVerified(true);
@@ -301,7 +299,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			subscriberRepository.save(subscriber);
 		}
 
-		return new ApiResponse<String>(1, "success", "OTP verified successfully.", null, request.getSubscriberId());
+		return new ApiResponse<String>(CommonConstants.SUCCESS_CODE, CommonConstants.SUCCESS_DESC,"OTP verified successfully.", null, request.getSubscriberId());
 	}
 
 	@Transactional

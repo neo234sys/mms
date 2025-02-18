@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sbmtech.mms.constant.CommonConstants;
+import com.sbmtech.mms.exception.BusinessException;
 import com.sbmtech.mms.models.Subscriber;
 import com.sbmtech.mms.models.User;
 import com.sbmtech.mms.payload.request.ApiResponse;
@@ -37,8 +39,8 @@ import com.sbmtech.mms.service.SubscriberService;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api/op")
-public class PublicController {
+@RequestMapping("/api/subs")
+public class SubscriberController {
 	@Autowired
 	AuthenticationManager authenticationManager;
 
@@ -80,23 +82,20 @@ public class PublicController {
 				if (subscriber != null && subscriber.getOtpVerified() == 1) {
 					JwtResponse jwtResponse = new JwtResponse(jwt, userDetails.getUserId(), userDetails.getUsername(),
 							userDetails.getMobileNo(), roles);
-					return ResponseEntity.ok(new ApiResponse<>(1, "Authentication successful!", jwtResponse,
+					return ResponseEntity.ok(new ApiResponse<>(CommonConstants.SUCCESS_CODE, CommonConstants.SUCCESS_DESC, jwtResponse,
 							user.getUserId(), subscriber.getSubscriberId()));
 				} else {
-					return ResponseEntity.ok(new ApiResponse<>(0, "OTP not verified. Please verify your OTP to login.",
-							null, null, null));
+					return ResponseEntity.ok(new ApiResponse<>(CommonConstants.FAILURE_CODE, CommonConstants.FAILURE_DESC, "OTP not verified. Please verify your OTP to login.",null, null));
 				}
 			} else {
-				return ResponseEntity.ok(new ApiResponse<>(0, "User not found with email: " + loginRequest.getEmail(),
-						null, null, null));
+				throw new BusinessException("User not found with email: " + loginRequest.getEmail());
 			}
 
 		} catch (BadCredentialsException e) {
-			return ResponseEntity.ok(new ApiResponse<>(0, "Invalid username or password!", null, null, null));
+			throw new BusinessException("Invalid username or password!");
 
 		} catch (Exception e) {
-			return ResponseEntity
-					.ok(new ApiResponse<>(0, "An error occurred during authentication!", null, null, null));
+			throw new BusinessException("An error occurred during authentication!");
 		}
 	}
 

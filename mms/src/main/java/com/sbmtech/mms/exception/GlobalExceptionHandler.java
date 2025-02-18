@@ -36,19 +36,22 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler{
         return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
     }
     
-    @ExceptionHandler(SubscriptionException.class)
+    
+    
+    @ExceptionHandler(BusinessException.class)
     @ResponseBody
-    public ResponseEntity<Object> handleSubscriptionException(SubscriptionException ex, WebRequest request) {
+    public ResponseEntity<Object> handleBusinessException(BusinessException ex, WebRequest request) {
 
+    	LocalDateTime dateTime = LocalDateTime.now();
     	HttpStatus httpStatus=HttpStatus.OK;
         Map<String, Object> objectBody = new LinkedHashMap<>();
-        objectBody.put("timestamp", new Date());
+        objectBody.put("timestamp", dateTime);
         objectBody.put("status", 200);
-        objectBody.put("responseCode", CommonConstants.FAILURE_CODE);
-        objectBody.put("responseMessage", CommonConstants.FAILURE_DESC);
+        objectBody.put(CommonConstants.RESPONSE_CODE, CommonConstants.FAILURE_CODE);
+        objectBody.put(CommonConstants.RESPONSE_DESC, CommonConstants.FAILURE_DESC);
       
         objectBody.put("data", ex.getMessage());
- 
+        logger.error("BusinessException Time="+dateTime, ex);
         return new ResponseEntity<>(objectBody, httpStatus);
     }
 
@@ -60,7 +63,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler{
     	String formattedDateTime = dateTime.format(formatter); 
         ErrorDetails errorDetails = new ErrorDetails(HttpStatus.INTERNAL_SERVER_ERROR.value(), ex.getMessage(), 
         		request.getDescription(false),formattedDateTime);
-        logger.error("Error Message Logged=", ex);
+        logger.error("Exception Time="+dateTime, ex);
         return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     
@@ -70,12 +73,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler{
                     HttpHeaders httpHeaders, HttpStatus httpStatus,
                     WebRequest webRequest){
     	httpStatus=HttpStatus.OK;
+    	LocalDateTime dateTime = LocalDateTime.now();
         Map<String, Object> objectBody = new LinkedHashMap<>();
         objectBody.put("timestamp", new Date());
         objectBody.put("status", 200);
         
-        objectBody.put("responseCode",  CommonConstants.FAILURE_CODE);
-        objectBody.put("responseMessage",  CommonConstants.FAILURE_DESC);
+        objectBody.put(CommonConstants.RESPONSE_CODE,  CommonConstants.FAILURE_CODE);
+        objectBody.put(CommonConstants.RESPONSE_DESC,  CommonConstants.FAILURE_DESC);
         
  
         // Get all errors
@@ -87,7 +91,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler{
                         .collect(Collectors.toList());
  
         objectBody.put("data", exceptionalErrors);
- 
+        logger.error("MethodArgumentException Time="+dateTime, exception);
         return new ResponseEntity<>(objectBody, httpStatus);
     }
 }

@@ -1,12 +1,12 @@
 package com.sbmtech.mms.exception;
 
-public class SubscriptionException extends RuntimeException {
+public class BusinessException extends RuntimeException {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public SubscriptionException(String message) {
+	public BusinessException(String message) {
 		super(message);
 	}
 }
