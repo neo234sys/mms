@@ -41,7 +41,12 @@ public class SubscriptionPlanMaster implements Serializable {
 	@Column(name = "created_date")
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date createdDate;
-
+	
+	
+	@Column(name = "trial_days")
+	private Integer trialDays;
+	
+	
 	public Integer getPlanId() {
 		return planId;
 	}
@@ -108,6 +113,14 @@ public class SubscriptionPlanMaster implements Serializable {
 
 	public static long getSerialversionuid() {
 		return serialVersionUID;
+	}
+
+	public Integer getTrialDays() {
+		return trialDays;
+	}
+
+	public void setTrialDays(Integer trialDays) {
+		this.trialDays = trialDays;
 	}
 
 }

@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sbmtech.mms.constant.CommonConstants;
+import com.sbmtech.mms.constant.SubscriptionStatus;
 import com.sbmtech.mms.dto.NotifEmailDTO;
 import com.sbmtech.mms.dto.NotificationEmailResponseDTO;
 import com.sbmtech.mms.exception.BusinessException;
@@ -63,6 +65,7 @@ import com.sbmtech.mms.payload.request.UnitRequest;
 import com.sbmtech.mms.payload.request.VerifyOtpRequest;
 import com.sbmtech.mms.payload.response.CityResponse;
 import com.sbmtech.mms.payload.response.StateResponse;
+import com.sbmtech.mms.payload.response.SubscriptionPlans;
 import com.sbmtech.mms.repository.BuildingRepository;
 import com.sbmtech.mms.repository.ChannelMasterRepository;
 import com.sbmtech.mms.repository.CityRepository;
@@ -88,6 +91,13 @@ import com.sbmtech.mms.repository.UserRepository;
 import com.sbmtech.mms.repository.UserTypeMasterRepository;
 import com.sbmtech.mms.service.NotificationService;
 import com.sbmtech.mms.service.SubscriberService;
+import com.sbmtech.mms.util.CommonUtil;
+
+import static com.sbmtech.mms.constant.CommonConstants.FAILURE_CODE;
+import static com.sbmtech.mms.constant.CommonConstants.FAILURE_DESC;
+import static com.sbmtech.mms.constant.CommonConstants.SUCCESS_CODE;
+import static com.sbmtech.mms.constant.CommonConstants.SUCCESS_DESC;
+import static com.sbmtech.mms.constant.CommonConstants.DATE_ddMMyyyy;
 
 @Service
 @Transactional
@@ -181,7 +191,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		Subscriber existingSubscriber = subscriberRepository.findByCompanyEmail(request.getCompanyEmail());
 		if (existingSubscriber != null) {
 			if (existingSubscriber.getOtpVerified() != null && existingSubscriber.getOtpVerified() == 1) {
-				return new ApiResponse<>(CommonConstants.FAILURE_CODE, CommonConstants.FAILURE_DESC,
+				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
 						"Email is already registered and OTP is verified. Cannot register again.", null,
 						existingSubscriber.getSubscriberId());
 			}
@@ -205,10 +215,10 @@ public class SubscriberServiceImpl implements SubscriberService {
 			NotificationEmailResponseDTO resp = notificationService.sendOTPEmail(dto);
 
 			if (resp != null && resp.isEmailSent()) {
-				return new ApiResponse<>(CommonConstants.SUCCESS_CODE, CommonConstants.SUCCESS_DESC, "OTP sent to the registered email.", null,
+				return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "OTP sent to the registered email.", null,
 						existingSubscriber.getSubscriberId());
 			} else {
-				return new ApiResponse<>(CommonConstants.FAILURE_CODE, CommonConstants.FAILURE_DESC, "Failed to send OTP email.", null, null);
+				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to send OTP email.", null, null);
 			}
 		}
 
@@ -229,7 +239,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			Long mobileNo = Long.parseLong(request.getCompanyMobileNo());
 			user.setMobileNo(Long.valueOf(country.getPhonecode()+mobileNo));
 		} catch (NumberFormatException e) {
-			return new ApiResponse<>(CommonConstants.FAILURE_CODE, CommonConstants.FAILURE_DESC, "Invalid mobile number format.", null, subscriber.getSubscriberId());
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Invalid mobile number format.", null, subscriber.getSubscriberId());
 		}
 
 		user.setPassword(request.getPassword());
@@ -262,7 +272,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		NotificationEmailResponseDTO resp = notificationService.sendOTPEmail(dto);
 		if (resp != null && resp.isEmailSent()) {
-			return new ApiResponse<>(CommonConstants.SUCCESS_CODE, CommonConstants.SUCCESS_DESC, "Subscriber and user created successfully. OTP sent.",
+			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Subscriber and user created successfully. OTP sent.",
 					user.getUserId(), subscriber.getSubscriberId());
 		} else {
 			throw new BusinessException("Subscription Not created");
@@ -299,10 +309,10 @@ public class SubscriberServiceImpl implements SubscriberService {
 			subscriberRepository.save(subscriber);
 		}
 
-		return new ApiResponse<String>(CommonConstants.SUCCESS_CODE, CommonConstants.SUCCESS_DESC,"OTP verified successfully.", null, request.getSubscriberId());
+		return new ApiResponse<String>(SUCCESS_CODE, SUCCESS_DESC,"OTP verified successfully.", null, request.getSubscriberId());
 	}
 
-	@Transactional
+
 	public ApiResponse<String> resendOtp(ResendOtpRequest request) {
 		try {
 			Subscriber subscriber = subscriberRepository.findById(request.getSubscriberId()).orElseThrow(
@@ -336,33 +346,33 @@ public class SubscriberServiceImpl implements SubscriberService {
 			NotificationEmailResponseDTO resp = notificationService.sendOTPEmail(dto);
 
 			if (resp != null && resp.isEmailSent()) {
-				return new ApiResponse<>(1, "success", "OTP resent successfully.", null, subscriber.getSubscriberId());
+				return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "OTP resent successfully.", null, subscriber.getSubscriberId());
 			} else {
-				return new ApiResponse<>(0, "failure", "Failed to send OTP email.", null, null);
+				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to send OTP email.", null, null);
 			}
 
 		} catch (Exception e) {
-			return new ApiResponse<>(0, "failure", "An error occurred: " + e.getMessage(), null, null);
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "An error occurred: " + e.getMessage(), null, null);
 		}
 	}
 
 	public ApiResponse<List<ChannelMaster>> getAllChannels() {
 		List<ChannelMaster> channels = channelMasterRepository.findAll();
 		if (channels.isEmpty()) {
-			return new ApiResponse<>(0, "failure", null, null, null);
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
 		}
-		return new ApiResponse<>(1, "success", channels, null, null);
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, channels, null, null);
 	}
 
 	public ApiResponse<List<Countries>> getAllCountries() {
 		List<Countries> countries = countriesRepository.findAll();
 		if (countries.isEmpty()) {
-			return new ApiResponse<>(0, "failure", null, null, null);
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
 		}
-		return new ApiResponse<>(1, "Success", countries, null, null);
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, countries, null, null);
 	}
 
-	@Transactional
+
 	public ApiResponse<String> addAdditionalDetails(AdditionalDetailsRequest request) {
 		Subscriber subscriber = subscriberRepository.findById(request.getSubscriberId())
 				.orElseThrow(() -> new RuntimeException("Subscriber not found with id: " + request.getSubscriberId()));
@@ -389,49 +399,31 @@ public class SubscriberServiceImpl implements SubscriberService {
 		subscriber.setUpdatedDate(new Date());
 		subscriberRepository.save(subscriber);
 
-		return new ApiResponse<>(1, "success", "Additional details added successfully.", null,
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Additional details added successfully.", null,
 				subscriber.getSubscriberId());
 	}
 
-	@Transactional
+	
 	public ApiResponse<String> saveSubscription(SubscriptionRequest subscriptionRequest) {
-		if (subscriptionRequest.getPlanId() == null
-				|| !planMasterRepository.existsById(subscriptionRequest.getPlanId())) {
-			return new ApiResponse<>(0, "Invalid plan_id", null, null, null);
-		}
 
-		if (subscriptionRequest.getSubscriberId() == null
-				|| !subscriberRepository.existsById(subscriptionRequest.getSubscriberId())) {
-			return new ApiResponse<>(0, "Invalid subscriber_id", null, null, null);
-		}
+		SubscriptionPlanMaster planMaster = planMasterRepository.findById(subscriptionRequest.getPlanId()).orElse(null);
 
-		if (subscriptionRequest.getChannelId() == null
-				|| !channelMasterRepository.existsById(subscriptionRequest.getChannelId())) {
-			return new ApiResponse<>(0, "Invalid channel_id", null, null, null);
-		}
 
-		Subscriptions existingSubscription = subscriptionRepository
-				.findTopBySubscriber_SubscriberIdAndStatusOrderByStartDateDesc(subscriptionRequest.getSubscriberId(),
-						"ACTIVE");
+		Subscriptions existingSubscription = subscriptionRepository.findTopBySubscriber_SubscriberIdOrderBySubscriptionIdDesc(
+				subscriptionRequest.getSubscriberId());
 
-		if (existingSubscription != null) {
-			return new ApiResponse<>(0, "Subscriber already has an active subscription", null, null, null);
-		}
-
-		existingSubscription = subscriptionRepository.findTopBySubscriber_SubscriberIdAndStatusOrderByStartDateDesc(
-				subscriptionRequest.getSubscriberId(), "PAYMENT_PROCEEDED");
-
-		if (existingSubscription != null) {
-			return new ApiResponse<>(0, "Subscriber already has a subscription with status PAYMENT_PROCEEDED", null,
-					null, null);
+		if (existingSubscription != null && existingSubscription.getStatus().equals(SubscriptionStatus.TRIAL.toString())
+				|| existingSubscription.getStatus().equals(SubscriptionStatus.ACTIVE.toString())
+				) {
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Subscriber already has a subscription with status "+existingSubscription.getStatus(), null, null);
 		}
 
 		Subscriptions subscription = new Subscriptions();
 
-		subscription.setStartDate(subscriptionRequest.getStartDate());
-		subscription.setEndDate(subscriptionRequest.getEndDate());
-		subscription.setStatus("PAYMENT_PROCEEDED"); // Status is set as PaymentProceeded initially
-		subscription.setIsFree(subscriptionRequest.getIsFree());
+		subscription.setStartDate(CommonUtil.getLocalDateTimefromString(subscriptionRequest.getStartDate(),DATE_ddMMyyyy));
+		subscription.setEndDate(subscription.getStartDate().plusDays((planMaster.getPlanDurationDays())));
+		subscription.setStatus(SubscriptionStatus.TRIAL.toString()); 
+		
 
 		SubscriptionPlanMaster plan = new SubscriptionPlanMaster();
 		plan.setPlanId(subscriptionRequest.getPlanId());
@@ -446,19 +438,23 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		subscriptionRepository.save(subscription);
 
-		return new ApiResponse<>(1, "success", "Subscription saved successfully", null,
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Subscription saved successfully", null,
 				subscription.getSubscriber().getSubscriberId());
 	}
 
-	public ApiResponse<List<SubscriptionPlanMaster>> getAllSubscriptionPlans() {
-		List<SubscriptionPlanMaster> plans = planMasterRepository.findAll();
-		if (plans.isEmpty()) {
-			return new ApiResponse<>(0, "failure", null, null, null);
+	public ApiResponse<List<SubscriptionPlans>> getAllSubscriptionPlans() {
+		List<SubscriptionPlanMaster> plansList = planMasterRepository.findAll();
+		List<SubscriptionPlans> result = plansList.stream()
+				  .filter(e -> e.getActive()==true)
+				  .map(e -> new SubscriptionPlans(e.getPlanId(), e.getPlanName(),e.getPlanDurationDays(),e.getPlanPrice(),e.getFeatures(),e.getTrialDays()))
+				  .collect(Collectors.toList());
+		if (result.isEmpty()) {
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
 		}
-		return new ApiResponse<>(1, "success", plans, null, null);
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, result, null, null);
 	}
 
-	@Transactional
+	
 	public ApiResponse<String> makePayment(SubscriptionPaymentRequest paymentRequest) {
 		Subscriptions subscription = subscriptionRepository
 				.findTopBySubscriber_SubscriberIdAndStatusOrderByStartDateDesc(paymentRequest.getSubscriberId(),
@@ -530,7 +526,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		return new ApiResponse<>(1, "success", responses, null, null);
 	}
 
-	@Transactional
+	
 	public ApiResponse<String> addSubscriberLocation(SubscriberLocationRequest request) {
 		Optional<Subscriber> subscriberOpt = subscriberRepository.findById(request.getSubscriberId());
 		if (!subscriberOpt.isPresent()) {
@@ -571,7 +567,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 				subscriberLocation.getSubscriber().getSubscriberId());
 	}
 
-	@Transactional
+	
 	public ApiResponse<String> addCommunity(CommunityRequest request) {
 		Optional<SubscriberLocation> locationOptional = subscriberLocationRepository.findById(request.getLocationId());
 		if (!locationOptional.isPresent()) {
@@ -597,7 +593,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		return new ApiResponse<>(1, "success", "Community added successfully.", null, request.getSubscriberId());
 	}
 
-	@Transactional
+	
 	public ApiResponse<String> addBuilding(BuildingRequest request) {
 		Optional<Community> communityOptional = communityRepository.findById(request.getCommunityId());
 		if (!communityOptional.isPresent()) {
@@ -630,7 +626,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		return new ApiResponse<>(1, "success", "Building added successfully.", null, request.getSubscriberId());
 	}
 
-	@Transactional
+
 	public ApiResponse<String> addFloor(FloorRequest request) {
 		Optional<Building> buildingOptional = buildingRepository.findById(request.getBuildingId());
 		if (!buildingOptional.isPresent()) {
@@ -648,7 +644,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		return new ApiResponse<>(1, "success", "Floor added successfully.", null, request.getBuildingId());
 	}
 
-	@Transactional
+	
 	public ApiResponse<String> addUnit(UnitRequest request) {
 		Optional<Building> buildingOptional = buildingRepository.findById(request.getBuildingId());
 		if (!buildingOptional.isPresent()) {
@@ -684,7 +680,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		return new ApiResponse<>(1, "success", "Unit added successfully.", null, null);
 	}
 
-	@Transactional
+	
 	public ApiResponse<String> createUserAndMergeTenant(CreateUserRequest request) {
 		Countries nationality = countriesRepository.findById(request.getNationalityId()).orElse(null);
 		if (nationality == null) {
@@ -766,7 +762,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		return new ApiResponse<>(1, "success", "Parking Zone created successfully.", null, null);
 	}
 
-	@Transactional
+	
 	public ApiResponse<String> createParking(ParkingRequest request) {
 		Optional<ParkingZone> parkZoneOptional = parkingZoneRepository.findById(request.getParkZoneId());
 		if (!parkZoneOptional.isPresent()) {
@@ -786,7 +782,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		return new ApiResponse<>(1, "success", "Parking created successfully.", null, null);
 	}
 
-	@Transactional
+	
 	public ApiResponse<String> addKey(KeyMasterRequest request) {
 		if (keyMasterRepository.findByKeyName(request.getKeyName()).isPresent()) {
 			return new ApiResponse<>(0, "failure", "Key name already exists.", null, null);
@@ -799,7 +795,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		return new ApiResponse<>(1, "success", "Key added successfully.", null, null);
 	}
 
-	@Transactional
+	
 	public ApiResponse<String> addUnitKey(UnitKeysRequest request) {
 		Optional<Unit> unitOptional = unitRepository.findById(request.getUnitId());
 		if (!unitOptional.isPresent()) {
@@ -827,7 +823,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		return new ApiResponse<>(1, "success", "Unit-Key mapping added successfully.", null, null);
 	}
 
-	@Transactional
+	
 	public ApiResponse<String> addTenantUnit(TenantUnitRequest request) {
 		Tenant tenant = tenantRepository.findById(request.getTenantId()).orElse(null);
 		if (tenant == null) {

@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.sbmtech.mms.models.ChannelMaster;
 import com.sbmtech.mms.models.Countries;
-import com.sbmtech.mms.models.SubscriptionPlanMaster;
 import com.sbmtech.mms.payload.request.AdditionalDetailsRequest;
 import com.sbmtech.mms.payload.request.ApiResponse;
 import com.sbmtech.mms.payload.request.BuildingRequest;
@@ -25,6 +24,7 @@ import com.sbmtech.mms.payload.request.UnitRequest;
 import com.sbmtech.mms.payload.request.VerifyOtpRequest;
 import com.sbmtech.mms.payload.response.CityResponse;
 import com.sbmtech.mms.payload.response.StateResponse;
+import com.sbmtech.mms.payload.response.SubscriptionPlans;
 
 public interface SubscriberService {
 	public ApiResponse<String> createSubscriber(SubscriberRequest request) throws Exception;
@@ -41,7 +41,7 @@ public interface SubscriberService {
 
 	public ApiResponse<String> saveSubscription(SubscriptionRequest subscriptionRequest);
 
-	public ApiResponse<List<SubscriptionPlanMaster>> getAllSubscriptionPlans();
+	public ApiResponse<List<SubscriptionPlans>> getAllSubscriptionPlans();
 
 	public ApiResponse<String> makePayment(SubscriptionPaymentRequest paymentRequest);
 

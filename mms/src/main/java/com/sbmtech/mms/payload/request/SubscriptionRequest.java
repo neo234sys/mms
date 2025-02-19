@@ -1,15 +1,30 @@
 package com.sbmtech.mms.payload.request;
 
-import java.time.LocalDateTime;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+
+import com.sbmtech.mms.validator.ValidChannelId;
+import com.sbmtech.mms.validator.ValidDateDDMMYYYY;
+import com.sbmtech.mms.validator.ValidFutureDate;
+import com.sbmtech.mms.validator.ValidPlanId;
+import com.sbmtech.mms.validator.ValidSubscriberlId;
 
 public class SubscriptionRequest {
 
+	@ValidPlanId
 	private Integer planId;
+	
+	@ValidSubscriberlId
 	private Integer subscriberId;
-	private LocalDateTime startDate;
-	private LocalDateTime endDate;
-	private String status;
-	private Boolean isFree;
+	
+	@NotBlank (message = "startDate cannot be null")
+	@NotEmpty(message = "startDate cannot be null")
+	@ValidDateDDMMYYYY
+	@ValidFutureDate
+	private String startDate;
+	
+	
+	@ValidChannelId
 	private Integer channelId;
 
 	public Integer getPlanId() {
@@ -28,37 +43,37 @@ public class SubscriptionRequest {
 		this.subscriberId = subscriberId;
 	}
 
-	public LocalDateTime getStartDate() {
+	public String getStartDate() {
 		return startDate;
 	}
 
-	public void setStartDate(LocalDateTime startDate) {
+	public void setStartDate(String startDate) {
 		this.startDate = startDate;
 	}
+//
+//	public LocalDateTime getEndDate() {
+//		return endDate;
+//	}
+//
+//	public void setEndDate(LocalDateTime endDate) {
+//		this.endDate = endDate;
+//	}
 
-	public LocalDateTime getEndDate() {
-		return endDate;
-	}
+//	public String getStatus() {
+//		return status;
+//	}
+//
+//	public void setStatus(String status) {
+//		this.status = status;
+//	}
 
-	public void setEndDate(LocalDateTime endDate) {
-		this.endDate = endDate;
-	}
-
-	public String getStatus() {
-		return status;
-	}
-
-	public void setStatus(String status) {
-		this.status = status;
-	}
-
-	public Boolean getIsFree() {
-		return isFree;
-	}
-
-	public void setIsFree(Boolean isFree) {
-		this.isFree = isFree;
-	}
+//	public Boolean getIsFree() {
+//		return isFree;
+//	}
+//
+//	public void setIsFree(Boolean isFree) {
+//		this.isFree = isFree;
+//	}
 
 	public Integer getChannelId() {
 		return channelId;

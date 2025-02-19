@@ -8,4 +8,6 @@ import com.sbmtech.mms.models.SubscriptionPlanMaster;
 @Repository
 public interface SubscriptionPlanMasterRepository extends JpaRepository<SubscriptionPlanMaster, Integer> {
 
+	
+	public boolean existsByPlanIdAndActive(Integer planId,boolean active);
 }

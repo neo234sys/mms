@@ -6,14 +6,14 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 @JsonInclude(Include.NON_NULL)
 public class ApiResponse<T> {
 	private int responseCode;
-	private String responseMessage;
+	private String responseDesc;
 	private T data;
 	private Long userId;
 	private Integer subscriberId;
 
-	public ApiResponse(int responseCode, String responseMessage, T data, Long userId, Integer subscriberId) {
+	public ApiResponse(int responseCode, String responseDesc, T data, Long userId, Integer subscriberId) {
 		this.responseCode = responseCode;
-		this.responseMessage = responseMessage;
+		this.responseDesc = responseDesc;
 		this.data = data;
 		this.userId = userId;
 		this.subscriberId = subscriberId;
@@ -27,12 +27,14 @@ public class ApiResponse<T> {
 		this.responseCode = responseCode;
 	}
 
-	public String getResponseMessage() {
-		return responseMessage;
+	
+
+	public String getResponseDesc() {
+		return responseDesc;
 	}
 
-	public void setResponseMessage(String responseMessage) {
-		this.responseMessage = responseMessage;
+	public void setResponseDesc(String responseDesc) {
+		this.responseDesc = responseDesc;
 	}
 
 	public T getData() {
