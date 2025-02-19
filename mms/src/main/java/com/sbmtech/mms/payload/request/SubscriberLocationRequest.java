@@ -1,11 +1,15 @@
 package com.sbmtech.mms.payload.request;
 
+import com.sbmtech.mms.validator.ValidSubscriberlId;
+
 public class SubscriberLocationRequest {
 
 	private String locationName;
 	private Integer countryId;
 	private Integer stateId;
 	private Integer cityId;
+	
+	@ValidSubscriberlId
 	private Integer subscriberId;
 
 	public String getLocationName() {

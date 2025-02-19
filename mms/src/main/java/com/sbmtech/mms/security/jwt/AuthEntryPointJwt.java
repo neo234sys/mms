@@ -1,6 +1,7 @@
 package com.sbmtech.mms.security.jwt;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,6 +17,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sbmtech.mms.constant.CommonConstants;
 
 @Component
 public class AuthEntryPointJwt implements AuthenticationEntryPoint {
@@ -26,6 +28,7 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
   public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
       throws IOException, ServletException {
     logger.error("Unauthorized error: {}", authException.getMessage());
+    
 
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -33,8 +36,10 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
     final Map<String, Object> body = new HashMap<>();
     body.put("status", HttpServletResponse.SC_UNAUTHORIZED);
     body.put("error", "Unauthorized");
-    body.put("message", authException.getMessage());
     body.put("path", request.getServletPath());
+    body.put("responseCode", CommonConstants.FAILURE_CODE);
+    body.put("responseDesc", CommonConstants.FAILURE_DESC);
+    body.put("data", authException.getMessage());
 
     final ObjectMapper mapper = new ObjectMapper();
     mapper.writeValue(response.getOutputStream(), body);

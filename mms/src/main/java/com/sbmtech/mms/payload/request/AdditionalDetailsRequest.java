@@ -1,8 +1,13 @@
 package com.sbmtech.mms.payload.request;
 
+import com.sbmtech.mms.validator.ValidSubscriberlId;
+
 public class AdditionalDetailsRequest {
 
+
+	@ValidSubscriberlId
 	private Integer subscriberId;
+	
 	private String companyAddress;
 	private String companyContactName;
 	private String companyLandlineNo;

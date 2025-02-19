@@ -1,5 +1,7 @@
 package com.sbmtech.mms.payload.request;
 
+import com.sbmtech.mms.validator.ValidSubscriberlId;
+
 public class BuildingRequest {
 
 	private String buildingName;
@@ -10,6 +12,7 @@ public class BuildingRequest {
 	private Boolean hasKidsPlayground;
 	private Boolean hasPlaycourt;
 	private Integer communityId;
+	@ValidSubscriberlId
 	private Integer subscriberId;
 
 	public String getBuildingName() {

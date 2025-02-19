@@ -13,8 +13,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sbmtech.mms.constant.SubscriptionStatus;
 import com.sbmtech.mms.models.Subscriptions;
 import com.sbmtech.mms.payload.request.AdditionalDetailsRequest;
 import com.sbmtech.mms.payload.request.BuildingRequest;
@@ -45,7 +47,7 @@ public class ManagementController {
 	private SubscriptionRepository subscriptionRepository;
 
 	@PostMapping("/addAdditionalDetails")
-	public ResponseEntity<?> addAdditionalDetails(@RequestBody AdditionalDetailsRequest request) {
+	public ResponseEntity<?> addAdditionalDetails(@Valid @RequestBody AdditionalDetailsRequest request) {
 		return ResponseEntity.ok(subscriberService.addAdditionalDetails(request));
 	}
 
@@ -65,17 +67,17 @@ public class ManagementController {
 	}
 
 	@PostMapping("/addSubscriberLocation")
-	public ResponseEntity<?> addSubscriberLocation(@RequestBody SubscriberLocationRequest request) {
+	public ResponseEntity<?> addSubscriberLocation(@Valid @RequestBody SubscriberLocationRequest request) {
 		return ResponseEntity.ok(subscriberService.addSubscriberLocation(request));
 	}
 
 	@PostMapping("/addCommunity")
-	public ResponseEntity<?> addCommunity(@RequestBody CommunityRequest request) {
+	public ResponseEntity<?> addCommunity(@Valid @RequestBody CommunityRequest request) {
 		return ResponseEntity.ok(subscriberService.addCommunity(request));
 	}
 
 	@PostMapping("/addBuilding")
-	public ResponseEntity<?> addBuilding(@RequestBody BuildingRequest request) {
+	public ResponseEntity<?> addBuilding(@Valid @RequestBody BuildingRequest request) {
 		return ResponseEntity.ok(subscriberService.addBuilding(request));
 	}
 
@@ -124,12 +126,29 @@ public class ManagementController {
 		LocalDateTime now = LocalDateTime.now();
 
 		List<Subscriptions> subscriptionsToExpire = subscriptionRepository
-				.findByStatusInAndEndDateBefore(List.of("ACTIVE", "PAYMENT_PROCEEDED"), now);
+				.findByStatusInAndEndDateBefore(List.of(SubscriptionStatus.ACTIVE.toString(), SubscriptionStatus.TRIAL.toString()), now);
 
 		for (Subscriptions subscription : subscriptionsToExpire) {
-			subscription.setStatus("EXPIRED");
+			subscription.setStatus(SubscriptionStatus.EXPIRED.toString());
 			subscriptionRepository.save(subscription);
 		}
+	}
+	
+	
+	@GetMapping("/countries")
+	public ResponseEntity<?> getAllCountries() {
+		return ResponseEntity.ok(subscriberService.getAllCountries());
+	}
+	
+	@GetMapping("/states")
+	public ResponseEntity<?> getStatesByCountryId(@RequestParam Integer countryId) {
+		return ResponseEntity.ok(subscriberService.getStatesByCountryId(countryId));
+	}
+
+	@GetMapping("/cities")
+	public ResponseEntity<?> getCitiesByStateAndCountryId(@RequestParam Integer stateId,
+			@RequestParam Integer countryId) {
+		return ResponseEntity.ok(subscriberService.getCitiesByStateAndCountryId(stateId, countryId));
 	}
 
 }

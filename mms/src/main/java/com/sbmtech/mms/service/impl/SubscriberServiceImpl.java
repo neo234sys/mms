@@ -461,7 +461,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 						"PAYMENT_PROCEEDED");
 
 		if (subscription == null) {
-			return new ApiResponse<>(0, "No payment proceeded subscription found for this subscriber", null, null,
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "No payment proceeded subscription found for this subscriber",  null,
 					null);
 		}
 
@@ -473,17 +473,17 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		payment.setTransactionId(paymentRequest.getTransactionId());
 		payment.setPaymentDate(Timestamp.valueOf(LocalDateTime.now()));
-		payment.setStatus("SUCCESS");
+		payment.setStatus(CommonConstants.SUCCESS_DESC);
 
 		payment.setSubscription(subscription);
 		payment.setSubscriber(subscription.getSubscriber());
 
 		paymentRepository.save(payment);
 
-		subscription.setStatus("ACTIVE");
+		subscription.setStatus(SubscriptionStatus.ACTIVE.toString());
 		subscriptionRepository.save(subscription);
 
-		return new ApiResponse<>(1, "success", "Payment processed and subscription activated", null,
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Payment processed and subscription activated", null,
 				paymentRequest.getSubscriberId());
 	}
 
@@ -492,7 +492,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		List<StateResponse> responses = new ArrayList<>();
 
 		if (states.isEmpty()) {
-			return new ApiResponse<>(0, "failure", null, null, null);
+			throw new BusinessException("Invalid CountryId");
 		}
 
 		for (State state : states) {
@@ -504,7 +504,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			responses.add(stateResponse);
 		}
 
-		return new ApiResponse<>(1, "success", responses, null, null);
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC,  responses, null, null);
 	}
 
 	public ApiResponse<List<CityResponse>> getCitiesByStateAndCountryId(Integer stateId, Integer countryId) {
@@ -512,7 +512,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		List<CityResponse> responses = new ArrayList<>();
 
 		if (cities.isEmpty()) {
-			return new ApiResponse<>(0, "failure", null, null, null);
+			throw new BusinessException("Invalid Country/City Id");
 		}
 
 		for (City city : cities) {
@@ -523,30 +523,27 @@ public class SubscriberServiceImpl implements SubscriberService {
 			responses.add(cityResponse);
 		}
 
-		return new ApiResponse<>(1, "success", responses, null, null);
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, responses, null, null);
 	}
 
 	
 	public ApiResponse<String> addSubscriberLocation(SubscriberLocationRequest request) {
 		Optional<Subscriber> subscriberOpt = subscriberRepository.findById(request.getSubscriberId());
-		if (!subscriberOpt.isPresent()) {
-			return new ApiResponse<>(0, "failure", "Subscriber not found with id: " + request.getSubscriberId(), null,
-					null);
-		}
+
 
 		Optional<Countries> countryOpt = countriesRepository.findById(request.getCountryId());
 		if (!countryOpt.isPresent()) {
-			return new ApiResponse<>(0, "failure", "Country not found with id: " + request.getCountryId(), null, null);
+			throw new BusinessException("Country not found with id: " + request.getCountryId());
 		}
 
 		Optional<State> stateOpt = stateRepository.findById(request.getStateId());
 		if (!stateOpt.isPresent()) {
-			return new ApiResponse<>(0, "failure", "State not found with id: " + request.getStateId(), null, null);
+			throw new BusinessException("State not found with id: " + request.getStateId());
 		}
 
 		Optional<City> cityOpt = cityRepository.findById(request.getCityId());
 		if (!cityOpt.isPresent()) {
-			return new ApiResponse<>(0, "failure", "City not found with id: " + request.getCityId(), null, null);
+			throw new BusinessException("City not found with id: " + request.getCityId());
 		}
 
 		Subscriber subscriber = subscriberOpt.get();
@@ -563,7 +560,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		subscriberLocationRepository.save(subscriberLocation);
 
-		return new ApiResponse<>(1, "success", "Subscriber location added successfully.", null,
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Subscriber location added successfully.", null,
 				subscriberLocation.getSubscriber().getSubscriberId());
 	}
 
@@ -571,16 +568,12 @@ public class SubscriberServiceImpl implements SubscriberService {
 	public ApiResponse<String> addCommunity(CommunityRequest request) {
 		Optional<SubscriberLocation> locationOptional = subscriberLocationRepository.findById(request.getLocationId());
 		if (!locationOptional.isPresent()) {
-			return new ApiResponse<>(0, "failure", "Location not found with id: " + request.getLocationId(), null,
-					null);
+			throw new BusinessException( "Location not found with id: " + request.getLocationId());
 		}
 		SubscriberLocation location = locationOptional.get();
 
 		Optional<Subscriber> subscriberOptional = subscriberRepository.findById(request.getSubscriberId());
-		if (!subscriberOptional.isPresent()) {
-			return new ApiResponse<>(0, "failure", "Subscriber not found with id: " + request.getSubscriberId(), null,
-					null);
-		}
+		
 		Subscriber subscriber = subscriberOptional.get();
 
 		Community community = new Community();
@@ -590,23 +583,19 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		communityRepository.save(community);
 
-		return new ApiResponse<>(1, "success", "Community added successfully.", null, request.getSubscriberId());
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Community added successfully.", null, request.getSubscriberId());
 	}
 
 	
 	public ApiResponse<String> addBuilding(BuildingRequest request) {
 		Optional<Community> communityOptional = communityRepository.findById(request.getCommunityId());
 		if (!communityOptional.isPresent()) {
-			return new ApiResponse<>(0, "failure", "Community not found with id: " + request.getCommunityId(), null,
-					null);
+			throw new BusinessException("Community not found with id: " + request.getCommunityId());
 		}
 		Community community = communityOptional.get();
 
 		Optional<Subscriber> subscriberOptional = subscriberRepository.findById(request.getSubscriberId());
-		if (!subscriberOptional.isPresent()) {
-			return new ApiResponse<>(0, "failure", "Subscriber not found with id: " + request.getSubscriberId(), null,
-					null);
-		}
+		
 		Subscriber subscriber = subscriberOptional.get();
 
 		Building building = new Building();
@@ -623,15 +612,14 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		buildingRepository.save(building);
 
-		return new ApiResponse<>(1, "success", "Building added successfully.", null, request.getSubscriberId());
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Building added successfully.", null, request.getSubscriberId());
 	}
 
 
 	public ApiResponse<String> addFloor(FloorRequest request) {
 		Optional<Building> buildingOptional = buildingRepository.findById(request.getBuildingId());
 		if (!buildingOptional.isPresent()) {
-			return new ApiResponse<>(0, "failure", "Building not found with id: " + request.getBuildingId(), null,
-					null);
+			throw new BusinessException("Building not found with id: " + request.getBuildingId());
 		}
 		Building building = buildingOptional.get();
 
@@ -641,21 +629,20 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		floorRepository.save(floor);
 
-		return new ApiResponse<>(1, "success", "Floor added successfully.", null, request.getBuildingId());
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Floor added successfully.", null, request.getBuildingId());
 	}
 
 	
 	public ApiResponse<String> addUnit(UnitRequest request) {
 		Optional<Building> buildingOptional = buildingRepository.findById(request.getBuildingId());
 		if (!buildingOptional.isPresent()) {
-			return new ApiResponse<>(0, "failure", "Building not found with id: " + request.getBuildingId(), null,
-					null);
+			throw new BusinessException("Building not found with id: " + request.getBuildingId());
 		}
 		Building building = buildingOptional.get();
 
 		Optional<Floor> floorOptional = floorRepository.findById(request.getFloorId());
 		if (!floorOptional.isPresent()) {
-			return new ApiResponse<>(0, "failure", "Floor not found with id: " + request.getFloorId(), null, null);
+			throw new BusinessException( "Floor not found with id: " + request.getFloorId());
 		}
 		Floor floor = floorOptional.get();
 
@@ -677,31 +664,32 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		unitRepository.save(unit);
 
-		return new ApiResponse<>(1, "success", "Unit added successfully.", null, null);
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Unit added successfully.", null, null);
 	}
 
 	
 	public ApiResponse<String> createUserAndMergeTenant(CreateUserRequest request) {
 		Countries nationality = countriesRepository.findById(request.getNationalityId()).orElse(null);
 		if (nationality == null) {
-			return new ApiResponse<>(0, "failure", "Country not found with ID: " + request.getNationalityId(), null,
-					null);
+			
+			throw new BusinessException( "Country not found with ID: " + request.getNationalityId());
 		}
 
 		UserTypeMaster userType = userTypeMasterRepository.findById(4).orElse(null);
 		if (userType == null) {
-			return new ApiResponse<>(0, "failure", "User Type not found with ID 4", null, null);
+			
+			throw new BusinessException( "User Type not found with ID 4");
 		}
 
 		Subscriber subscriber = subscriberRepository.findById(request.getSubscriberId()).orElse(null);
 		if (subscriber == null) {
-			return new ApiResponse<>(0, "failure", "Subscriber not found with ID: " + request.getSubscriberId(), null,
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Subscriber not found with ID: " + request.getSubscriberId(), null,
 					null);
 		}
 
 		Role role = roleRepository.findById(8).orElse(null);
 		if (role == null) {
-			return new ApiResponse<>(0, "failure", "Role not found with ID 8", null, null);
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Role not found with ID 8", null, null);
 		}
 
 		Tenant tenant = new Tenant();
@@ -742,14 +730,14 @@ public class SubscriberServiceImpl implements SubscriberService {
 		user.setTenantId(tenant.getTenantId());
 		user = userRepository.save(user);
 
-		return new ApiResponse<>(1, "success", "Tenant and User created successfully.", user.getUserId(),
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Tenant and User created successfully.", user.getUserId(),
 				user.getSubscriber().getSubscriberId());
 	}
 
 	public ApiResponse<String> createParkingZone(ParkingZoneRequest request) {
 		Optional<Subscriber> subscriberOptional = subscriberRepository.findById(request.getSubscriberId());
 		if (!subscriberOptional.isPresent()) {
-			return new ApiResponse<>(0, "failure", "Subscriber not found with ID: " + request.getSubscriberId(), null,
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Subscriber not found with ID: " + request.getSubscriberId(), null,
 					null);
 		}
 
@@ -759,14 +747,14 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		parkingZoneRepository.save(parkingZone);
 
-		return new ApiResponse<>(1, "success", "Parking Zone created successfully.", null, null);
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Parking Zone created successfully.", null, null);
 	}
 
 	
 	public ApiResponse<String> createParking(ParkingRequest request) {
 		Optional<ParkingZone> parkZoneOptional = parkingZoneRepository.findById(request.getParkZoneId());
 		if (!parkZoneOptional.isPresent()) {
-			return new ApiResponse<>(0, "failure", "Parking Zone not found", null, null);
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Parking Zone not found", null, null);
 		}
 
 		ParkingZone parkZone = parkZoneOptional.get();
@@ -779,32 +767,32 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		parkingRepository.save(parking);
 
-		return new ApiResponse<>(1, "success", "Parking created successfully.", null, null);
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Parking created successfully.", null, null);
 	}
 
 	
 	public ApiResponse<String> addKey(KeyMasterRequest request) {
 		if (keyMasterRepository.findByKeyName(request.getKeyName()).isPresent()) {
-			return new ApiResponse<>(0, "failure", "Key name already exists.", null, null);
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Key name already exists.", null, null);
 		}
 
 		KeyMaster keyMaster = new KeyMaster();
 		keyMaster.setKeyName(request.getKeyName());
 		keyMasterRepository.save(keyMaster);
 
-		return new ApiResponse<>(1, "success", "Key added successfully.", null, null);
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Key added successfully.", null, null);
 	}
 
 	
 	public ApiResponse<String> addUnitKey(UnitKeysRequest request) {
 		Optional<Unit> unitOptional = unitRepository.findById(request.getUnitId());
 		if (!unitOptional.isPresent()) {
-			return new ApiResponse<>(0, "failure", "Unit not found with ID: " + request.getUnitId(), null, null);
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Unit not found with ID: " + request.getUnitId(), null, null);
 		}
 
 		Optional<KeyMaster> keyMasterOptional = keyMasterRepository.findById(request.getKeyId());
 		if (!keyMasterOptional.isPresent()) {
-			return new ApiResponse<>(0, "failure", "Key not found with ID: " + request.getKeyId(), null, null);
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Key not found with ID: " + request.getKeyId(), null, null);
 		}
 
 		Unit unit = unitOptional.get();
@@ -812,7 +800,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		boolean mappingExists = unitKeysRepository.existsByUnitAndKeyMaster(unit, keyMaster);
 		if (mappingExists) {
-			return new ApiResponse<>(0, "failure", "Unit-Key mapping already exists.", null, null);
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Unit-Key mapping already exists.", null, null);
 		}
 
 		UnitKeys unitKeys = new UnitKeys();
@@ -820,29 +808,29 @@ public class SubscriberServiceImpl implements SubscriberService {
 		unitKeys.setKeyMaster(keyMaster);
 		unitKeysRepository.save(unitKeys);
 
-		return new ApiResponse<>(1, "success", "Unit-Key mapping added successfully.", null, null);
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Unit-Key mapping added successfully.", null, null);
 	}
 
 	
 	public ApiResponse<String> addTenantUnit(TenantUnitRequest request) {
 		Tenant tenant = tenantRepository.findById(request.getTenantId()).orElse(null);
 		if (tenant == null) {
-			return new ApiResponse<>(0, "failure", "Tenant not found with ID: " + request.getTenantId(), null, null);
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Tenant not found with ID: " + request.getTenantId(), null, null);
 		}
 
 		Unit unit = unitRepository.findById(request.getUnitId()).orElse(null);
 		if (unit == null) {
-			return new ApiResponse<>(0, "failure", "Unit not found with ID: " + request.getUnitId(), null, null);
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,"Unit not found with ID: " + request.getUnitId(), null, null);
 		}
 
 		Parking parking = parkingRepository.findById(request.getParkingId()).orElse(null);
 		if (parking == null) {
-			return new ApiResponse<>(0, "failure", "Parking not found with ID: " + request.getParkingId(), null, null);
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Parking not found with ID: " + request.getParkingId(), null, null);
 		}
 
 		UnitKeys unitKeys = unitKeysRepository.findById(request.getUnitKeysId()).orElse(null);
 		if (unitKeys == null) {
-			return new ApiResponse<>(0, "failure", "Unit Keys not found with ID: " + request.getUnitKeysId(), null,
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Unit Keys not found with ID: " + request.getUnitKeysId(), null,
 					null);
 		}
 
@@ -862,7 +850,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		tenantUnitRepository.save(tenantUnit);
 
-		return new ApiResponse<>(1, "success", "Tenant-Unit mapping added successfully.", null, null);
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Tenant-Unit mapping added successfully.", null, null);
 	}
 
 }

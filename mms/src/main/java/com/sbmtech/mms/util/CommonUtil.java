@@ -76,9 +76,7 @@ public class CommonUtil {
 				if (paramVal != null && paramVal.trim().length() > 0 && !(paramVal.equalsIgnoreCase("null"))) {
 					
 					Date date=sdf.parse(paramVal);
-					// LocalDate.now(ZONE_DUBAI);
 					 return date.toInstant().atZone(ZONE_DUBAI).toLocalDate();
-					//return date.toInstant().atZone(ZONE_DUBAI).toLocalDate();
 				} else {
 					return null;
 				}
