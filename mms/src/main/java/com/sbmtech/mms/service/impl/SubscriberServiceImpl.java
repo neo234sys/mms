@@ -43,6 +43,7 @@ import com.sbmtech.mms.models.Parking;
 import com.sbmtech.mms.models.ParkingZone;
 import com.sbmtech.mms.models.PaymentMethod;
 import com.sbmtech.mms.models.Role;
+import com.sbmtech.mms.models.RoleEnum;
 import com.sbmtech.mms.models.State;
 import com.sbmtech.mms.models.Subscriber;
 import com.sbmtech.mms.models.SubscriberLocation;
@@ -53,9 +54,10 @@ import com.sbmtech.mms.models.Tenant;
 import com.sbmtech.mms.models.TenantUnit;
 import com.sbmtech.mms.models.Unit;
 import com.sbmtech.mms.models.UnitKeys;
-import com.sbmtech.mms.models.UnitSubType;
-import com.sbmtech.mms.models.UnitType;
+import com.sbmtech.mms.models.UnitSubTypeEnum;
+import com.sbmtech.mms.models.UnitTypeEnum;
 import com.sbmtech.mms.models.User;
+import com.sbmtech.mms.models.UserTypeEnum;
 import com.sbmtech.mms.models.UserTypeMaster;
 import com.sbmtech.mms.payload.request.AdditionalDetailsRequest;
 import com.sbmtech.mms.payload.request.ApiResponse;
@@ -662,12 +664,12 @@ public class SubscriberServiceImpl implements SubscriberService {
 	public ApiResponse<Object> addUnit(UnitRequest request) {
 		
 		
-		Optional<UnitType> op=Arrays.stream(UnitType.values()).filter(status -> status.getValue().toString().equals(request.getUnitType())).findAny();
+		Optional<UnitTypeEnum> op=Arrays.stream(UnitTypeEnum.values()).filter(status -> status.getValue().toString().equals(request.getUnitType())).findAny();
 		if(!op.isPresent()) {
 			throw new BusinessException("Invalid unitType, can be any one APARTMENT/VILLA/COMMERCIAL");
 		}
 			
-		Optional<UnitSubType> ops=Arrays.stream(UnitSubType.values()).filter(status -> status.getValue().toString().equals(request.getUnitSubType())).findAny();
+		Optional<UnitSubTypeEnum> ops=Arrays.stream(UnitSubTypeEnum.values()).filter(status -> status.getValue().toString().equals(request.getUnitSubType())).findAny();
 		
 		if(!ops.isPresent()) {
 			throw new BusinessException("Invalid unitSubType, can be any one STUDIO/1BHK/2BHK/3BHK");
@@ -709,28 +711,19 @@ public class SubscriberServiceImpl implements SubscriberService {
 	}
 
 	
-	public ApiResponse<String> createUserAndMergeTenant(CreateUserRequest request) {
+	public ApiResponse<String> createUserAndMergeTenant(CreateUserRequest request)throws Exception {
 		Countries nationality = countriesRepository.findById(request.getNationalityId()).orElse(null);
-		if (nationality == null) {
-			
-			throw new BusinessException( "Country not found with ID: " + request.getNationalityId());
-		}
 
-		UserTypeMaster userType = userTypeMasterRepository.findById(4).orElse(null);
+		UserTypeMaster userType = userTypeMasterRepository.findById(UserTypeEnum.TENANT.getValue()).orElse(null);
 		if (userType == null) {
-			
-			throw new BusinessException( "User Type not found with ID 4");
+			throw new BusinessException( "User Type not found");
 		}
 
 		Subscriber subscriber = subscriberRepository.findById(request.getSubscriberId()).orElse(null);
-		if (subscriber == null) {
-			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Subscriber not found with ID: " + request.getSubscriberId(), null,
-					null);
-		}
 
-		Role role = roleRepository.findById(8).orElse(null);
+		Role role = roleRepository.findById(RoleEnum.ROLE_TENANT.getValue()).orElse(null);
 		if (role == null) {
-			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Role not found with ID 8", null, null);
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, RoleEnum.ROLE_TENANT.getName()+" Role not found", null, null);
 		}
 
 		
@@ -752,10 +745,11 @@ public class SubscriberServiceImpl implements SubscriberService {
 		tenant.setNationality(nationality);
 		tenant = tenantRepository.save(tenant);
 
+		String pwd=CommonUtil.generateRandomPwd();
 		User user = new User();
 		user.setEmail(request.getEmail());
-		user.setMobileNo(request.getMobileNo());
-		user.setPassword(encoder.encode(request.getPassword()));
+		user.setMobileNo(Long.valueOf(request.getMobileNo()));
+		user.setPassword(pwd);
 		user.setActive(true);
 		user.setEmiratesId(request.getEmiratesId());
 		user.setDob(CommonUtil.getDatefromString(request.getDob(),DATE_ddMMyyyy));
@@ -773,9 +767,21 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		user.setTenantId(tenant.getTenantId());
 		user = userRepository.save(user);
+		
+		NotifEmailDTO dto = new NotifEmailDTO();
+		dto.setEmailTo(request.getEmail());
+		dto.setCustomerName(request.getFirstName());
+		dto.setPwd(pwd);
 
-		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Tenant and User created successfully.", user.getUserId(),
-				user.getSubscriber().getSubscriberId());
+		NotificationEmailResponseDTO resp = notificationService.sendTenentAccountCreationEmail(dto);
+		if (resp != null && resp.isEmailSent()) {
+			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Tenant created successfully.", user.getUserId(),
+					null);
+		} else {
+			throw new BusinessException("Tenant Not created");
+		}
+
+		
 	}
 
 	public ApiResponse<String> createParkingZone(ParkingZoneRequest request) {

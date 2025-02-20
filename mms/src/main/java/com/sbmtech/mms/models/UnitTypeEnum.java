@@ -1,13 +1,13 @@
 package com.sbmtech.mms.models;
 
-public enum UnitSubType {
+public enum UnitTypeEnum {
 	
 	
-	STUDIO("STUDIO"),_1BHK1("1BHK"),_2BHK2("2BHK"),_3BHK3("3BHK");
+	APARTMENT("APARTMENT"),VILLA("VILLA"),COMMERCIAL("COMMERCIAL");
 	
 	private String value;
 	
-	private UnitSubType(String value){
+	private UnitTypeEnum(String value){
 		
 		this.value = value;
 	}
@@ -16,4 +16,6 @@ public enum UnitSubType {
 		
 		return this.value;
 	}
+	
+	
 }

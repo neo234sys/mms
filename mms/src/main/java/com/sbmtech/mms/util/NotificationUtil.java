@@ -37,6 +37,11 @@ public class NotificationUtil {
 		return getNotifProperty(NotificationConstants.NOTIF_OTP_SUBJECT_KEY);
 	}
 	
+	public String getTenantAcctCreationSubject() {
+
+		return getNotifProperty(NotificationConstants.NOTIF_TENANT_ACCT_SUBJECT_KEY);
+	}
+	
 	public String prepareOTPEmail(NotifEmailDTO dto){
 		
 		StringWriter mergedContent = new StringWriter();
@@ -57,6 +62,18 @@ public class NotificationUtil {
 		
 		
 		velocityEngine.mergeTemplate(getNotifProperty(NotificationConstants.NOTIF_ACCT_ACTIVE_TEMPLATE_KEY), "UTF-8", velocityContext, mergedContent);
+		
+		return mergedContent.toString();
+	}
+	
+	public String prepareTenantAcctCreationEmail(NotifEmailDTO dto){
+		
+		StringWriter mergedContent = new StringWriter();
+		VelocityContext velocityContext = new VelocityContext();
+		velocityContext.put("dataHolderDTO", dto);
+		
+		
+		velocityEngine.mergeTemplate(getNotifProperty(NotificationConstants.NOTIF_TENANT_ACCT_ACTIVE_TEMPLATE_KEY), "UTF-8", velocityContext, mergedContent);
 		
 		return mergedContent.toString();
 	}

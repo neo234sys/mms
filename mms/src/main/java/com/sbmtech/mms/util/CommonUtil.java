@@ -25,6 +25,7 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.Element;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.tomcat.util.json.JSONParser;
 import org.w3c.dom.NodeList;
 
@@ -489,5 +490,11 @@ public class CommonUtil {
 		String credentials = new String(decodedBytes);
 		final String[] values = credentials.split(":", 2);
 		return values.length == 2 && values[0].equals(username) && values[1].equals(password);
+	}
+	
+	public static String generateRandomPwd() {
+		String characters = "ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789~`!@#$%^&*()-_=+[{]}\\|;:\'\",<.>/?";
+		String pwd = RandomStringUtils.random( 10, characters );
+		return pwd;
 	}
 }

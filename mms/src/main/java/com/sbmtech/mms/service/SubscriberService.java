@@ -59,7 +59,7 @@ public interface SubscriberService {
 
 	public ApiResponse<Object> addUnit(UnitRequest request);
 
-	public ApiResponse<String> createUserAndMergeTenant(CreateUserRequest request);
+	public ApiResponse<String> createUserAndMergeTenant(CreateUserRequest request)throws Exception;
 
 	public ApiResponse<String> createParkingZone(ParkingZoneRequest request);
 

@@ -43,6 +43,32 @@ public class NotificationServiceImpl implements NotificationService {
 		return emailResponseDTO;
 		
 	}
+	
+	@Override
+	public NotificationEmailResponseDTO sendTenentAccountCreationEmail(NotifEmailDTO dto) throws Exception {
+		NotificationEmailResponseDTO emailResponseDTO = new NotificationEmailResponseDTO();
+		NotifEmailDTO emailSenderDTO = new NotifEmailDTO();
+		boolean isEmailSent = false;
+		
+		emailSenderDTO.setEmailTo(dto.getEmailTo());
+		emailSenderDTO.setEmailBody(util.prepareTenantAcctCreationEmail(dto));
+		emailSenderDTO.setSubject(util.getTenantAcctCreationSubject());
+		emailSenderDTO.setAttachmentFileName(dto.getAttachmentFileName());
+		emailSenderDTO.setAttachmentObj(dto.getAttachmentObj());
+		emailSenderDTO.setCustomerName(dto.getCustomerName());
+		emailSenderDTO.setPwd(dto.getPwd());
+		
+		//isEmailSent = emailSender.sendEmail(emailSenderDTO);
+		
+		isEmailSent =emailService.sendEmailWithMultiAttachments(emailSenderDTO);
+		
+		
+		emailResponseDTO.setEmailSent(isEmailSent);
+		emailResponseDTO.setEmail(emailSenderDTO.getEmailTo());
+		
+		return emailResponseDTO;
+		
+	}
 
 	@Override
 	public NotificationEmailResponseDTO sendAcctActivationEmail(NotifEmailDTO dto) throws Exception {

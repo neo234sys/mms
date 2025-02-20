@@ -109,7 +109,7 @@ public class ManagementController {
 	}
 
 	@PostMapping("/createTenant")
-	public ResponseEntity<?> createUserAndMergeTenant(@Valid @RequestBody CreateUserRequest request) {
+	public ResponseEntity<?> createUserAndMergeTenant(@Valid @RequestBody CreateUserRequest request) throws Exception {
 		return ResponseEntity.ok(subscriberService.createUserAndMergeTenant(request));
 	}
 

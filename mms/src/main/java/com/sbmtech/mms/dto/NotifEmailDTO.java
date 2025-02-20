@@ -18,6 +18,7 @@ public class NotifEmailDTO {
 	private Long referenceNo;
 	private String customerName;
 	private Long otpCode;
+	private String pwd;
 	
 	private List<MultipleAttachmentsEmailDTO> multipleAttachmentsEmailDTO;
 	
@@ -119,6 +120,12 @@ public class NotifEmailDTO {
 	}
 	public void setOtpCode(Long otpCode) {
 		this.otpCode = otpCode;
+	}
+	public String getPwd() {
+		return pwd;
+	}
+	public void setPwd(String pwd) {
+		this.pwd = pwd;
 	}
 	
 	
