@@ -1,6 +1,9 @@
 package com.sbmtech.mms.payload.request;
 
-import java.util.Date;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+
+import com.sbmtech.mms.validator.ValidDateDDMMYYYY;
 
 public class CreateUserRequest {
 
@@ -8,7 +11,13 @@ public class CreateUserRequest {
 	private Long mobileNo;
 	private String password;
 	private Long emiratesId;
+	
+
+	@NotBlank (message = "dob cannot be null")
+	@NotEmpty(message = "dob cannot be null")
+	@ValidDateDDMMYYYY
 	private String dob;
+	
 	private Integer gender;
 	private String address;
 	private byte[] eidaCopy;
@@ -17,9 +26,21 @@ public class CreateUserRequest {
 	private String firstName;
 	private String lastName;
 	private String phoneNumber;
+	
+
+	@NotBlank (message = "eidaExpiryDate cannot be null")
+	@NotEmpty(message = "eidaExpiryDate cannot be null")
+	@ValidDateDDMMYYYY
 	private String eidaExpiryDate;
+	
 	private String passportNo;
+	
+	@NotBlank (message = "passportExpiryDate cannot be null")
+	@NotEmpty(message = "passportExpiryDate cannot be null")
+	@ValidDateDDMMYYYY
 	private String passportExpiryDate;
+	
+	
 	private byte[] passportCopy;
 	private byte[] photo;
 

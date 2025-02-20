@@ -109,32 +109,32 @@ public class ManagementController {
 	}
 
 	@PostMapping("/createTenant")
-	public ResponseEntity<?> createUserAndMergeTenant(@RequestBody CreateUserRequest request) {
+	public ResponseEntity<?> createUserAndMergeTenant(@Valid @RequestBody CreateUserRequest request) {
 		return ResponseEntity.ok(subscriberService.createUserAndMergeTenant(request));
 	}
 
 	@PostMapping("/addParkingZone")
-	public ResponseEntity<?> addParkingZone(@RequestBody ParkingZoneRequest request) {
+	public ResponseEntity<?> addParkingZone(@Valid @RequestBody ParkingZoneRequest request) {
 		return ResponseEntity.ok(subscriberService.createParkingZone(request));
 	}
 
 	@PostMapping("/addParking")
-	public ResponseEntity<?> addParking(@RequestBody ParkingRequest request) {
+	public ResponseEntity<?> addParking(@Valid @RequestBody ParkingRequest request) {
 		return ResponseEntity.ok(subscriberService.createParking(request));
 	}
 
 	@PostMapping("/addKey")
-	public ResponseEntity<?> addKey(@RequestBody KeyMasterRequest request) {
+	public ResponseEntity<?> addKey(@Valid @RequestBody KeyMasterRequest request) {
 		return ResponseEntity.ok(subscriberService.addKey(request));
 	}
 
 	@PostMapping("/addUnitKey")
-	public ResponseEntity<?> addUnitKey(@RequestBody UnitKeysRequest request) {
+	public ResponseEntity<?> addUnitKey(@Valid @RequestBody UnitKeysRequest request) {
 		return ResponseEntity.ok(subscriberService.addUnitKey(request));
 	}
 
 	@PostMapping("/addTenantUnit")
-	public ResponseEntity<?> addTenantUnit(@RequestBody TenantUnitRequest request) {
+	public ResponseEntity<?> addTenantUnit(@Valid @RequestBody TenantUnitRequest request) {
 		return ResponseEntity.ok(subscriberService.addTenantUnit(request));
 	}
 

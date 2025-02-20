@@ -733,17 +733,20 @@ public class SubscriberServiceImpl implements SubscriberService {
 			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Role not found with ID 8", null, null);
 		}
 
+		
+		
+		
 		Tenant tenant = new Tenant();
 		tenant.setFirstName(request.getFirstName());
 		tenant.setLastName(request.getLastName());
 		tenant.setEmail(request.getEmail());
 		tenant.setPhoneNumber(request.getPhoneNumber());
-		tenant.setDateOfBirth(request.getDob());
+		tenant.setDateOfBirth(CommonUtil.getDatefromString(request.getDob(),DATE_ddMMyyyy));
 		tenant.setEmiratesId(request.getEmiratesId());
-		tenant.setEidaExpiryDate(request.getEidaExpiryDate());
+		tenant.setEidaExpiryDate(CommonUtil.getDatefromString(request.getEidaExpiryDate(),DATE_ddMMyyyy));
 		tenant.setEidaCopy(request.getEidaCopy());
 		tenant.setPassportNo(request.getPassportNo());
-		tenant.setPassportExpiryDate(request.getPassportExpiryDate());
+		tenant.setPassportExpiryDate( CommonUtil.getDatefromString(request.getPassportExpiryDate(),DATE_ddMMyyyy) );
 		tenant.setPassportCopy(request.getPassportCopy());
 		tenant.setPhoto(request.getPhoto());
 		tenant.setNationality(nationality);
@@ -755,7 +758,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		user.setPassword(encoder.encode(request.getPassword()));
 		user.setActive(true);
 		user.setEmiratesId(request.getEmiratesId());
-		user.setDob(request.getDob());
+		user.setDob(CommonUtil.getDatefromString(request.getDob(),DATE_ddMMyyyy));
 		user.setGender(request.getGender());
 		user.setAddress(request.getAddress());
 		user.setEidaCopy(request.getEidaCopy());
