@@ -1,5 +1,11 @@
 package com.sbmtech.mms.service.impl;
 
+import static com.sbmtech.mms.constant.CommonConstants.DATE_ddMMyyyy;
+import static com.sbmtech.mms.constant.CommonConstants.FAILURE_CODE;
+import static com.sbmtech.mms.constant.CommonConstants.FAILURE_DESC;
+import static com.sbmtech.mms.constant.CommonConstants.SUCCESS_CODE;
+import static com.sbmtech.mms.constant.CommonConstants.SUCCESS_DESC;
+
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -11,6 +17,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -63,9 +71,14 @@ import com.sbmtech.mms.payload.request.TenantUnitRequest;
 import com.sbmtech.mms.payload.request.UnitKeysRequest;
 import com.sbmtech.mms.payload.request.UnitRequest;
 import com.sbmtech.mms.payload.request.VerifyOtpRequest;
+import com.sbmtech.mms.payload.response.BuildingResponse;
 import com.sbmtech.mms.payload.response.CityResponse;
+import com.sbmtech.mms.payload.response.CommunityResponse;
+import com.sbmtech.mms.payload.response.FloorResponse;
+import com.sbmtech.mms.payload.response.LocationResponse;
 import com.sbmtech.mms.payload.response.StateResponse;
 import com.sbmtech.mms.payload.response.SubscriptionPlans;
+import com.sbmtech.mms.payload.response.UnitResponse;
 import com.sbmtech.mms.repository.BuildingRepository;
 import com.sbmtech.mms.repository.ChannelMasterRepository;
 import com.sbmtech.mms.repository.CityRepository;
@@ -79,6 +92,7 @@ import com.sbmtech.mms.repository.ParkingZoneRepository;
 import com.sbmtech.mms.repository.RoleRepository;
 import com.sbmtech.mms.repository.StateRepository;
 import com.sbmtech.mms.repository.SubscriberLocationRepository;
+import com.sbmtech.mms.repository.SubscriberLocationRepositoryCustom;
 import com.sbmtech.mms.repository.SubscriberRepository;
 import com.sbmtech.mms.repository.SubscriptionPaymentRepository;
 import com.sbmtech.mms.repository.SubscriptionPlanMasterRepository;
@@ -92,12 +106,6 @@ import com.sbmtech.mms.repository.UserTypeMasterRepository;
 import com.sbmtech.mms.service.NotificationService;
 import com.sbmtech.mms.service.SubscriberService;
 import com.sbmtech.mms.util.CommonUtil;
-
-import static com.sbmtech.mms.constant.CommonConstants.FAILURE_CODE;
-import static com.sbmtech.mms.constant.CommonConstants.FAILURE_DESC;
-import static com.sbmtech.mms.constant.CommonConstants.SUCCESS_CODE;
-import static com.sbmtech.mms.constant.CommonConstants.SUCCESS_DESC;
-import static com.sbmtech.mms.constant.CommonConstants.DATE_ddMMyyyy;
 
 @Service
 @Transactional
@@ -147,6 +155,9 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	@Autowired
 	private SubscriberLocationRepository subscriberLocationRepository;
+	
+	@Autowired
+	private SubscriberLocationRepositoryCustom subscriberLocationRepoCustom;
 
 	@Autowired
 	private CommunityRepository communityRepository;
@@ -527,7 +538,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 	}
 
 	
-	public ApiResponse<String> addSubscriberLocation(SubscriberLocationRequest request) {
+	public ApiResponse<Object> addSubscriberLocation(SubscriberLocationRequest request) {
 		Optional<Subscriber> subscriberOpt = subscriberRepository.findById(request.getSubscriberId());
 
 
@@ -559,19 +570,22 @@ public class SubscriberServiceImpl implements SubscriberService {
 		subscriberLocation.setSubscriber(subscriber);
 
 		subscriberLocationRepository.save(subscriberLocation);
+		
+		LocationResponse locResp=new LocationResponse();
+		BeanUtils.copyProperties(subscriberLocation, locResp);
 
-		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Subscriber location added successfully.", null,
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, locResp, null,
 				subscriberLocation.getSubscriber().getSubscriberId());
 	}
 
 	
-	public ApiResponse<String> addCommunity(CommunityRequest request) {
-		Optional<SubscriberLocation> locationOptional = subscriberLocationRepository.findById(request.getLocationId());
-		if (!locationOptional.isPresent()) {
+	public ApiResponse<Object> addCommunity(CommunityRequest request) {
+
+		SubscriberLocation location= subscriberLocationRepoCustom.findByLocationIdAndSubscriberId(request.getLocationId(),request.getSubscriberId());
+		if (ObjectUtils.isEmpty(location)) {
 			throw new BusinessException( "Location not found with id: " + request.getLocationId());
 		}
-		SubscriberLocation location = locationOptional.get();
-
+	
 		Optional<Subscriber> subscriberOptional = subscriberRepository.findById(request.getSubscriberId());
 		
 		Subscriber subscriber = subscriberOptional.get();
@@ -583,16 +597,19 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		communityRepository.save(community);
 
-		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Community added successfully.", null, request.getSubscriberId());
+
+		CommunityResponse commuResp=new CommunityResponse();
+		BeanUtils.copyProperties(community, commuResp);
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, commuResp, null, request.getSubscriberId());
 	}
 
 	
-	public ApiResponse<String> addBuilding(BuildingRequest request) {
-		Optional<Community> communityOptional = communityRepository.findById(request.getCommunityId());
-		if (!communityOptional.isPresent()) {
-			throw new BusinessException("Community not found with id: " + request.getCommunityId());
+	public ApiResponse<Object> addBuilding(BuildingRequest request) {
+				
+		Community community = communityRepository.findByCommunityIdAndSubscriberId(request.getCommunityId(),request.getSubscriberId());
+		if (ObjectUtils.isEmpty(community)) {
+			throw new BusinessException( "Community not found with id: " + request.getCommunityId());
 		}
-		Community community = communityOptional.get();
 
 		Optional<Subscriber> subscriberOptional = subscriberRepository.findById(request.getSubscriberId());
 		
@@ -611,12 +628,14 @@ public class SubscriberServiceImpl implements SubscriberService {
 		building.setCreatedAt(new Timestamp(System.currentTimeMillis()));
 
 		buildingRepository.save(building);
+		BuildingResponse buildingResp=new BuildingResponse();
+		BeanUtils.copyProperties(building, buildingResp);
 
-		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Building added successfully.", null, request.getSubscriberId());
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, buildingResp, null, request.getSubscriberId());
 	}
 
 
-	public ApiResponse<String> addFloor(FloorRequest request) {
+	public ApiResponse<Object> addFloor(FloorRequest request) {
 		Optional<Building> buildingOptional = buildingRepository.findById(request.getBuildingId());
 		if (!buildingOptional.isPresent()) {
 			throw new BusinessException("Building not found with id: " + request.getBuildingId());
@@ -628,12 +647,15 @@ public class SubscriberServiceImpl implements SubscriberService {
 		floor.setBuilding(building);
 
 		floorRepository.save(floor);
+		
+		FloorResponse floorResp=new FloorResponse();
+		BeanUtils.copyProperties(floor, floorResp);
 
-		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Floor added successfully.", null, request.getBuildingId());
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, floorResp, null, null);
 	}
 
 	
-	public ApiResponse<String> addUnit(UnitRequest request) {
+	public ApiResponse<Object> addUnit(UnitRequest request) {
 		Optional<Building> buildingOptional = buildingRepository.findById(request.getBuildingId());
 		if (!buildingOptional.isPresent()) {
 			throw new BusinessException("Building not found with id: " + request.getBuildingId());
@@ -664,7 +686,9 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		unitRepository.save(unit);
 
-		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Unit added successfully.", null, null);
+		UnitResponse unitResp=new UnitResponse();
+		BeanUtils.copyProperties(unit, unitResp);
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, unitResp, null, null);
 	}
 
 	

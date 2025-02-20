@@ -60,6 +60,23 @@ public class ManagementController {
 	public ResponseEntity<?> getAllSubscriptionPlans() {
 		return ResponseEntity.ok(subscriberService.getAllSubscriptionPlans());
 	}
+	
+	@GetMapping("/countries")
+	public ResponseEntity<?> getAllCountries() {
+		return ResponseEntity.ok(subscriberService.getAllCountries());
+	}
+	
+	@GetMapping("/states")
+	public ResponseEntity<?> getStatesByCountryId(@RequestParam Integer countryId) {
+		return ResponseEntity.ok(subscriberService.getStatesByCountryId(countryId));
+	}
+
+	@GetMapping("/cities")
+	public ResponseEntity<?> getCitiesByStateAndCountryId(@RequestParam Integer stateId,
+			@RequestParam Integer countryId) {
+		return ResponseEntity.ok(subscriberService.getCitiesByStateAndCountryId(stateId, countryId));
+	}
+
 
 	@PostMapping("/makePayment")
 	public ResponseEntity<?> makePayment(@RequestBody SubscriptionPaymentRequest subscriptionPayment) {
@@ -82,12 +99,12 @@ public class ManagementController {
 	}
 
 	@PostMapping("/addFloor")
-	public ResponseEntity<?> addFloor(@RequestBody FloorRequest request) {
+	public ResponseEntity<?> addFloor(@Valid @RequestBody FloorRequest request) {
 		return ResponseEntity.ok(subscriberService.addFloor(request));
 	}
 
 	@PostMapping("/addUnit")
-	public ResponseEntity<?> addUnit(@RequestBody UnitRequest request) {
+	public ResponseEntity<?> addUnit(@Valid @RequestBody UnitRequest request) {
 		return ResponseEntity.ok(subscriberService.addUnit(request));
 	}
 
@@ -135,20 +152,5 @@ public class ManagementController {
 	}
 	
 	
-	@GetMapping("/countries")
-	public ResponseEntity<?> getAllCountries() {
-		return ResponseEntity.ok(subscriberService.getAllCountries());
-	}
 	
-	@GetMapping("/states")
-	public ResponseEntity<?> getStatesByCountryId(@RequestParam Integer countryId) {
-		return ResponseEntity.ok(subscriberService.getStatesByCountryId(countryId));
-	}
-
-	@GetMapping("/cities")
-	public ResponseEntity<?> getCitiesByStateAndCountryId(@RequestParam Integer stateId,
-			@RequestParam Integer countryId) {
-		return ResponseEntity.ok(subscriberService.getCitiesByStateAndCountryId(stateId, countryId));
-	}
-
 }

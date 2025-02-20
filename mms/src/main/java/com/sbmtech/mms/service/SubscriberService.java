@@ -49,15 +49,15 @@ public interface SubscriberService {
 
 	public ApiResponse<List<CityResponse>> getCitiesByStateAndCountryId(Integer stateId, Integer countryId);
 
-	public ApiResponse<String> addSubscriberLocation(SubscriberLocationRequest request);
+	public ApiResponse<Object> addSubscriberLocation(SubscriberLocationRequest request);
 
-	public ApiResponse<String> addCommunity(CommunityRequest request);
+	public ApiResponse<Object> addCommunity(CommunityRequest request);
 
-	public ApiResponse<String> addBuilding(BuildingRequest request);
+	public ApiResponse<Object> addBuilding(BuildingRequest request);
 
-	public ApiResponse<String> addFloor(FloorRequest request);
+	public ApiResponse<Object> addFloor(FloorRequest request);
 
-	public ApiResponse<String> addUnit(UnitRequest request);
+	public ApiResponse<Object> addUnit(UnitRequest request);
 
 	public ApiResponse<String> createUserAndMergeTenant(CreateUserRequest request);
 

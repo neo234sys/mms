@@ -1,17 +1,29 @@
 package com.sbmtech.mms.payload.request;
 
+import javax.validation.constraints.NotEmpty;
+
 import com.sbmtech.mms.validator.ValidSubscriberlId;
 
 public class BuildingRequest {
 
+	@NotEmpty(message = "buildingName must not be empty and null")
 	private String buildingName;
+	
+	@NotEmpty(message = "address must not be empty and null")
 	private String address;
+	
 	private byte[] buildingLogo; // BLOB field
+	
 	private Boolean hasGym;
+	
 	private Boolean hasSwimpool;
+	
 	private Boolean hasKidsPlayground;
+	
 	private Boolean hasPlaycourt;
+	
 	private Integer communityId;
+	
 	@ValidSubscriberlId
 	private Integer subscriberId;
 
