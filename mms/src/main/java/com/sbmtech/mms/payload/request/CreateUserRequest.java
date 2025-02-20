@@ -8,7 +8,7 @@ public class CreateUserRequest {
 	private Long mobileNo;
 	private String password;
 	private Long emiratesId;
-	private Date dob;
+	private String dob;
 	private Integer gender;
 	private String address;
 	private byte[] eidaCopy;
@@ -17,9 +17,9 @@ public class CreateUserRequest {
 	private String firstName;
 	private String lastName;
 	private String phoneNumber;
-	private Date eidaExpiryDate;
+	private String eidaExpiryDate;
 	private String passportNo;
-	private Date passportExpiryDate;
+	private String passportExpiryDate;
 	private byte[] passportCopy;
 	private byte[] photo;
 
@@ -55,11 +55,11 @@ public class CreateUserRequest {
 		this.emiratesId = emiratesId;
 	}
 
-	public Date getDob() {
+	public String getDob() {
 		return dob;
 	}
 
-	public void setDob(Date dob) {
+	public void setDob(String dob) {
 		this.dob = dob;
 	}
 
@@ -127,11 +127,11 @@ public class CreateUserRequest {
 		this.phoneNumber = phoneNumber;
 	}
 
-	public Date getEidaExpiryDate() {
+	public String getEidaExpiryDate() {
 		return eidaExpiryDate;
 	}
 
-	public void setEidaExpiryDate(Date eidaExpiryDate) {
+	public void setEidaExpiryDate(String eidaExpiryDate) {
 		this.eidaExpiryDate = eidaExpiryDate;
 	}
 
@@ -143,11 +143,11 @@ public class CreateUserRequest {
 		this.passportNo = passportNo;
 	}
 
-	public Date getPassportExpiryDate() {
+	public String getPassportExpiryDate() {
 		return passportExpiryDate;
 	}
 
-	public void setPassportExpiryDate(Date passportExpiryDate) {
+	public void setPassportExpiryDate(String passportExpiryDate) {
 		this.passportExpiryDate = passportExpiryDate;
 	}
 

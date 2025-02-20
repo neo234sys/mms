@@ -6,9 +6,11 @@ import static com.sbmtech.mms.constant.CommonConstants.FAILURE_DESC;
 import static com.sbmtech.mms.constant.CommonConstants.SUCCESS_CODE;
 import static com.sbmtech.mms.constant.CommonConstants.SUCCESS_DESC;
 
+
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
@@ -51,6 +53,8 @@ import com.sbmtech.mms.models.Tenant;
 import com.sbmtech.mms.models.TenantUnit;
 import com.sbmtech.mms.models.Unit;
 import com.sbmtech.mms.models.UnitKeys;
+import com.sbmtech.mms.models.UnitSubType;
+import com.sbmtech.mms.models.UnitType;
 import com.sbmtech.mms.models.User;
 import com.sbmtech.mms.models.UserTypeMaster;
 import com.sbmtech.mms.payload.request.AdditionalDetailsRequest;
@@ -656,6 +660,19 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	
 	public ApiResponse<Object> addUnit(UnitRequest request) {
+		
+		
+		Optional<UnitType> op=Arrays.stream(UnitType.values()).filter(status -> status.getValue().toString().equals(request.getUnitType())).findAny();
+		if(!op.isPresent()) {
+			throw new BusinessException("Invalid unitType, can be any one APARTMENT/VILLA/COMMERCIAL");
+		}
+			
+		Optional<UnitSubType> ops=Arrays.stream(UnitSubType.values()).filter(status -> status.getValue().toString().equals(request.getUnitSubType())).findAny();
+		
+		if(!ops.isPresent()) {
+			throw new BusinessException("Invalid unitSubType, can be any one STUDIO/1BHK/2BHK/3BHK");
+		}
+				
 		Optional<Building> buildingOptional = buildingRepository.findById(request.getBuildingId());
 		if (!buildingOptional.isPresent()) {
 			throw new BusinessException("Building not found with id: " + request.getBuildingId());

@@ -41,13 +41,13 @@ public class Unit implements Serializable {
 	@Column(name = "unit_name")
 	private String unitName;
 
-	@Enumerated(EnumType.STRING)
+	//@Enumerated(EnumType.STRING)
 	@Column(name = "unit_type")
-	private UnitType unitType;
+	private String unitType;
 
-	@Enumerated(EnumType.STRING)
+	//@Enumerated(EnumType.STRING)
 	@Column(name = "unit_sub_type")
-	private UnitSubType unitSubType;
+	private String unitSubType;
 
 	@Column(name = "size")
 	private String size;
@@ -121,19 +121,19 @@ public class Unit implements Serializable {
 		this.unitName = unitName;
 	}
 
-	public UnitType getUnitType() {
+	public String getUnitType() {
 		return unitType;
 	}
 
-	public void setUnitType(UnitType unitType) {
+	public void setUnitType(String unitType) {
 		this.unitType = unitType;
 	}
 
-	public UnitSubType getUnitSubType() {
+	public String getUnitSubType() {
 		return unitSubType;
 	}
 
-	public void setUnitSubType(UnitSubType unitSubType) {
+	public void setUnitSubType(String unitSubType) {
 		this.unitSubType = unitSubType;
 	}
 

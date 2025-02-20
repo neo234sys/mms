@@ -1,15 +1,22 @@
 package com.sbmtech.mms.payload.request;
 
-import com.sbmtech.mms.models.UnitSubType;
-import com.sbmtech.mms.models.UnitType;
+import javax.validation.constraints.NotEmpty;
+
 
 public class UnitRequest {
 
 	private Integer buildingId;
 	private Integer floorId;
+	
+	@NotEmpty(message = "unitName cannot be null")
 	private String unitName;
-	private UnitType unitType;
-	private UnitSubType unitSubType;
+	
+	@NotEmpty(message = "unitType cannot be null")
+	private String unitType;
+	
+	@NotEmpty(message = "unitSubType cannot be null")
+	private String unitSubType;
+	
 	private String size;
 	private Boolean hasBalcony;
 	private Boolean isOccupied;
@@ -44,19 +51,19 @@ public class UnitRequest {
 		this.unitName = unitName;
 	}
 
-	public UnitType getUnitType() {
+	public String getUnitType() {
 		return unitType;
 	}
 
-	public void setUnitType(UnitType unitType) {
+	public void setUnitType(String unitType) {
 		this.unitType = unitType;
 	}
 
-	public UnitSubType getUnitSubType() {
+	public String getUnitSubType() {
 		return unitSubType;
 	}
 
-	public void setUnitSubType(UnitSubType unitSubType) {
+	public void setUnitSubType(String unitSubType) {
 		this.unitSubType = unitSubType;
 	}
 
