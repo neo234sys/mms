@@ -75,6 +75,10 @@ public class User implements Serializable {
 	@Column(name = "created_date")
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date createdDate;
+	
+	@Column(name = "updated_date")
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date updatedDate;
 
 	@Column(name = "company_id")
 	private Integer companyId;
@@ -244,6 +248,14 @@ public class User implements Serializable {
 
 	public static long getSerialversionuid() {
 		return serialVersionUID;
+	}
+
+	public Date getUpdatedDate() {
+		return updatedDate;
+	}
+
+	public void setUpdatedDate(Date updatedDate) {
+		this.updatedDate = updatedDate;
 	}
 
 }

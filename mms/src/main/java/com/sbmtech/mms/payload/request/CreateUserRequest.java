@@ -5,7 +5,9 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Pattern;
 
+import com.sbmtech.mms.util.CommonUtil;
 import com.sbmtech.mms.validator.ValidCountryId;
 import com.sbmtech.mms.validator.ValidDateDDMMYYYY;
 import com.sbmtech.mms.validator.ValidPhoneNo;
@@ -23,7 +25,8 @@ public class CreateUserRequest {
 	@NotEmpty(message = "password cannot be null")
 	private String password;
 	
-	private Long emiratesId;
+	@Pattern(regexp="784[-]*\\d{4}[-]*\\d{7}[-]*\\d",message="Invalid EmiratesId")  
+	private String emiratesId;
 	
 
 	@NotBlank (message = "dob cannot be null")
@@ -103,11 +106,13 @@ public class CreateUserRequest {
 		this.password = password;
 	}
 
-	public Long getEmiratesId() {
+	public String getEmiratesId() {
+		emiratesId=emiratesId.replace("-", "");
+		
 		return emiratesId;
 	}
 
-	public void setEmiratesId(Long emiratesId) {
+	public void setEmiratesId(String emiratesId) {
 		this.emiratesId = emiratesId;
 	}
 

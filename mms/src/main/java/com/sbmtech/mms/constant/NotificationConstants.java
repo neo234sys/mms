@@ -9,5 +9,6 @@ public class NotificationConstants {
 	
 	public static final String NOTIF_TENANT_ACCT_SUBJECT_KEY = "notif.tenant.acct.creation.subject";
 	public static final String NOTIF_TENANT_ACCT_ACTIVE_TEMPLATE_KEY = "notif.tenant.acct.creation.template";
+	public static final String NOTIF_TENANT_ACCT_ACTIVE_TEMPLATE_KEY_EXT_USER = "notif.tenant.acct.creation.template.existingUser";
 	
 }

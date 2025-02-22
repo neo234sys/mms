@@ -88,14 +88,16 @@ public class SubscriberController {
 					return ResponseEntity.ok(new ApiResponse<>(CommonConstants.FAILURE_CODE, CommonConstants.FAILURE_DESC, "OTP not verified. Please verify your OTP to login.",null, null));
 				}
 			} else {
-				throw new BusinessException("User not found with email: " + loginRequest.getEmail());
+				throw new BusinessException("User not found with email: " + loginRequest.getEmail(),null);
 			}
 
 		} catch (BadCredentialsException e) {
-			throw new BusinessException("Invalid username or password!");
+			throw new BusinessException("Invalid username or password!",e);
 
 		} catch (Exception e) {
-			throw new BusinessException("An error occurred during authentication!");
+			e.printStackTrace();
+			throw new BusinessException("An error occurred during authentication!",e);
+			
 		}
 	}
 

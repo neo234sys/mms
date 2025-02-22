@@ -292,7 +292,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Subscriber and user created successfully. OTP sent.",
 					user.getUserId(), subscriber.getSubscriberId());
 		} else {
-			throw new BusinessException("Subscription Not created");
+			throw new BusinessException("Subscription Not created",null);
 		}
 	}
 
@@ -310,11 +310,11 @@ public class SubscriberServiceImpl implements SubscriberService {
 		Otp otp = otpRepository.findByReferenceIdAndOtpCode(request.getSubscriberId(), request.getOtpCode());
 
 		if (otp == null) {
-			throw new BusinessException("Invalid OTP code");
+			throw new BusinessException("Invalid OTP code",null);
 		}
 
 		if (otp.getExpiresAt().before(new Timestamp(System.currentTimeMillis()))) {
-			throw new BusinessException("OTP has expired");
+			throw new BusinessException("OTP has expired",null);
 		}
 
 		otp.setVerified(true);
@@ -509,7 +509,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		List<StateResponse> responses = new ArrayList<>();
 
 		if (states.isEmpty()) {
-			throw new BusinessException("Invalid CountryId");
+			throw new BusinessException("Invalid CountryId",null);
 		}
 
 		for (State state : states) {
@@ -529,7 +529,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		List<CityResponse> responses = new ArrayList<>();
 
 		if (cities.isEmpty()) {
-			throw new BusinessException("Invalid Country/City Id");
+			throw new BusinessException("Invalid Country/City Id",null);
 		}
 
 		for (City city : cities) {
@@ -550,17 +550,17 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		Optional<Countries> countryOpt = countriesRepository.findById(request.getCountryId());
 		if (!countryOpt.isPresent()) {
-			throw new BusinessException("Country not found with id: " + request.getCountryId());
+			throw new BusinessException("Country not found with id: " + request.getCountryId(),null);
 		}
 
 		Optional<State> stateOpt = stateRepository.findById(request.getStateId());
 		if (!stateOpt.isPresent()) {
-			throw new BusinessException("State not found with id: " + request.getStateId());
+			throw new BusinessException("State not found with id: " + request.getStateId(),null);
 		}
 
 		Optional<City> cityOpt = cityRepository.findById(request.getCityId());
 		if (!cityOpt.isPresent()) {
-			throw new BusinessException("City not found with id: " + request.getCityId());
+			throw new BusinessException("City not found with id: " + request.getCityId(),null);
 		}
 
 		Subscriber subscriber = subscriberOpt.get();
@@ -589,7 +589,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		SubscriberLocation location= subscriberLocationRepoCustom.findByLocationIdAndSubscriberId(request.getLocationId(),request.getSubscriberId());
 		if (ObjectUtils.isEmpty(location)) {
-			throw new BusinessException( "Location not found with id: " + request.getLocationId());
+			throw new BusinessException( "Location not found with id: " + request.getLocationId(),null);
 		}
 	
 		Optional<Subscriber> subscriberOptional = subscriberRepository.findById(request.getSubscriberId());
@@ -614,7 +614,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 				
 		Community community = communityRepository.findByCommunityIdAndSubscriberId(request.getCommunityId(),request.getSubscriberId());
 		if (ObjectUtils.isEmpty(community)) {
-			throw new BusinessException( "Community not found with id: " + request.getCommunityId());
+			throw new BusinessException( "Community not found with id: " + request.getCommunityId(),null);
 		}
 
 		Optional<Subscriber> subscriberOptional = subscriberRepository.findById(request.getSubscriberId());
@@ -644,7 +644,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 	public ApiResponse<Object> addFloor(FloorRequest request) {
 		Optional<Building> buildingOptional = buildingRepository.findById(request.getBuildingId());
 		if (!buildingOptional.isPresent()) {
-			throw new BusinessException("Building not found with id: " + request.getBuildingId());
+			throw new BusinessException("Building not found with id: " + request.getBuildingId(),null);
 		}
 		Building building = buildingOptional.get();
 
@@ -666,24 +666,24 @@ public class SubscriberServiceImpl implements SubscriberService {
 		
 		Optional<UnitTypeEnum> op=Arrays.stream(UnitTypeEnum.values()).filter(status -> status.getValue().toString().equals(request.getUnitType())).findAny();
 		if(!op.isPresent()) {
-			throw new BusinessException("Invalid unitType, can be any one APARTMENT/VILLA/COMMERCIAL");
+			throw new BusinessException("Invalid unitType, can be any one APARTMENT/VILLA/COMMERCIAL",null);
 		}
 			
 		Optional<UnitSubTypeEnum> ops=Arrays.stream(UnitSubTypeEnum.values()).filter(status -> status.getValue().toString().equals(request.getUnitSubType())).findAny();
 		
 		if(!ops.isPresent()) {
-			throw new BusinessException("Invalid unitSubType, can be any one STUDIO/1BHK/2BHK/3BHK");
+			throw new BusinessException("Invalid unitSubType, can be any one STUDIO/1BHK/2BHK/3BHK",null);
 		}
 				
 		Optional<Building> buildingOptional = buildingRepository.findById(request.getBuildingId());
 		if (!buildingOptional.isPresent()) {
-			throw new BusinessException("Building not found with id: " + request.getBuildingId());
+			throw new BusinessException("Building not found with id: " + request.getBuildingId(),null);
 		}
 		Building building = buildingOptional.get();
 
 		Optional<Floor> floorOptional = floorRepository.findById(request.getFloorId());
 		if (!floorOptional.isPresent()) {
-			throw new BusinessException( "Floor not found with id: " + request.getFloorId());
+			throw new BusinessException( "Floor not found with id: " + request.getFloorId(),null);
 		}
 		Floor floor = floorOptional.get();
 
@@ -712,11 +712,33 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	
 	public ApiResponse<String> createUserAndMergeTenant(CreateUserRequest request)throws Exception {
+		User existingUser=null;
+		User user=null;
+		boolean existingTenant=false;
+		boolean existingSubscriber=false;
+		NotificationEmailResponseDTO resp=null;
+		Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
+		if (userOptional.isPresent()) {
+			existingUser=userOptional.get();
+			Set <Role> exisingRoles=existingUser.getRoles();
+			for (Role r : exisingRoles) {
+				if(r.getRoleId()==RoleEnum.ROLE_TENANT.getValue()) {
+					existingTenant=true;
+				}else if(r.getRoleId()==RoleEnum.ROLE_MGT_SUPERVISOR.getValue()) {
+					existingSubscriber=true;
+				}
+			}
+			
+			if(existingTenant) {
+				throw new BusinessException( "Tenant already Registered",null);
+			}
+			
+		}
 		Countries nationality = countriesRepository.findById(request.getNationalityId()).orElse(null);
 
 		UserTypeMaster userType = userTypeMasterRepository.findById(UserTypeEnum.TENANT.getValue()).orElse(null);
 		if (userType == null) {
-			throw new BusinessException( "User Type not found");
+			throw new BusinessException( "User Type not found",null);
 		}
 
 		Subscriber subscriber = subscriberRepository.findById(request.getSubscriberId()).orElse(null);
@@ -735,7 +757,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		tenant.setEmail(request.getEmail());
 		tenant.setPhoneNumber(request.getPhoneNumber());
 		tenant.setDateOfBirth(CommonUtil.getDatefromString(request.getDob(),DATE_ddMMyyyy));
-		tenant.setEmiratesId(request.getEmiratesId());
+		tenant.setEmiratesId(CommonUtil.getLongValofObject(request.getEmiratesId()));
 		tenant.setEidaExpiryDate(CommonUtil.getDatefromString(request.getEidaExpiryDate(),DATE_ddMMyyyy));
 		tenant.setEidaCopy(request.getEidaCopy());
 		tenant.setPassportNo(request.getPassportNo());
@@ -744,41 +766,74 @@ public class SubscriberServiceImpl implements SubscriberService {
 		tenant.setPhoto(request.getPhoto());
 		tenant.setNationality(nationality);
 		tenant = tenantRepository.save(tenant);
-
 		String pwd=CommonUtil.generateRandomPwd();
-		User user = new User();
-		user.setEmail(request.getEmail());
-		user.setMobileNo(Long.valueOf(request.getMobileNo()));
-		user.setPassword(pwd);
-		user.setActive(true);
-		user.setEmiratesId(request.getEmiratesId());
-		user.setDob(CommonUtil.getDatefromString(request.getDob(),DATE_ddMMyyyy));
-		user.setGender(request.getGender());
-		user.setAddress(request.getAddress());
-		user.setEidaCopy(request.getEidaCopy());
-		user.setNationality(nationality);
-		user.setUserType(userType);
-		user.setSubscriber(subscriber);
-		user.setCreatedDate(new Date());
+		pwd=CommonUtil.generateRandomPwd();
+		pwd="123456";//remove this
+		if(existingUser!=null) {
+			//BeanUtils.copyProperties(request, existingUser);
+			
+			existingUser.setMobileNo(Long.valueOf(request.getMobileNo()));
+			existingUser.setActive(true);
+			existingUser.setActive(true);
+			existingUser.setEmiratesId(CommonUtil.getLongValofObject(request.getEmiratesId()));
+			existingUser.setDob(CommonUtil.getDatefromString(request.getDob(),DATE_ddMMyyyy));
+			existingUser.setGender(request.getGender());
+			existingUser.setAddress(request.getAddress());
+			if(request.getEidaCopy()!=null && request.getEidaCopy().length>1) {
+				existingUser.setEidaCopy(request.getEidaCopy());
+			}
+			existingUser.setNationality(nationality);
+			
+			
+			//user.setUserType(userType);
+			existingUser.setSubscriber(subscriber);
+			existingUser.setUpdatedDate (new Date());
+			Set <Role> exisingRoles=existingUser.getRoles();
+			exisingRoles.add(role);
+			existingUser.setTenantId(tenant.getTenantId());
+			user = userRepository.save(existingUser);
+			
+			
+			NotifEmailDTO dto = new NotifEmailDTO();
+			dto.setEmailTo(request.getEmail());
+			dto.setCustomerName(request.getFirstName());
+			resp = notificationService.sendTenentAccountCreationEmailExistingUser(dto);
+		}else {
+			user = new User();
+			user.setEmail(request.getEmail());
+			user.setMobileNo(Long.valueOf(request.getMobileNo()));
+			user.setPassword(encoder.encode(pwd));
+			user.setActive(true);
+			user.setEmiratesId(CommonUtil.getLongValofObject(request.getEmiratesId()));
+			user.setDob(CommonUtil.getDatefromString(request.getDob(),DATE_ddMMyyyy));
+			user.setGender(request.getGender());
+			user.setAddress(request.getAddress());
+			user.setEidaCopy(request.getEidaCopy());
+			user.setNationality(nationality);
+			//user.setUserType(userType);
+			user.setSubscriber(subscriber);
+			user.setCreatedDate(new Date());
+	
+			Set<Role> roles = new HashSet<>();
+			roles.add(role);
+			user.setRoles(roles);
+	
+			user.setTenantId(tenant.getTenantId());
+			user = userRepository.save(user);
+			
 
-		Set<Role> roles = new HashSet<>();
-		roles.add(role);
-		user.setRoles(roles);
-
-		user.setTenantId(tenant.getTenantId());
-		user = userRepository.save(user);
+			NotifEmailDTO dto = new NotifEmailDTO();
+			dto.setEmailTo(request.getEmail());
+			dto.setCustomerName(request.getFirstName());
+			dto.setPwd(pwd);
+			resp = notificationService.sendTenentAccountCreationEmail(dto);
+		}
 		
-		NotifEmailDTO dto = new NotifEmailDTO();
-		dto.setEmailTo(request.getEmail());
-		dto.setCustomerName(request.getFirstName());
-		dto.setPwd(pwd);
-
-		NotificationEmailResponseDTO resp = notificationService.sendTenentAccountCreationEmail(dto);
 		if (resp != null && resp.isEmailSent()) {
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Tenant created successfully.", user.getUserId(),
 					null);
 		} else {
-			throw new BusinessException("Tenant Not created");
+			throw new BusinessException("Tenant Not created",null);
 		}
 
 		
