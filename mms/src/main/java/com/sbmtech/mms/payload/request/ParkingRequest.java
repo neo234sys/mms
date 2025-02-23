@@ -1,13 +1,24 @@
 package com.sbmtech.mms.payload.request;
 
-import com.sbmtech.mms.models.ParkingType;
+import javax.validation.constraints.NotEmpty;
+
+import com.sbmtech.mms.validator.ValidSubscriberlId;
 
 public class ParkingRequest {
 
+	@NotEmpty(message = "parkingName cannot be null")
 	private String parkingName;
+	
 	private Integer parkZoneId;
-	private ParkingType parkingType;
+	
+	private String parkingType;
+	
 	private Boolean isAvailable;
+	
+	private Integer buildingId;
+	
+	@ValidSubscriberlId
+	private Integer subscriberId;
 
 	public String getParkingName() {
 		return parkingName;
@@ -25,11 +36,11 @@ public class ParkingRequest {
 		this.parkZoneId = parkZoneId;
 	}
 
-	public ParkingType getParkingType() {
+	public String getParkingType() {
 		return parkingType;
 	}
 
-	public void setParkingType(ParkingType parkingType) {
+	public void setParkingType(String parkingType) {
 		this.parkingType = parkingType;
 	}
 
@@ -40,5 +51,22 @@ public class ParkingRequest {
 	public void setIsAvailable(Boolean isAvailable) {
 		this.isAvailable = isAvailable;
 	}
+
+	public Integer getBuildingId() {
+		return buildingId;
+	}
+
+	public void setBuildingId(Integer buildingId) {
+		this.buildingId = buildingId;
+	}
+
+	public Integer getSubscriberId() {
+		return subscriberId;
+	}
+
+	public void setSubscriberId(Integer subscriberId) {
+		this.subscriberId = subscriberId;
+	}
+	
 
 }

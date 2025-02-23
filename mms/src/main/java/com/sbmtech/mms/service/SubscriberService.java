@@ -63,11 +63,11 @@ public interface SubscriberService {
 
 	public ApiResponse<String> createParkingZone(ParkingZoneRequest request);
 
-	public ApiResponse<String> createParking(ParkingRequest request);
+	public ApiResponse<Object> createParking(ParkingRequest request);
 
-	public ApiResponse<String> addKey(KeyMasterRequest request);
+	public ApiResponse<Object> addKey(KeyMasterRequest request);
 
-	public ApiResponse<String> addUnitKey(UnitKeysRequest request);
+	public ApiResponse<Object> addUnitKey(UnitKeysRequest request);
 
-	public ApiResponse<String> addTenantUnit(TenantUnitRequest request);
+	public ApiResponse<Object> addTenantUnit(TenantUnitRequest request);
 }

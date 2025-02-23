@@ -7,6 +7,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -33,10 +34,15 @@ public class Parking implements Serializable {
 	@ManyToOne
 	@JoinColumn(name = "park_zone_id", referencedColumnName = "park_zone_id")
 	private ParkingZone parkZone;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "building_id", referencedColumnName = "building_id")
+	private Building building;
 
-	@Enumerated(EnumType.STRING)
+
+	//@Enumerated(EnumType.STRING)
 	@Column(name = "parking_type", nullable = false)
-	private ParkingType parkingType;
+	private String parkingType;
 
 	@Column(name = "is_available", nullable = false)
 	private Boolean isAvailable = true;
@@ -73,11 +79,11 @@ public class Parking implements Serializable {
 		this.parkZone = parkZone;
 	}
 
-	public ParkingType getParkingType() {
+	public String getParkingType() {
 		return parkingType;
 	}
 
-	public void setParkingType(ParkingType parkingType) {
+	public void setParkingType(String parkingType) {
 		this.parkingType = parkingType;
 	}
 
@@ -108,5 +114,15 @@ public class Parking implements Serializable {
 	public static long getSerialversionuid() {
 		return serialVersionUID;
 	}
+
+	public Building getBuilding() {
+		return building;
+	}
+
+	public void setBuilding(Building building) {
+		this.building = building;
+	}
+	
+	
 
 }

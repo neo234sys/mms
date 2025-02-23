@@ -6,7 +6,6 @@ import static com.sbmtech.mms.constant.CommonConstants.FAILURE_DESC;
 import static com.sbmtech.mms.constant.CommonConstants.SUCCESS_CODE;
 import static com.sbmtech.mms.constant.CommonConstants.SUCCESS_DESC;
 
-
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -40,8 +39,11 @@ import com.sbmtech.mms.models.Floor;
 import com.sbmtech.mms.models.KeyMaster;
 import com.sbmtech.mms.models.Otp;
 import com.sbmtech.mms.models.Parking;
+import com.sbmtech.mms.models.ParkingTypeEnum;
 import com.sbmtech.mms.models.ParkingZone;
 import com.sbmtech.mms.models.PaymentMethod;
+import com.sbmtech.mms.models.RentCycleEnum;
+import com.sbmtech.mms.models.RentPaymentModeEnum;
 import com.sbmtech.mms.models.Role;
 import com.sbmtech.mms.models.RoleEnum;
 import com.sbmtech.mms.models.State;
@@ -81,9 +83,13 @@ import com.sbmtech.mms.payload.response.BuildingResponse;
 import com.sbmtech.mms.payload.response.CityResponse;
 import com.sbmtech.mms.payload.response.CommunityResponse;
 import com.sbmtech.mms.payload.response.FloorResponse;
+import com.sbmtech.mms.payload.response.KeyResponse;
 import com.sbmtech.mms.payload.response.LocationResponse;
+import com.sbmtech.mms.payload.response.ParkingResponse;
 import com.sbmtech.mms.payload.response.StateResponse;
 import com.sbmtech.mms.payload.response.SubscriptionPlans;
+import com.sbmtech.mms.payload.response.TenantUnitResponse;
+import com.sbmtech.mms.payload.response.UniKeyResponse;
 import com.sbmtech.mms.payload.response.UnitResponse;
 import com.sbmtech.mms.repository.BuildingRepository;
 import com.sbmtech.mms.repository.ChannelMasterRepository;
@@ -767,7 +773,6 @@ public class SubscriberServiceImpl implements SubscriberService {
 		tenant.setNationality(nationality);
 		tenant = tenantRepository.save(tenant);
 		String pwd=CommonUtil.generateRandomPwd();
-		pwd=CommonUtil.generateRandomPwd();
 		pwd="123456";//remove this
 		if(existingUser!=null) {
 			//BeanUtils.copyProperties(request, existingUser);
@@ -856,95 +861,172 @@ public class SubscriberServiceImpl implements SubscriberService {
 	}
 
 	
-	public ApiResponse<String> createParking(ParkingRequest request) {
-		Optional<ParkingZone> parkZoneOptional = parkingZoneRepository.findById(request.getParkZoneId());
-		if (!parkZoneOptional.isPresent()) {
+	public ApiResponse<Object> createParking(ParkingRequest request) {
+		
+		Building building = buildingRepository.findByBuildingIdAndSubscriberId(request.getBuildingId(),request.getSubscriberId());
+		if (ObjectUtils.isEmpty(building)) {
+			throw new BusinessException("Building not found with id: " + request.getBuildingId(),null);
+		}
+	
+		
+		
+		ParkingZone parkZone= parkingZoneRepository.findByParkZoneIdAndSubscriberId(request.getParkZoneId(),request.getSubscriberId());
+		if (ObjectUtils.isEmpty(parkZone)) {
 			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Parking Zone not found", null, null);
 		}
+		
+		Optional<ParkingTypeEnum> ops=Arrays.stream(ParkingTypeEnum.values()).filter(status -> status.getValue().toString().equals(request.getParkingType())).findAny();
+		
+		if(!ops.isPresent()) {
+			throw new BusinessException("Invalid ParkingType, can be any one COVERED/OPEN/GARAGE",null);
+		}
 
-		ParkingZone parkZone = parkZoneOptional.get();
-
+		
 		Parking parking = new Parking();
 		parking.setParkingName(request.getParkingName());
 		parking.setParkZone(parkZone);
 		parking.setParkingType(request.getParkingType());
 		parking.setIsAvailable(request.getIsAvailable());
+		parking.setBuilding(building);
 
 		parkingRepository.save(parking);
 
-		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Parking created successfully.", null, null);
+		
+		
+		ParkingResponse parkResp=new ParkingResponse();
+		BeanUtils.copyProperties(parking, parkResp);
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, parkResp, null, null);
 	}
 
 	
-	public ApiResponse<String> addKey(KeyMasterRequest request) {
-		if (keyMasterRepository.findByKeyName(request.getKeyName()).isPresent()) {
-			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Key name already exists.", null, null);
+	public ApiResponse<Object> addKey(KeyMasterRequest request) {
+		if (keyMasterRepository.findByKeyNameAndSubscriberId(request.getKeyName(),request.getSubscriberId())!=null) {
+			
+			throw new BusinessException("Key name already exists.",null);
 		}
+		
+		Optional<Subscriber> subscriberOptional = subscriberRepository.findById(request.getSubscriberId());
+		
+		Subscriber subscriber = subscriberOptional.get();
 
 		KeyMaster keyMaster = new KeyMaster();
 		keyMaster.setKeyName(request.getKeyName());
+		keyMaster.setSubscriber(subscriber);
 		keyMasterRepository.save(keyMaster);
 
-		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Key added successfully.", null, null);
+		KeyResponse keyResp=new KeyResponse();
+		BeanUtils.copyProperties(keyMaster, keyResp);
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, keyResp, null, null);
 	}
 
 	
-	public ApiResponse<String> addUnitKey(UnitKeysRequest request) {
-		Optional<Unit> unitOptional = unitRepository.findById(request.getUnitId());
-		if (!unitOptional.isPresent()) {
-			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Unit not found with ID: " + request.getUnitId(), null, null);
+	public ApiResponse<Object> addUnitKey(UnitKeysRequest request) {
+		
+
+		
+		Unit unit=unitRepository.findByUnitIdAndSubscriberId(request.getUnitId(),request.getSubscriberId());
+		
+		if (ObjectUtils.isEmpty(unit)) {
+			
+			throw new BusinessException( "Unit not found with ID: " + request.getUnitId(),null);
 		}
 
-		Optional<KeyMaster> keyMasterOptional = keyMasterRepository.findById(request.getKeyId());
-		if (!keyMasterOptional.isPresent()) {
-			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Key not found with ID: " + request.getKeyId(), null, null);
+		List<KeyMaster> masterKeys = keyMasterRepository.findAllKeysBySubscriberId(request.getSubscriberId());
+		if(ObjectUtils.isNotEmpty(masterKeys) && ObjectUtils.isNotEmpty(request.getKeyIds()) ) {
+			List<Integer> masterKeysId = masterKeys
+		            .stream()
+		            .map(KeyMaster::getKeyId)
+		            .collect(Collectors.toList());
+			boolean validKeys =	masterKeysId.containsAll(request.getKeyIds());
+			if(!validKeys) {
+				
+				throw new BusinessException("One of the keyIds not found",null);
+			}
 		}
-
-		Unit unit = unitOptional.get();
-		KeyMaster keyMaster = keyMasterOptional.get();
-
-		boolean mappingExists = unitKeysRepository.existsByUnitAndKeyMaster(unit, keyMaster);
-		if (mappingExists) {
-			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Unit-Key mapping already exists.", null, null);
+		
+		UnitKeys unitKeys=null;
+		if(ObjectUtils.isNotEmpty(request.getKeyId()) ) {
+			KeyMaster keyMaster = keyMasterRepository.findBykeyIdAndSubscriberId(request.getKeyId(),request.getSubscriberId());
+			if (ObjectUtils.isEmpty(keyMaster)) {
+				
+				throw new BusinessException("Key not found with ID: " + request.getKeyId(),null);
+			}
+			unitKeys = new UnitKeys();
+			unitKeys.setUnit(unit);
+			unitKeys.setKeyMaster(keyMaster);
+			unitKeysRepository.save(unitKeys);
+		}else if(ObjectUtils.isNotEmpty(request.getKeyIds()) ) {
+			for (Integer keyId:request.getKeyIds()) {
+				KeyMaster keyMaster = keyMasterRepository.findBykeyIdAndSubscriberId(keyId,request.getSubscriberId());
+				if (ObjectUtils.isEmpty(keyMaster)) {
+					
+					throw new BusinessException("Key not found with ID: " + keyId,null);
+				}
+				unitKeys = new UnitKeys();
+				unitKeys.setUnit(unit);
+				unitKeys.setKeyMaster(keyMaster);
+				unitKeysRepository.save(unitKeys);
+			}
 		}
+		
 
-		UnitKeys unitKeys = new UnitKeys();
-		unitKeys.setUnit(unit);
-		unitKeys.setKeyMaster(keyMaster);
-		unitKeysRepository.save(unitKeys);
-
-		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Unit-Key mapping added successfully.", null, null);
+		if(unitKeys!=null) {
+			UniKeyResponse unitKeyResp=new UniKeyResponse();
+			BeanUtils.copyProperties(unitKeys, unitKeyResp);
+			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, unitKeyResp, null, null);
+		}
+		return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
 	}
 
 	
-	public ApiResponse<String> addTenantUnit(TenantUnitRequest request) {
-		Tenant tenant = tenantRepository.findById(request.getTenantId()).orElse(null);
-		if (tenant == null) {
-			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Tenant not found with ID: " + request.getTenantId(), null, null);
+	public ApiResponse<Object> addTenantUnit(TenantUnitRequest request) {
+		//Tenant tenant = tenantRepository.findById(request.getTenantId()).orElse(null);
+		Tenant tenant = tenantRepository.findByTenantIdAndSubscriberId(request.getTenantId(),request.getSubscriberId());
+		
+		if (ObjectUtils.isEmpty(tenant)) {
+			
+			throw new BusinessException("Tenant not found with ID: " + request.getTenantId(),null);
 		}
 
-		Unit unit = unitRepository.findById(request.getUnitId()).orElse(null);
+		//Unit unit = unitRepository.findById(request.getUnitId()).orElse(null);
+		Unit unit=unitRepository.findByUnitIdAndSubscriberId(request.getUnitId(),request.getSubscriberId());
 		if (unit == null) {
-			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,"Unit not found with ID: " + request.getUnitId(), null, null);
+			
+			throw new BusinessException("Unit not found with ID: " + request.getUnitId(),null);
 		}
 
-		Parking parking = parkingRepository.findById(request.getParkingId()).orElse(null);
+		//Parking parking = parkingRepository.findById(request.getParkingId()).orElse(null);
+		Parking parking = parkingRepository.findByParkingIdAndSubscriberId(request.getParkingId(),request.getSubscriberId());
+		
 		if (parking == null) {
-			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Parking not found with ID: " + request.getParkingId(), null, null);
+			
+			throw new BusinessException( "Parking not found with ID: " + request.getParkingId(),null);
 		}
 
-		UnitKeys unitKeys = unitKeysRepository.findById(request.getUnitKeysId()).orElse(null);
-		if (unitKeys == null) {
-			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Unit Keys not found with ID: " + request.getUnitKeysId(), null,
-					null);
+//		UnitKeys unitKeys = unitKeysRepository.findById(request.getUnitKeysId()).orElse(null);
+//		if (unitKeys == null) {
+//			
+//			throw new BusinessException( "Unit Keys not found with ID: " + request.getUnitKeysId(),null);
+//		}
+		
+		Optional<RentPaymentModeEnum> ops=Arrays.stream(RentPaymentModeEnum.values()).filter(status -> status.getValue().equals(request.getRentPaymentMode())).findAny();
+		
+		if(!ops.isPresent()) {
+			throw new BusinessException("Invalid RentPaymentMode, can be any one CREDIT_CARD/BANK_TRANSFER/CASH/CHEQUE",null);
+		}
+		
+		Optional<RentCycleEnum> rentCycle=Arrays.stream(RentCycleEnum.values()).filter(status -> status.getValue().equals(request.getRentCycle()  )).findAny();
+		
+		if(!rentCycle.isPresent()) {
+			throw new BusinessException("Invalid RentCycle, can be any one of MONTHLY/QUARTERLY/HALFLY/YEARLY",null);
 		}
 
 		TenantUnit tenantUnit = new TenantUnit();
 		tenantUnit.setTenant(tenant);
 		tenantUnit.setUnit(unit);
 		tenantUnit.setParking(parking);
-		tenantUnit.setUnitKeys(unitKeys);
-		tenantUnit.setRegisteredDate(request.getRegisteredDate());
+		//tenantUnit.setUnitKeys(unitKeys);
+		tenantUnit.setTenureFromDate(CommonUtil.getDatefromString(request.getTenureFromDate(),DATE_ddMMyyyy));
 		tenantUnit.setSecurityDeposit(request.getSecurityDeposit());
 		tenantUnit.setRent(request.getRent());
 		tenantUnit.setRentCycle(request.getRentCycle());
@@ -955,7 +1037,12 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		tenantUnitRepository.save(tenantUnit);
 
-		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Tenant-Unit mapping added successfully.", null, null);
+		if(tenantUnit!=null) {
+			TenantUnitResponse tenantUnitResp=new TenantUnitResponse();
+			BeanUtils.copyProperties(tenantUnit, tenantUnitResp);
+			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, tenantUnitResp, null, null);
+		}
+		return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
 	}
 
 }

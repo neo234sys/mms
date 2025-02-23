@@ -75,8 +75,8 @@ public class SubscriberController {
 
 			Optional<User> userOptional = userRepository.findByEmail(loginRequest.getEmail());
 
-			if (userOptional.isPresent()) {
 				User user = userOptional.get();
+				if (userOptional.isPresent()) {
 				Subscriber subscriber = user.getSubscriber();
 
 				if (subscriber != null && subscriber.getOtpVerified() == 1) {

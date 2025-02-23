@@ -4,9 +4,12 @@ import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -22,6 +25,10 @@ public class KeyMaster implements Serializable {
 
 	@Column(name = "key_name", unique = true, nullable = false)
 	private String keyName;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "subscriber_id")
+	private Subscriber subscriber;
 
 	public Integer getKeyId() {
 		return keyId;
@@ -39,8 +46,16 @@ public class KeyMaster implements Serializable {
 		this.keyName = keyName;
 	}
 
-	public static long getSerialversionuid() {
-		return serialVersionUID;
+	public Subscriber getSubscriber() {
+		return subscriber;
 	}
+
+	public void setSubscriber(Subscriber subscriber) {
+		this.subscriber = subscriber;
+	}
+
+	
+	
+	
 
 }

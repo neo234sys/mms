@@ -1,22 +1,43 @@
 package com.sbmtech.mms.payload.request;
 
-import java.math.BigDecimal;
-import java.util.Date;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
 
-import com.sbmtech.mms.models.RentCycle;
-import com.sbmtech.mms.models.RentPaymentMode;
+import com.sbmtech.mms.validator.ValidDateDDMMYYYY;
+import com.sbmtech.mms.validator.ValidFutureDate;
+import com.sbmtech.mms.validator.ValidSubscriberlId;
 
 public class TenantUnitRequest {
 
+	@Min(value=1, message="min value 1")
 	private Integer tenantId;
+	
+	@Min(value=1, message="min value 1")
 	private Integer unitId;
+	
+	@Min(value=1, message="min value 1")
 	private Integer parkingId;
-	private Integer unitKeysId;
-	private Date registeredDate;
-	private BigDecimal securityDeposit;
-	private BigDecimal rent;
-	private RentCycle rentCycle;
-	private RentPaymentMode rentPaymentMode;
+	
+
+	
+	@ValidDateDDMMYYYY
+	@ValidFutureDate
+	private String tenureFromDate;
+	
+	@Min(value=1, message="min value 1")
+	private Double securityDeposit;
+	
+	@Min(value=1, message="min value 1")
+	private Double rent;
+	
+	@NotEmpty(message = "rentCycle cannot be null")
+	private String rentCycle;
+	
+	@NotEmpty(message = "rentPaymentMode cannot be null")
+	private String rentPaymentMode;
+	
+	@ValidSubscriberlId
+	private Integer subscriberId;
 
 	public Integer getTenantId() {
 		return tenantId;
@@ -42,52 +63,55 @@ public class TenantUnitRequest {
 		this.parkingId = parkingId;
 	}
 
-	public Integer getUnitKeysId() {
-		return unitKeysId;
+
+	
+
+	public String getTenureFromDate() {
+		return tenureFromDate;
 	}
 
-	public void setUnitKeysId(Integer unitKeysId) {
-		this.unitKeysId = unitKeysId;
+	public void setTenureFromDate(String tenureFromDate) {
+		this.tenureFromDate = tenureFromDate;
 	}
 
-	public Date getRegisteredDate() {
-		return registeredDate;
-	}
-
-	public void setRegisteredDate(Date registeredDate) {
-		this.registeredDate = registeredDate;
-	}
-
-	public BigDecimal getSecurityDeposit() {
+	public Double getSecurityDeposit() {
 		return securityDeposit;
 	}
 
-	public void setSecurityDeposit(BigDecimal securityDeposit) {
+	public void setSecurityDeposit(Double securityDeposit) {
 		this.securityDeposit = securityDeposit;
 	}
 
-	public BigDecimal getRent() {
+	public Double getRent() {
 		return rent;
 	}
 
-	public void setRent(BigDecimal rent) {
+	public void setRent(Double rent) {
 		this.rent = rent;
 	}
 
-	public RentCycle getRentCycle() {
+	public String getRentCycle() {
 		return rentCycle;
 	}
 
-	public void setRentCycle(RentCycle rentCycle) {
+	public void setRentCycle(String rentCycle) {
 		this.rentCycle = rentCycle;
 	}
 
-	public RentPaymentMode getRentPaymentMode() {
+	public String getRentPaymentMode() {
 		return rentPaymentMode;
 	}
 
-	public void setRentPaymentMode(RentPaymentMode rentPaymentMode) {
+	public void setRentPaymentMode(String rentPaymentMode) {
 		this.rentPaymentMode = rentPaymentMode;
+	}
+
+	public Integer getSubscriberId() {
+		return subscriberId;
+	}
+
+	public void setSubscriberId(Integer subscriberId) {
+		this.subscriberId = subscriberId;
 	}
 
 }

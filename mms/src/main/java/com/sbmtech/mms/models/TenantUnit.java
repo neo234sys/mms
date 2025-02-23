@@ -42,22 +42,19 @@ public class TenantUnit implements Serializable {
 	@JoinColumn(name = "parking_id", referencedColumnName = "parking_id")
 	private Parking parking;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "unit_keys_id", referencedColumnName = "unit_keys_id")
-	private UnitKeys unitKeys;
 
-	@Column(name = "registered_date")
-	private Date registeredDate;
+	@Column(name = "tenure_from_date")
+	private Date tenureFromDate;
 
 	@Column(name = "security_deposit")
-	private BigDecimal securityDeposit;
+	private Double securityDeposit;
 
 	@Column(name = "rent")
-	private BigDecimal rent;
+	private Double rent;
 
-	@Enumerated(EnumType.STRING)
+	
 	@Column(name = "rent_cycle")
-	private RentCycle rentCycle;
+	private String rentCycle;
 
 	@Column(name = "expired")
 	private Boolean expired;
@@ -65,9 +62,9 @@ public class TenantUnit implements Serializable {
 	@Column(name = "active")
 	private Boolean active;
 
-	@Enumerated(EnumType.STRING)
+
 	@Column(name = "rent_payment_mode")
-	private RentPaymentMode rentPaymentMode;
+	private String rentPaymentMode;
 
 	@Column(name = "created_time")
 	@CreationTimestamp
@@ -115,43 +112,36 @@ public class TenantUnit implements Serializable {
 		this.parking = parking;
 	}
 
-	public UnitKeys getUnitKeys() {
-		return unitKeys;
+
+	public Date getTenureFromDate() {
+		return tenureFromDate;
 	}
 
-	public void setUnitKeys(UnitKeys unitKeys) {
-		this.unitKeys = unitKeys;
+	public void setTenureFromDate(Date tenureFromDate) {
+		this.tenureFromDate = tenureFromDate;
 	}
 
-	public Date getRegisteredDate() {
-		return registeredDate;
-	}
-
-	public void setRegisteredDate(Date registeredDate) {
-		this.registeredDate = registeredDate;
-	}
-
-	public BigDecimal getSecurityDeposit() {
+	public Double getSecurityDeposit() {
 		return securityDeposit;
 	}
 
-	public void setSecurityDeposit(BigDecimal securityDeposit) {
+	public void setSecurityDeposit(Double securityDeposit) {
 		this.securityDeposit = securityDeposit;
 	}
 
-	public BigDecimal getRent() {
+	public Double getRent() {
 		return rent;
 	}
 
-	public void setRent(BigDecimal rent) {
+	public void setRent(Double rent) {
 		this.rent = rent;
 	}
 
-	public RentCycle getRentCycle() {
+	public String getRentCycle() {
 		return rentCycle;
 	}
 
-	public void setRentCycle(RentCycle rentCycle) {
+	public void setRentCycle(String rentCycle) {
 		this.rentCycle = rentCycle;
 	}
 
@@ -171,11 +161,11 @@ public class TenantUnit implements Serializable {
 		this.active = active;
 	}
 
-	public RentPaymentMode getRentPaymentMode() {
+	public String getRentPaymentMode() {
 		return rentPaymentMode;
 	}
 
-	public void setRentPaymentMode(RentPaymentMode rentPaymentMode) {
+	public void setRentPaymentMode(String rentPaymentMode) {
 		this.rentPaymentMode = rentPaymentMode;
 	}
 
