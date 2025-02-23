@@ -51,12 +51,15 @@ public class JwtUtils {
     Integer subscriberId=null;
     if(userOp.isPresent()) {
      	user=userOp.get();
-    	if(user!=null ) {
+    	if(user!=null && user.getRoles()!=null) {
     		Set <Role> roles=user.getRoles();
-//    		if(roles!=null && roles..contains(RoleEnum.ROLE_MGT_ADMIN)) {
-//    			
-//    		}
-    		subscriberId=user.getSubscriber().getSubscriberId();
+    		for(Role role:roles) {
+    			if(role.getName().toString().equals(RoleEnum.ROLE_MGT_ADMIN.getName())) {
+    				subscriberId=user.getSubscriber().getSubscriberId();
+    				break;
+    			}
+    		}
+    		
     	}
     }
     
