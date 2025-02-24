@@ -24,7 +24,7 @@ public class BuildingRequest {
 	
 	private Integer communityId;
 	
-	@ValidSubscriberlId
+	//@ValidSubscriberlId
 	private Integer subscriberId;
 
 	public String getBuildingName() {

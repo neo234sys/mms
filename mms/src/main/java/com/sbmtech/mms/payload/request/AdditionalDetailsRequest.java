@@ -5,7 +5,7 @@ import com.sbmtech.mms.validator.ValidSubscriberlId;
 public class AdditionalDetailsRequest {
 
 
-	@ValidSubscriberlId
+	//@ValidSubscriberlId
 	private Integer subscriberId;
 	
 	private String companyAddress;

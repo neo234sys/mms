@@ -50,7 +50,7 @@ public class CreateUserRequest {
 	@ValidCountryId
 	private Integer nationalityId;
 	
-	@ValidSubscriberlId
+	//@ValidSubscriberlId
 	private Integer subscriberId;
 	
 	

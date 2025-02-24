@@ -10,7 +10,7 @@ public class CommunityRequest {
 	private String communityName;
 	private Integer locationId;
 	
-	@ValidSubscriberlId
+	//@ValidSubscriberlId
 	private Integer subscriberId;
 
 	public String getCommunityName() {

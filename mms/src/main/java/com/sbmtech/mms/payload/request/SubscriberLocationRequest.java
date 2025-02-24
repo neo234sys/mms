@@ -9,7 +9,7 @@ public class SubscriberLocationRequest {
 	private Integer stateId;
 	private Integer cityId;
 	
-	@ValidSubscriberlId
+	//@ValidSubscriberlId
 	private Integer subscriberId;
 
 	public String getLocationName() {

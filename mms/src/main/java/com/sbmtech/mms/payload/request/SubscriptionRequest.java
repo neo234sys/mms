@@ -14,7 +14,7 @@ public class SubscriptionRequest {
 	@ValidPlanId
 	private Integer planId;
 	
-	@ValidSubscriberlId
+	//@ValidSubscriberlId
 	private Integer subscriberId;
 	
 	@NotBlank (message = "startDate cannot be null")

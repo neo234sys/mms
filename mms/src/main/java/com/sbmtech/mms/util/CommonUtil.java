@@ -18,6 +18,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -27,9 +29,17 @@ import javax.xml.bind.Element;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.tomcat.util.json.JSONParser;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Component;
 import org.w3c.dom.NodeList;
 
 import com.sbmtech.mms.constant.CommonConstants;
+import com.sbmtech.mms.models.Role;
+import com.sbmtech.mms.models.RoleEnum;
+import com.sbmtech.mms.models.User;
+import com.sbmtech.mms.repository.UserRepository;
+import com.sbmtech.mms.security.services.UserDetailsImpl;
 
 
 
@@ -37,6 +47,30 @@ public class CommonUtil {
 
 	
 	public static ZoneId ZONE_DUBAI = ZoneId.of( "Asia/Dubai" );
+	
+//	@Autowired
+//	private UserRepository userRepository;
+//	
+//	public Integer getSubscriberIdfromAuth( Authentication auth) {
+//		User user=null;
+//		Integer subscriberId=0;
+//		UserDetailsImpl userPrincipal = (UserDetailsImpl)auth.getPrincipal();
+//		Optional<User> userOp=userRepository.findByEmail(userPrincipal.getUsername());
+//		if(userOp.isPresent()) {
+//	     	user=userOp.get();
+//	    	if(user!=null && user.getRoles()!=null) {
+//	    		Set <Role> roles=user.getRoles();
+//	    		for(Role role:roles) {
+//	    			if(role.getName().toString().equals(RoleEnum.ROLE_MGT_ADMIN.getName())) {
+//	    				subscriberId=user.getSubscriber().getSubscriberId();
+//	    				break;
+//	    			}
+//	    		}
+//	    		
+//	    	}
+//	    }
+//		return subscriberId;
+//	}
 	
 	public static String getStringValue(String fieldName) {
 		String result = "";

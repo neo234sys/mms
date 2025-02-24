@@ -8,6 +8,9 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.CurrentSecurityContext;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sbmtech.mms.constant.SubscriptionStatus;
+import com.sbmtech.mms.models.Subscriber;
 import com.sbmtech.mms.models.Subscriptions;
 import com.sbmtech.mms.payload.request.AdditionalDetailsRequest;
 import com.sbmtech.mms.payload.request.BuildingRequest;
@@ -32,12 +36,14 @@ import com.sbmtech.mms.payload.request.SubscriptionRequest;
 import com.sbmtech.mms.payload.request.TenantUnitRequest;
 import com.sbmtech.mms.payload.request.UnitKeysRequest;
 import com.sbmtech.mms.payload.request.UnitRequest;
+import com.sbmtech.mms.repository.SubscriberRepository;
 import com.sbmtech.mms.repository.SubscriptionRepository;
 import com.sbmtech.mms.service.SubscriberService;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/mgt")
+@PreAuthorize("hasRole(@securityService.MgtAdmin)")
 public class ManagementController {
 
 	@Autowired
@@ -45,19 +51,34 @@ public class ManagementController {
 
 	@Autowired
 	private SubscriptionRepository subscriptionRepository;
-
+	
+	@Autowired
+	private SubscriberRepository subscriberRepository;
+	
 	@PostMapping("/addAdditionalDetails")
-	public ResponseEntity<?> addAdditionalDetails(@Valid @RequestBody AdditionalDetailsRequest request) {
+	public ResponseEntity<?> addAdditionalDetails(@Valid @RequestBody AdditionalDetailsRequest request,
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth) {
+		
+		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
+		request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.addAdditionalDetails(request));
 	}
 
 	@PostMapping("/createSubscription")
-	public ResponseEntity<?> createSubscription(@Valid @RequestBody SubscriptionRequest request) {
+	public ResponseEntity<?> createSubscription(@Valid @RequestBody SubscriptionRequest request,
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth) {
+		
+		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
+		request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.saveSubscription(request));
 	}
 
 	@GetMapping("/subscriptionPlans")
-	public ResponseEntity<?> getAllSubscriptionPlans() {
+	public ResponseEntity<?> getAllSubscriptionPlans(
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth) {
+		
+		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
+		
 		return ResponseEntity.ok(subscriberService.getAllSubscriptionPlans());
 	}
 	
@@ -84,57 +105,99 @@ public class ManagementController {
 	}
 
 	@PostMapping("/addSubscriberLocation")
-	public ResponseEntity<?> addSubscriberLocation(@Valid @RequestBody SubscriberLocationRequest request) {
+	public ResponseEntity<?> addSubscriberLocation(@Valid @RequestBody SubscriberLocationRequest request,
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth) {
+		
+		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
+		request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.addSubscriberLocation(request));
 	}
 
 	@PostMapping("/addCommunity")
-	public ResponseEntity<?> addCommunity(@Valid @RequestBody CommunityRequest request) {
+	public ResponseEntity<?> addCommunity(@Valid @RequestBody CommunityRequest request,
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth) {
+		
+		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
+		request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.addCommunity(request));
 	}
 
 	@PostMapping("/addBuilding")
-	public ResponseEntity<?> addBuilding(@Valid @RequestBody BuildingRequest request) {
+	public ResponseEntity<?> addBuilding(@Valid @RequestBody BuildingRequest request,
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth) {
+		
+		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
+		request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.addBuilding(request));
 	}
 
 	@PostMapping("/addFloor")
-	public ResponseEntity<?> addFloor(@Valid @RequestBody FloorRequest request) {
+	public ResponseEntity<?> addFloor(@Valid @RequestBody FloorRequest request,
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth) {
+		
+		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
+		//request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.addFloor(request));
 	}
 
 	@PostMapping("/addUnit")
-	public ResponseEntity<?> addUnit(@Valid @RequestBody UnitRequest request) {
+	public ResponseEntity<?> addUnit(@Valid @RequestBody UnitRequest request,
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth) {
+		
+		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
+		//request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.addUnit(request));
 	}
 
 	@PostMapping("/createTenant")
-	public ResponseEntity<?> createUserAndMergeTenant(@Valid @RequestBody CreateUserRequest request) throws Exception {
+	public ResponseEntity<?> createUserAndMergeTenant(@Valid @RequestBody CreateUserRequest request,
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth) throws Exception {
+		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
 		return ResponseEntity.ok(subscriberService.createUserAndMergeTenant(request));
 	}
 
 	@PostMapping("/addParkingZone")
-	public ResponseEntity<?> addParkingZone(@Valid @RequestBody ParkingZoneRequest request) {
+	public ResponseEntity<?> addParkingZone(@Valid @RequestBody ParkingZoneRequest request,
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth) {
+		
+		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
+		request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.createParkingZone(request));
 	}
 
 	@PostMapping("/addParking")
-	public ResponseEntity<?> addParking(@Valid @RequestBody ParkingRequest request) {
+	public ResponseEntity<?> addParking(@Valid @RequestBody ParkingRequest request,
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth) {
+		
+		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
+		request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.createParking(request));
 	}
 
 	@PostMapping("/addKey")
-	public ResponseEntity<?> addKey(@Valid @RequestBody KeyMasterRequest request) {
+	public ResponseEntity<?> addKey(@Valid @RequestBody KeyMasterRequest request,
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth) {
+		
+		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
+		request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.addKey(request));
 	}
 
 	@PostMapping("/addUnitKey")
-	public ResponseEntity<?> addUnitKey(@Valid @RequestBody UnitKeysRequest request) {
+	public ResponseEntity<?> addUnitKey(@Valid @RequestBody UnitKeysRequest request,
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth) {
+		
+		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
+		request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.addUnitKey(request));
 	}
 
 	@PostMapping("/addTenantUnit")
-	public ResponseEntity<?> addTenantUnit(@Valid @RequestBody TenantUnitRequest request) {
+	public ResponseEntity<?> addTenantUnit(@Valid @RequestBody TenantUnitRequest request,
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth) {
+		
+		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
+		request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.addTenantUnit(request));
 	}
 
@@ -147,7 +210,12 @@ public class ManagementController {
 
 		for (Subscriptions subscription : subscriptionsToExpire) {
 			subscription.setStatus(SubscriptionStatus.EXPIRED.toString());
+		
 			subscriptionRepository.save(subscription);
+			Subscriber subscriber=subscription.getSubscriber();
+			subscriber.setActive(0);
+			subscriberRepository.save(subscriber);
+			
 		}
 	}
 	

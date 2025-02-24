@@ -36,7 +36,7 @@ public class TenantUnitRequest {
 	@NotEmpty(message = "rentPaymentMode cannot be null")
 	private String rentPaymentMode;
 	
-	@ValidSubscriberlId
+	//@ValidSubscriberlId
 	private Integer subscriberId;
 
 	public Integer getTenantId() {

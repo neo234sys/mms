@@ -61,7 +61,9 @@ public class SubscriberController {
 
 	@PostMapping("/signin")
 	public ResponseEntity<ApiResponse<Object>> authenticateUser(@RequestBody LoginRequest loginRequest) {
-
+		Subscriber subscriber=null;
+		User user =null;
+		JwtResponse jwtResponse=null;
 		try {
 			Authentication authentication = authenticationManager.authenticate(
 					new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
@@ -75,18 +77,29 @@ public class SubscriberController {
 
 			Optional<User> userOptional = userRepository.findByEmail(loginRequest.getEmail());
 
-				User user = userOptional.get();
+				user = userOptional.get();
 				if (userOptional.isPresent()) {
-				Subscriber subscriber = user.getSubscriber();
-
-				if (subscriber != null && subscriber.getOtpVerified() == 1) {
-					JwtResponse jwtResponse = new JwtResponse(jwt, userDetails.getUserId(), userDetails.getUsername(),
+				subscriber = user.getSubscriber();
+							
+				boolean isOTPVerified=false;
+				boolean isSuspended=false;
+				if(subscriber != null) {
+					jwtResponse = new JwtResponse(jwt, userDetails.getUserId(), userDetails.getUsername(),
 							userDetails.getMobileNo(), roles);
-					return ResponseEntity.ok(new ApiResponse<>(CommonConstants.SUCCESS_CODE, CommonConstants.SUCCESS_DESC, jwtResponse,
-							user.getUserId(), subscriber.getSubscriberId()));
-				} else {
-					return ResponseEntity.ok(new ApiResponse<>(CommonConstants.FAILURE_CODE, CommonConstants.FAILURE_DESC, "OTP not verified. Please verify your OTP to login.",null, null));
+					if ( subscriber.getOtpVerified() == 1 ) {
+						isOTPVerified=true;
+					}else {
+						throw new BusinessException("OTP not verified. Please verify your OTP to login",null);
+					}
+					if ( subscriber.getActive() == 0 ) {
+						isSuspended=true;
+						throw new BusinessException("Subscribtion subspended",null);
+					}
+					
+
 				}
+
+				
 			} else {
 				throw new BusinessException("User not found with email: " + loginRequest.getEmail(),null);
 			}
@@ -94,11 +107,17 @@ public class SubscriberController {
 		} catch (BadCredentialsException e) {
 			throw new BusinessException("Invalid username or password!",e);
 
-		} catch (Exception e) {
+		} catch (BusinessException e) {
+			//e.printStackTrace();
+			throw new BusinessException(e.getMessage(),e);
+			
+		}catch (Exception e) {
 			e.printStackTrace();
 			throw new BusinessException("An error occurred during authentication!",e);
 			
 		}
+		return ResponseEntity.ok(new ApiResponse<>(CommonConstants.SUCCESS_CODE, CommonConstants.SUCCESS_DESC, jwtResponse,
+				user.getUserId(), subscriber.getSubscriberId()));
 	}
 
 	@PostMapping("/createSubscriber")

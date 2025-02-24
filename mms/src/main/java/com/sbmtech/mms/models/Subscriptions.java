@@ -24,7 +24,8 @@ public class Subscriptions implements Serializable {
 	@Column(name = "subscription_id", nullable = false)
 	private Integer subscriptionId;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	//@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "subscriber_id", referencedColumnName = "subscriber_id")
 	private Subscriber subscriber;
 

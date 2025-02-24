@@ -9,7 +9,7 @@ public class ParkingZoneRequest {
 	@NotEmpty(message = "parkZoneName cannot be null")
 	private String parkZoneName;
 	
-	@ValidSubscriberlId
+	//@ValidSubscriberlId
 	private Integer subscriberId;
 
 	public String getParkZoneName() {

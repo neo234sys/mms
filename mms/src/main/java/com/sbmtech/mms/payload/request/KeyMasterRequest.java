@@ -9,7 +9,7 @@ public class KeyMasterRequest {
 	@NotEmpty(message = "keyName cannot be null")
 	private String keyName;
 	
-	@ValidSubscriberlId
+	//@ValidSubscriberlId
 	private Integer subscriberId;
 
 	public String getKeyName() {

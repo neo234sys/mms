@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -115,6 +116,7 @@ import com.sbmtech.mms.repository.UnitKeysRepository;
 import com.sbmtech.mms.repository.UnitRepository;
 import com.sbmtech.mms.repository.UserRepository;
 import com.sbmtech.mms.repository.UserTypeMasterRepository;
+import com.sbmtech.mms.security.services.UserDetailsImpl;
 import com.sbmtech.mms.service.NotificationService;
 import com.sbmtech.mms.service.SubscriberService;
 import com.sbmtech.mms.util.CommonUtil;
@@ -200,6 +202,28 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	@Autowired
 	private TenantUnitRepository tenantUnitRepository;
+	
+	@Override
+	public Integer getSubscriberIdfromAuth( Authentication auth) {
+		User user=null;
+		Integer subscriberId=0;
+		UserDetailsImpl userPrincipal = (UserDetailsImpl)auth.getPrincipal();
+		Optional<User> userOp=userRepository.findByEmail(userPrincipal.getUsername());
+		if(userOp.isPresent()) {
+	     	user=userOp.get();
+	    	if(user!=null && user.getRoles()!=null) {
+	    		Set <Role> roles=user.getRoles();
+	    		for(Role role:roles) {
+	    			if(role.getName().toString().equals(RoleEnum.ROLE_MGT_ADMIN.getName())) {
+	    				subscriberId=user.getSubscriber().getSubscriberId();
+	    				break;
+	    			}
+	    		}
+	    		
+	    	}
+	    }
+		return subscriberId;
+	}
 
 
 	@Override
@@ -435,10 +459,10 @@ public class SubscriberServiceImpl implements SubscriberService {
 		Subscriptions existingSubscription = subscriptionRepository.findTopBySubscriber_SubscriberIdOrderBySubscriptionIdDesc(
 				subscriptionRequest.getSubscriberId());
 
-		if (existingSubscription != null && existingSubscription.getStatus().equals(SubscriptionStatus.TRIAL.toString())
-				|| existingSubscription.getStatus().equals(SubscriptionStatus.ACTIVE.toString())
+		if (existingSubscription != null &&( existingSubscription.getStatus().equals(SubscriptionStatus.TRIAL.toString())
+				|| existingSubscription.getStatus().equals(SubscriptionStatus.ACTIVE.toString()))
 				) {
-			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Subscriber already has a subscription with status "+existingSubscription.getStatus(), null, null);
+			throw new BusinessException("Subscriber already has a subscription with status "+existingSubscription.getStatus(),null);
 		}
 
 		Subscriptions subscription = new Subscriptions();

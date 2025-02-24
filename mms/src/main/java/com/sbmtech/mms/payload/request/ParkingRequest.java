@@ -17,7 +17,7 @@ public class ParkingRequest {
 	
 	private Integer buildingId;
 	
-	@ValidSubscriberlId
+	//@ValidSubscriberlId
 	private Integer subscriberId;
 
 	public String getParkingName() {
