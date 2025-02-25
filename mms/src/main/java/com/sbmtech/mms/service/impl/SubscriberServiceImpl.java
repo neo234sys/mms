@@ -651,21 +651,35 @@ public class SubscriberServiceImpl implements SubscriberService {
 		
 		Subscriber subscriber = subscriberOptional.get();
 
-		Building building = new Building();
-		building.setBuildingName(request.getBuildingName());
-		building.setAddress(request.getAddress());
-		building.setBuildingLogo(request.getBuildingLogo());
-		building.setHasGym(request.getHasGym());
-		building.setHasSwimpool(request.getHasSwimpool());
-		building.setHasKidsPlayground(request.getHasKidsPlayground());
-		building.setHasPlaycourt(request.getHasPlaycourt());
-		building.setCommunity(community);
-		building.setSubscriber(subscriber);
-		building.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+		BuildingResponse buildingResp;
+		try {
+			Building building = new Building();
+			building.setBuildingName(request.getBuildingName());
+			building.setAddress(request.getAddress());
+			building.setBuildingLogo(request.getBuildingLogo());
+			building.setHasGym(request.getHasGym());
+			building.setHasSwimpool(request.getHasSwimpool());
+			building.setHasKidsPlayground(request.getHasKidsPlayground());
+			building.setHasPlaycourt(request.getHasPlaycourt());
+			building.setCommunity(community);
+			building.setSubscriber(subscriber);
+			building.setCreatedAt(new Timestamp(System.currentTimeMillis()));
 
-		buildingRepository.save(building);
-		BuildingResponse buildingResp=new BuildingResponse();
-		BeanUtils.copyProperties(building, buildingResp);
+			buildingRepository.save(building);
+			if(building.getBuildingId()!=null) {
+				Integer noOfFloors=request.getNoOfFloors();
+				for(int i=1;i<=noOfFloors;i++) {
+					Floor floor = new Floor();
+					floor.setFloorName("Floor "+i);
+					floor.setBuilding(building);
+					floorRepository.save(floor);
+				}
+			}
+			buildingResp = new BuildingResponse();
+			BeanUtils.copyProperties(building, buildingResp);
+		} catch (Exception e) {
+			throw new BusinessException("addBuilding failed ",e);
+		}
 
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, buildingResp, null, request.getSubscriberId());
 	}

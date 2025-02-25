@@ -201,7 +201,7 @@ public class ManagementController {
 		return ResponseEntity.ok(subscriberService.addTenantUnit(request));
 	}
 
-	@Scheduled(cron = "0/5 * * * * ?")
+	@Scheduled(cron = "0 */5 * * * ?") //every 5 hrs
 	public void expireSubscriptionsEvery5Seconds() {
 		LocalDateTime now = LocalDateTime.now();
 

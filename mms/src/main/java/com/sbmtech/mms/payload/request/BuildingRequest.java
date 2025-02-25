@@ -1,8 +1,7 @@
 package com.sbmtech.mms.payload.request;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
-
-import com.sbmtech.mms.validator.ValidSubscriberlId;
 
 public class BuildingRequest {
 
@@ -26,6 +25,9 @@ public class BuildingRequest {
 	
 	//@ValidSubscriberlId
 	private Integer subscriberId;
+	
+	@Min(value=1, message="min value should 1")
+	private Integer noOfFloors;
 
 	public String getBuildingName() {
 		return buildingName;
@@ -97,6 +99,14 @@ public class BuildingRequest {
 
 	public void setSubscriberId(Integer subscriberId) {
 		this.subscriberId = subscriberId;
+	}
+
+	public Integer getNoOfFloors() {
+		return noOfFloors;
+	}
+
+	public void setNoOfFloors(Integer noOfFloors) {
+		this.noOfFloors = noOfFloors;
 	}
 
 }
