@@ -2,6 +2,8 @@ package com.sbmtech.mms.service;
 
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.security.core.Authentication;
 
 import com.sbmtech.mms.models.ChannelMaster;
@@ -11,6 +13,7 @@ import com.sbmtech.mms.payload.request.ApiResponse;
 import com.sbmtech.mms.payload.request.BuildingRequest;
 import com.sbmtech.mms.payload.request.CommunityRequest;
 import com.sbmtech.mms.payload.request.CreateUserRequest;
+import com.sbmtech.mms.payload.request.DepartmentRequest;
 import com.sbmtech.mms.payload.request.FloorRequest;
 import com.sbmtech.mms.payload.request.KeyMasterRequest;
 import com.sbmtech.mms.payload.request.ParkingRequest;
@@ -75,4 +78,6 @@ public interface SubscriberService {
 	public ApiResponse<Object> addUnitKey(UnitKeysRequest request);
 
 	public ApiResponse<Object> addTenantUnit(TenantUnitRequest request);
+
+	public ApiResponse<Object>  addDepartment(@Valid DepartmentRequest request);
 }

@@ -26,6 +26,7 @@ import com.sbmtech.mms.payload.request.AdditionalDetailsRequest;
 import com.sbmtech.mms.payload.request.BuildingRequest;
 import com.sbmtech.mms.payload.request.CommunityRequest;
 import com.sbmtech.mms.payload.request.CreateUserRequest;
+import com.sbmtech.mms.payload.request.DepartmentRequest;
 import com.sbmtech.mms.payload.request.FloorRequest;
 import com.sbmtech.mms.payload.request.KeyMasterRequest;
 import com.sbmtech.mms.payload.request.ParkingRequest;
@@ -199,6 +200,17 @@ public class ManagementController {
 		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
 		request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.addTenantUnit(request));
+	}
+	
+	
+	
+	@PostMapping("/addDepartment")
+	public ResponseEntity<?> addDepartment(@Valid @RequestBody DepartmentRequest request,
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth) {
+		
+		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
+		request.setSubscriberId(subscriberId);
+		return ResponseEntity.ok(subscriberService.addDepartment(request));
 	}
 
 	@Scheduled(cron = "0 */5 * * * ?") //every 5 hrs
