@@ -17,6 +17,7 @@ public class CommonConstants {
     public static final String STR_TWO ="2";
     public static final int INT_ZERO = 0;
     public static final int INT_ONE = 1;
+    public static final int INT_ONE_YES = 1;
     public static final int INT_TWO = 2;
     public static final String STR_EMPTY ="";
     public static final String COMMA = ",";

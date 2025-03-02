@@ -15,14 +15,10 @@ public class TenantUnitRequest {
 	@Min(value=1, message="min value 1")
 	private Integer unitId;
 	
-	@Min(value=1, message="min value 1")
+	//@Min(value=1, message="min value 1")
 	private Integer parkingId;
 	
 
-	
-	@ValidDateDDMMYYYY
-	@ValidFutureDate
-	private String tenureFromDate;
 	
 	@Min(value=1, message="min value 1")
 	private Double securityDeposit;
@@ -30,11 +26,19 @@ public class TenantUnitRequest {
 	@Min(value=1, message="min value 1")
 	private Double rent;
 	
+	@Min(value=1, message="min value 1")
+	private Integer tenurePeriodMonth;
+	
 	@NotEmpty(message = "rentCycle cannot be null")
 	private String rentCycle;
 	
 	@NotEmpty(message = "rentPaymentMode cannot be null")
 	private String rentPaymentMode;
+	
+	@NotEmpty(message = "tenancyStartDate cannot be null")
+	@ValidDateDDMMYYYY
+	@ValidFutureDate
+	private String tenancyStartDate;
 	
 	//@ValidSubscriberlId
 	private Integer subscriberId;
@@ -66,13 +70,6 @@ public class TenantUnitRequest {
 
 	
 
-	public String getTenureFromDate() {
-		return tenureFromDate;
-	}
-
-	public void setTenureFromDate(String tenureFromDate) {
-		this.tenureFromDate = tenureFromDate;
-	}
 
 	public Double getSecurityDeposit() {
 		return securityDeposit;
@@ -113,5 +110,23 @@ public class TenantUnitRequest {
 	public void setSubscriberId(Integer subscriberId) {
 		this.subscriberId = subscriberId;
 	}
+
+	public Integer getTenurePeriodMonth() {
+		return tenurePeriodMonth;
+	}
+
+	public void setTenurePeriodMonth(Integer tenurePeriodMonth) {
+		this.tenurePeriodMonth = tenurePeriodMonth;
+	}
+
+	public String getTenancyStartDate() {
+		return tenancyStartDate;
+	}
+
+	public void setTenancyStartDate(String tenancyStartDate) {
+		this.tenancyStartDate = tenancyStartDate;
+	}
+	
+	
 
 }

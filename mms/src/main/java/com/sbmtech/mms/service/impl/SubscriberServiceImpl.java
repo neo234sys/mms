@@ -3,10 +3,12 @@ package com.sbmtech.mms.service.impl;
 import static com.sbmtech.mms.constant.CommonConstants.DATE_ddMMyyyy;
 import static com.sbmtech.mms.constant.CommonConstants.FAILURE_CODE;
 import static com.sbmtech.mms.constant.CommonConstants.FAILURE_DESC;
+import static com.sbmtech.mms.constant.CommonConstants.INT_ONE_YES;
 import static com.sbmtech.mms.constant.CommonConstants.SUCCESS_CODE;
 import static com.sbmtech.mms.constant.CommonConstants.SUCCESS_DESC;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,7 +20,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.validation.Valid;
+
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -26,6 +32,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.sbmtech.mms.config.VelocityEngineConfig;
 import com.sbmtech.mms.constant.CommonConstants;
 import com.sbmtech.mms.constant.SubscriptionStatus;
 import com.sbmtech.mms.dto.NotifEmailDTO;
@@ -36,6 +43,7 @@ import com.sbmtech.mms.models.ChannelMaster;
 import com.sbmtech.mms.models.City;
 import com.sbmtech.mms.models.Community;
 import com.sbmtech.mms.models.Countries;
+import com.sbmtech.mms.models.DepartmentMaster;
 import com.sbmtech.mms.models.Floor;
 import com.sbmtech.mms.models.KeyMaster;
 import com.sbmtech.mms.models.Otp;
@@ -55,6 +63,7 @@ import com.sbmtech.mms.models.SubscriptionPlanMaster;
 import com.sbmtech.mms.models.Subscriptions;
 import com.sbmtech.mms.models.Tenant;
 import com.sbmtech.mms.models.TenantUnit;
+import com.sbmtech.mms.models.TenureDetails;
 import com.sbmtech.mms.models.Unit;
 import com.sbmtech.mms.models.UnitKeys;
 import com.sbmtech.mms.models.UnitSubTypeEnum;
@@ -67,6 +76,7 @@ import com.sbmtech.mms.payload.request.ApiResponse;
 import com.sbmtech.mms.payload.request.BuildingRequest;
 import com.sbmtech.mms.payload.request.CommunityRequest;
 import com.sbmtech.mms.payload.request.CreateUserRequest;
+import com.sbmtech.mms.payload.request.DepartmentRequest;
 import com.sbmtech.mms.payload.request.FloorRequest;
 import com.sbmtech.mms.payload.request.KeyMasterRequest;
 import com.sbmtech.mms.payload.request.ParkingRequest;
@@ -83,6 +93,7 @@ import com.sbmtech.mms.payload.request.VerifyOtpRequest;
 import com.sbmtech.mms.payload.response.BuildingResponse;
 import com.sbmtech.mms.payload.response.CityResponse;
 import com.sbmtech.mms.payload.response.CommunityResponse;
+import com.sbmtech.mms.payload.response.DeptMasResponse;
 import com.sbmtech.mms.payload.response.FloorResponse;
 import com.sbmtech.mms.payload.response.KeyResponse;
 import com.sbmtech.mms.payload.response.LocationResponse;
@@ -97,6 +108,7 @@ import com.sbmtech.mms.repository.ChannelMasterRepository;
 import com.sbmtech.mms.repository.CityRepository;
 import com.sbmtech.mms.repository.CommunityRepository;
 import com.sbmtech.mms.repository.CountriesRepository;
+import com.sbmtech.mms.repository.DepartmentMasRepository;
 import com.sbmtech.mms.repository.FloorRepository;
 import com.sbmtech.mms.repository.KeyMasterRepository;
 import com.sbmtech.mms.repository.OtpRepository;
@@ -112,6 +124,7 @@ import com.sbmtech.mms.repository.SubscriptionPlanMasterRepository;
 import com.sbmtech.mms.repository.SubscriptionRepository;
 import com.sbmtech.mms.repository.TenantRepository;
 import com.sbmtech.mms.repository.TenantUnitRepository;
+import com.sbmtech.mms.repository.TenureDetailsRepository;
 import com.sbmtech.mms.repository.UnitKeysRepository;
 import com.sbmtech.mms.repository.UnitRepository;
 import com.sbmtech.mms.repository.UserRepository;
@@ -124,6 +137,8 @@ import com.sbmtech.mms.util.CommonUtil;
 @Service
 @Transactional
 public class SubscriberServiceImpl implements SubscriberService {
+	
+	private static final Logger logger = LogManager.getLogger(SubscriberServiceImpl.class);
 
 	@Autowired
 	private SubscriberRepository subscriberRepository;
@@ -203,10 +218,20 @@ public class SubscriberServiceImpl implements SubscriberService {
 	@Autowired
 	private TenantUnitRepository tenantUnitRepository;
 	
+	@Autowired
+	private TenureDetailsRepository tenureDetailsRepository;
+	
+	
+	
+	@Autowired
+	private DepartmentMasRepository departmentMasRepository;
+	
+	
+	
 	@Override
-	public Integer getSubscriberIdfromAuth( Authentication auth) {
+	public Integer getSubscriberIdfromAuth( Authentication auth)throws Exception {
 		User user=null;
-		Integer subscriberId=0;
+		Integer subscriberId=null;
 		UserDetailsImpl userPrincipal = (UserDetailsImpl)auth.getPrincipal();
 		Optional<User> userOp=userRepository.findByEmail(userPrincipal.getUsername());
 		if(userOp.isPresent()) {
@@ -216,12 +241,24 @@ public class SubscriberServiceImpl implements SubscriberService {
 	    		for(Role role:roles) {
 	    			if(role.getName().toString().equals(RoleEnum.ROLE_MGT_ADMIN.getName())) {
 	    				subscriberId=user.getSubscriber().getSubscriberId();
+	    				logger.info("getSubscriberIdfromAuth subscriber->= {}",user.getSubscriber());
 	    				break;
 	    			}
 	    		}
 	    		
 	    	}
 	    }
+		if(subscriberId!=null && subscriberId.intValue()!=0) {
+			boolean subscriberlIdExists=false;
+	    	subscriberlIdExists=subscriberRepository.existsBySubscriberIdAndActive(subscriberId,1);
+	    	if(!subscriberlIdExists) {
+	    		logger.info("Subscribtion subspended for subscriberId ->:{} ",subscriberId);
+	    		throw new BusinessException("Subscribtion subspended",null);
+	    	}
+	    	
+		}else {
+			subscriberId=0;
+		}
 		return subscriberId;
 	}
 
@@ -238,6 +275,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		Subscriber existingSubscriber = subscriberRepository.findByCompanyEmail(request.getCompanyEmail());
 		if (existingSubscriber != null) {
 			if (existingSubscriber.getOtpVerified() != null && existingSubscriber.getOtpVerified() == 1) {
+				logger.info("Email is already registered and OTP is verified. Cannot register again for ->:{} ",existingSubscriber);
 				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
 						"Email is already registered and OTP is verified. Cannot register again.", null,
 						existingSubscriber.getSubscriberId());
@@ -262,9 +300,11 @@ public class SubscriberServiceImpl implements SubscriberService {
 			NotificationEmailResponseDTO resp = notificationService.sendOTPEmail(dto);
 
 			if (resp != null && resp.isEmailSent()) {
+				logger.info("OTP sent successfully to the registered email for ->:{} ",dto.getEmailTo());
 				return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "OTP sent to the registered email.", null,
 						existingSubscriber.getSubscriberId());
 			} else {
+				logger.info("Failed to send OTP email for ->:{} ",dto.getEmailTo());
 				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to send OTP email.", null, null);
 			}
 		}
@@ -290,7 +330,8 @@ public class SubscriberServiceImpl implements SubscriberService {
 		}
 
 		user.setPassword(request.getPassword());
-		user.setPassword(encoder.encode(request.getPassword()));
+		//user.setPassword(encoder.encode(request.getPassword()));
+		user.setPassword(encoder.encode("123456"));//remove this
 		user.setActive(true);
 		user.setSubscriber(subscriber);
 		user.setUserType(userType);
@@ -319,6 +360,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		NotificationEmailResponseDTO resp = notificationService.sendOTPEmail(dto);
 		if (resp != null && resp.isEmailSent()) {
+			logger.info("Subscriber and user created successfully. OTP sent email for ->:{}, userId:{}, SubscriberId:{} ",dto.getEmailTo(),user.getUserId(),subscriber.getSubscriberId());
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Subscriber and user created successfully. OTP sent.",
 					user.getUserId(), subscriber.getSubscriberId());
 		} else {
@@ -332,7 +374,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	private Date calculateOtpExpiryTime() {
 		Calendar calendar = Calendar.getInstance();
-		calendar.add(Calendar.MINUTE, 5);
+		calendar.add(Calendar.MINUTE, 10);
 		return calendar.getTime();
 	}
 
@@ -746,6 +788,11 @@ public class SubscriberServiceImpl implements SubscriberService {
 		unit.setUnitPic3(request.getUnitPic3());
 		unit.setUnitPic4(request.getUnitPic4());
 		unit.setUnitPic5(request.getUnitPic5());
+		unit.setRentMonth(request.getRentMonth());
+		unit.setRentYear(request.getRentYear());
+		unit.setEbConnNo(request.getEbConnNo());
+		unit.setWaterConnNo(request.getWaterConnNo());
+		unit.setSecurityDeposit(request.getSecurityDeposit());
 
 		unitRepository.save(unit);
 
@@ -1018,7 +1065,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	
 	public ApiResponse<Object> addTenantUnit(TenantUnitRequest request) {
-		//Tenant tenant = tenantRepository.findById(request.getTenantId()).orElse(null);
+		TenantUnit tenantUnit = new TenantUnit();
 		Tenant tenant = tenantRepository.findByTenantIdAndSubscriberId(request.getTenantId(),request.getSubscriberId());
 		
 		if (ObjectUtils.isEmpty(tenant)) {
@@ -1026,27 +1073,38 @@ public class SubscriberServiceImpl implements SubscriberService {
 			throw new BusinessException("Tenant not found with ID: " + request.getTenantId(),null);
 		}
 
-		//Unit unit = unitRepository.findById(request.getUnitId()).orElse(null);
+
 		Unit unit=unitRepository.findByUnitIdAndSubscriberId(request.getUnitId(),request.getSubscriberId());
 		if (unit == null) {
 			
 			throw new BusinessException("Unit not found with ID: " + request.getUnitId(),null);
 		}
-
-		//Parking parking = parkingRepository.findById(request.getParkingId()).orElse(null);
-		Parking parking = parkingRepository.findByParkingIdAndSubscriberId(request.getParkingId(),request.getSubscriberId());
 		
-		if (parking == null) {
+		//Checks this unit assigned for another
+		TenantUnit existingTenantUnit= tenantUnitRepository.findByUnit(unit);
+		if(existingTenantUnit!=null) {
+			logger.info("Already this Unit registered for another tenant, That tenant info :->{}",existingTenantUnit);
+			throw new BusinessException("Already this Unit registered for another tenant",null);
+		}
+		
+		//Checks this tenent having another unit;
+//		boolean tenantUnitRegistred=tenantUnitRepository.existsByTenantAndUnit(tenant, unit);
+//		if (tenantUnitRegistred) {
+//			
+//			throw new BusinessException("Already a Unit registered for this tenant",null);
+//		}
+
+		if(request.getParkingId()!=null) {
+			Parking parking = parkingRepository.findByParkingIdAndSubscriberId(request.getParkingId(),request.getSubscriberId());
 			
-			throw new BusinessException( "Parking not found with ID: " + request.getParkingId(),null);
+			if (parking == null) {
+				
+				throw new BusinessException( "Parking not found with ID: " + request.getParkingId(),null);
+			}
+			tenantUnit.setParking(parking);
 		}
 
-//		UnitKeys unitKeys = unitKeysRepository.findById(request.getUnitKeysId()).orElse(null);
-//		if (unitKeys == null) {
-//			
-//			throw new BusinessException( "Unit Keys not found with ID: " + request.getUnitKeysId(),null);
-//		}
-		
+	
 		Optional<RentPaymentModeEnum> ops=Arrays.stream(RentPaymentModeEnum.values()).filter(status -> status.getValue().equals(request.getRentPaymentMode())).findAny();
 		
 		if(!ops.isPresent()) {
@@ -1059,26 +1117,64 @@ public class SubscriberServiceImpl implements SubscriberService {
 			throw new BusinessException("Invalid RentCycle, can be any one of MONTHLY/QUARTERLY/HALFLY/YEARLY",null);
 		}
 
-		TenantUnit tenantUnit = new TenantUnit();
+		
 		tenantUnit.setTenant(tenant);
 		tenantUnit.setUnit(unit);
-		tenantUnit.setParking(parking);
-		//tenantUnit.setUnitKeys(unitKeys);
-		tenantUnit.setTenureFromDate(CommonUtil.getDatefromString(request.getTenureFromDate(),DATE_ddMMyyyy));
-		tenantUnit.setSecurityDeposit(request.getSecurityDeposit());
-		tenantUnit.setRent(request.getRent());
+		tenantUnit.setTenurePeriodMonth(request.getTenurePeriodMonth());
 		tenantUnit.setRentCycle(request.getRentCycle());
 		tenantUnit.setExpired(false);
 		tenantUnit.setActive(true);
 		tenantUnit.setRentPaymentMode(request.getRentPaymentMode());
 		tenantUnit.setCreatedTime(new Date());
+		tenantUnit.setCreatedBy(request.getSubscriberId());
 
 		tenantUnitRepository.save(tenantUnit);
-
-		if(tenantUnit!=null) {
+		
+		
+		TenureDetails  tenureDetails=new TenureDetails();
+		tenureDetails.setTenancyStartDate(CommonUtil.getDatefromString(request.getTenancyStartDate(),DATE_ddMMyyyy));
+		tenureDetails.setTenantUnit(tenantUnit);
+		tenureDetails.setTenancyEndDate(calculateTenancyEndDate(request.getTenancyStartDate(),request.getTenurePeriodMonth()));
+		tenureDetails.setCreatedBy(request.getSubscriberId());
+		
+		tenureDetailsRepository.save(tenureDetails);
+		
+		if(tenureDetails!=null && tenureDetails.getTenantTenureId()!=null) {
 			TenantUnitResponse tenantUnitResp=new TenantUnitResponse();
 			BeanUtils.copyProperties(tenantUnit, tenantUnitResp);
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, tenantUnitResp, null, null);
+		}
+		return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
+	}
+
+
+	private Date calculateTenancyEndDate(String tenancyStartDate, Integer tenurePeriodMonth) {
+		LocalDate tenStartDate=CommonUtil.getLocalDatefromString(tenancyStartDate, CommonConstants.DATE_ddMMyyyy);
+		LocalDate tenEndDate=tenStartDate.plusMonths(tenurePeriodMonth);
+		return CommonUtil.getDatefromLocalDate(tenEndDate);
+	}
+
+
+	@Override
+	public ApiResponse<Object> addDepartment(@Valid DepartmentRequest request) {
+		
+		if (departmentMasRepository.findByDeptNameAndSubscriberId(request.getDeptName(),request.getSubscriberId())!=null) {
+			throw new BusinessException("Dept name already exists.",null);
+		}
+		Optional<Subscriber> subscriberOptional = subscriberRepository.findById(request.getSubscriberId());
+		
+		Subscriber subscriber = subscriberOptional.get();
+
+		DepartmentMaster deptMas = new DepartmentMaster();
+		deptMas.setDeptName(request.getDeptName());
+		deptMas.setActive(INT_ONE_YES);
+		deptMas.setSubscriber(subscriber);
+
+		departmentMasRepository.save(deptMas);
+		if(deptMas!=null) {
+			DeptMasResponse deptMasResp=new DeptMasResponse();
+			BeanUtils.copyProperties(deptMas, deptMasResp);
+			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, deptMasResp, null, null);
 		}
 		return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
 	}

@@ -28,6 +28,7 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.Element;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.tomcat.util.json.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -48,29 +49,7 @@ public class CommonUtil {
 	
 	public static ZoneId ZONE_DUBAI = ZoneId.of( "Asia/Dubai" );
 	
-//	@Autowired
-//	private UserRepository userRepository;
-//	
-//	public Integer getSubscriberIdfromAuth( Authentication auth) {
-//		User user=null;
-//		Integer subscriberId=0;
-//		UserDetailsImpl userPrincipal = (UserDetailsImpl)auth.getPrincipal();
-//		Optional<User> userOp=userRepository.findByEmail(userPrincipal.getUsername());
-//		if(userOp.isPresent()) {
-//	     	user=userOp.get();
-//	    	if(user!=null && user.getRoles()!=null) {
-//	    		Set <Role> roles=user.getRoles();
-//	    		for(Role role:roles) {
-//	    			if(role.getName().toString().equals(RoleEnum.ROLE_MGT_ADMIN.getName())) {
-//	    				subscriberId=user.getSubscriber().getSubscriberId();
-//	    				break;
-//	    			}
-//	    		}
-//	    		
-//	    	}
-//	    }
-//		return subscriberId;
-//	}
+
 	
 	public static String getStringValue(String fieldName) {
 		String result = "";
@@ -121,6 +100,20 @@ public class CommonUtil {
 		}
 		return null;
 	}
+	
+	public static Date getDatefromLocalDate(LocalDate localDate) {
+		return  Date.from(localDate.atStartOfDay(ZONE_DUBAI).toInstant());
+	}
+//	public static LocalDate getLocalDatefromDate(Date date,String datePattern) {
+//		if(StringUtils.isBlank(datePattern)) {
+//			datePattern=CommonConstants.DATE_ddMMyyyy;
+//		}
+//		SimpleDateFormat sdf = new SimpleDateFormat(datePattern, Locale.ENGLISH);
+//		Date dateOb=sdf.parse(date);
+//		return  Date.from(localDate.atStartOfDay(ZONE_DUBAI).toInstant());
+//	}
+	
+	
 	public static String getFormattedDate(Object dateToFormat) {
 		String strDate = null;
 		try {

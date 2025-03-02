@@ -5,16 +5,18 @@ import javax.validation.constraints.NotEmpty;
 public class DepartmentRequest {
 
 	@NotEmpty(message = "departmentName must not be empty and null")
-	private String departmentName;
+	private String deptName;
 
 	private Integer subscriberId;
 
-	public String getDepartmentName() {
-		return departmentName;
+	
+
+	public String getDeptName() {
+		return deptName;
 	}
 
-	public void setDepartmentName(String departmentName) {
-		this.departmentName = departmentName;
+	public void setDeptName(String deptName) {
+		this.deptName = deptName;
 	}
 
 	public Integer getSubscriberId() {

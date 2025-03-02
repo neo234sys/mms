@@ -6,6 +6,8 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -36,11 +38,16 @@ import com.sbmtech.mms.repository.UserRepository;
 import com.sbmtech.mms.security.jwt.JwtUtils;
 import com.sbmtech.mms.security.services.UserDetailsImpl;
 import com.sbmtech.mms.service.SubscriberService;
+import com.sbmtech.mms.service.impl.SubscriberServiceImpl;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/subs")
 public class SubscriberController {
+	
+	
+	private static final Logger logger = LogManager.getLogger(SubscriberController.class);
+	
 	@Autowired
 	AuthenticationManager authenticationManager;
 
@@ -84,9 +91,11 @@ public class SubscriberController {
 				boolean isOTPVerified=false;
 				boolean isSuspended=false;
 				if(subscriber != null) {
+					logger.info("authenticateUser = {} ",subscriber);
 					jwtResponse = new JwtResponse(jwt, userDetails.getUserId(), userDetails.getUsername(),
 							userDetails.getMobileNo(), roles);
 					if ( subscriber.getOtpVerified() == 1 ) {
+						
 						isOTPVerified=true;
 					}else {
 						throw new BusinessException("OTP not verified. Please verify your OTP to login",null);
@@ -101,6 +110,7 @@ public class SubscriberController {
 
 				
 			} else {
+				logger.info("User not found with email:{} ",loginRequest.getEmail());
 				throw new BusinessException("User not found with email: " + loginRequest.getEmail(),null);
 			}
 
@@ -112,7 +122,6 @@ public class SubscriberController {
 			throw new BusinessException(e.getMessage(),e);
 			
 		}catch (Exception e) {
-			e.printStackTrace();
 			throw new BusinessException("An error occurred during authentication!",e);
 			
 		}

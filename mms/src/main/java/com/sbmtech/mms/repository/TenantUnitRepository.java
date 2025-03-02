@@ -5,13 +5,17 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.sbmtech.mms.models.KeyMaster;
+import com.sbmtech.mms.models.Tenant;
 import com.sbmtech.mms.models.TenantUnit;
+import com.sbmtech.mms.models.Unit;
 
 @Repository
 public interface TenantUnitRepository extends JpaRepository<TenantUnit, Integer> {
 	
-	@Query(value="SELECT B from KeyMaster B where B.keyName=?1 and B.subscriber.subscriberId =?2")
-	public KeyMaster findByKeyNameAndSubscriberId(String keyName,Integer subscriberId);
+
 	
+	boolean existsByTenantAndUnit(Tenant tenant, Unit unit);
+	
+	public TenantUnit findByUnit(Unit unit);
 
 }

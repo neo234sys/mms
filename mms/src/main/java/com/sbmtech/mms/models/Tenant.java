@@ -244,4 +244,10 @@ public class Tenant {
 		this.updatedBy = updatedBy;
 	}
 
+	@Override
+	public String toString() {
+		return "Tenant [tenantId=" + tenantId + ", firstName=" + firstName + ", email=" + email + ", phoneNumber="
+				+ phoneNumber + ", emiratesId=" + emiratesId + "]";
+	}
+
 }

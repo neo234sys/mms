@@ -39,8 +39,11 @@ public class ChannelMaster implements Serializable {
 		this.channelName = channelName;
 	}
 
-	public static long getSerialversionuid() {
-		return serialVersionUID;
+	@Override
+	public String toString() {
+		return "ChannelMaster [channelId=" + channelId + ", channelName=" + channelName + "]";
 	}
+
+	
 
 }

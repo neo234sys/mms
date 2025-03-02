@@ -43,14 +43,11 @@ public class TenantUnit implements Serializable {
 	private Parking parking;
 
 
-	@Column(name = "tenure_from_date")
-	private Date tenureFromDate;
 
-	@Column(name = "security_deposit")
-	private Double securityDeposit;
-
-	@Column(name = "rent")
-	private Double rent;
+	
+	
+	@Column(name = "tenure_period_in_month")
+	private Integer tenurePeriodMonth;
 
 	
 	@Column(name = "rent_cycle")
@@ -113,29 +110,6 @@ public class TenantUnit implements Serializable {
 	}
 
 
-	public Date getTenureFromDate() {
-		return tenureFromDate;
-	}
-
-	public void setTenureFromDate(Date tenureFromDate) {
-		this.tenureFromDate = tenureFromDate;
-	}
-
-	public Double getSecurityDeposit() {
-		return securityDeposit;
-	}
-
-	public void setSecurityDeposit(Double securityDeposit) {
-		this.securityDeposit = securityDeposit;
-	}
-
-	public Double getRent() {
-		return rent;
-	}
-
-	public void setRent(Double rent) {
-		this.rent = rent;
-	}
 
 	public String getRentCycle() {
 		return rentCycle;
@@ -204,5 +178,22 @@ public class TenantUnit implements Serializable {
 	public static long getSerialversionuid() {
 		return serialVersionUID;
 	}
+
+	public Integer getTenurePeriodMonth() {
+		return tenurePeriodMonth;
+	}
+
+	public void setTenurePeriodMonth(Integer tenurePeriodMonth) {
+		this.tenurePeriodMonth = tenurePeriodMonth;
+	}
+
+	@Override
+	public String toString() {
+		return "TenantUnit [tenantUnitId=" + tenantUnitId + ", tenant=" + tenant + ", unit=" + unit
+				+ ", tenurePeriodMonth=" + tenurePeriodMonth + ", rentCycle=" + rentCycle + ", expired=" + expired
+				+ ", active=" + active + "]";
+	}
+	
+	
 
 }

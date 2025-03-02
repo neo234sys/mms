@@ -58,7 +58,7 @@ public class ManagementController {
 	
 	@PostMapping("/addAdditionalDetails")
 	public ResponseEntity<?> addAdditionalDetails(@Valid @RequestBody AdditionalDetailsRequest request,
-			@CurrentSecurityContext(expression = "authentication")  Authentication auth) {
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth) throws Exception{
 		
 		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
 		request.setSubscriberId(subscriberId);
@@ -67,7 +67,7 @@ public class ManagementController {
 
 	@PostMapping("/createSubscription")
 	public ResponseEntity<?> createSubscription(@Valid @RequestBody SubscriptionRequest request,
-			@CurrentSecurityContext(expression = "authentication")  Authentication auth) {
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth)throws Exception {
 		
 		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
 		request.setSubscriberId(subscriberId);
@@ -76,7 +76,7 @@ public class ManagementController {
 
 	@GetMapping("/subscriptionPlans")
 	public ResponseEntity<?> getAllSubscriptionPlans(
-			@CurrentSecurityContext(expression = "authentication")  Authentication auth) {
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth)throws Exception {
 		
 		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
 		
@@ -107,7 +107,7 @@ public class ManagementController {
 
 	@PostMapping("/addSubscriberLocation")
 	public ResponseEntity<?> addSubscriberLocation(@Valid @RequestBody SubscriberLocationRequest request,
-			@CurrentSecurityContext(expression = "authentication")  Authentication auth) {
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth)throws Exception{
 		
 		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
 		request.setSubscriberId(subscriberId);
@@ -116,7 +116,7 @@ public class ManagementController {
 
 	@PostMapping("/addCommunity")
 	public ResponseEntity<?> addCommunity(@Valid @RequestBody CommunityRequest request,
-			@CurrentSecurityContext(expression = "authentication")  Authentication auth) {
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth) throws Exception{
 		
 		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
 		request.setSubscriberId(subscriberId);
@@ -125,7 +125,7 @@ public class ManagementController {
 
 	@PostMapping("/addBuilding")
 	public ResponseEntity<?> addBuilding(@Valid @RequestBody BuildingRequest request,
-			@CurrentSecurityContext(expression = "authentication")  Authentication auth) {
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth)throws Exception {
 		
 		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
 		request.setSubscriberId(subscriberId);
@@ -134,7 +134,7 @@ public class ManagementController {
 
 	@PostMapping("/addFloor")
 	public ResponseEntity<?> addFloor(@Valid @RequestBody FloorRequest request,
-			@CurrentSecurityContext(expression = "authentication")  Authentication auth) {
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth)throws Exception {
 		
 		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
 		//request.setSubscriberId(subscriberId);
@@ -143,7 +143,7 @@ public class ManagementController {
 
 	@PostMapping("/addUnit")
 	public ResponseEntity<?> addUnit(@Valid @RequestBody UnitRequest request,
-			@CurrentSecurityContext(expression = "authentication")  Authentication auth) {
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth)throws Exception {
 		
 		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
 		//request.setSubscriberId(subscriberId);
@@ -159,7 +159,7 @@ public class ManagementController {
 
 	@PostMapping("/addParkingZone")
 	public ResponseEntity<?> addParkingZone(@Valid @RequestBody ParkingZoneRequest request,
-			@CurrentSecurityContext(expression = "authentication")  Authentication auth) {
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth)throws Exception {
 		
 		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
 		request.setSubscriberId(subscriberId);
@@ -168,7 +168,7 @@ public class ManagementController {
 
 	@PostMapping("/addParking")
 	public ResponseEntity<?> addParking(@Valid @RequestBody ParkingRequest request,
-			@CurrentSecurityContext(expression = "authentication")  Authentication auth) {
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth)throws Exception {
 		
 		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
 		request.setSubscriberId(subscriberId);
@@ -177,7 +177,7 @@ public class ManagementController {
 
 	@PostMapping("/addKey")
 	public ResponseEntity<?> addKey(@Valid @RequestBody KeyMasterRequest request,
-			@CurrentSecurityContext(expression = "authentication")  Authentication auth) {
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth)throws Exception {
 		
 		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
 		request.setSubscriberId(subscriberId);
@@ -186,7 +186,7 @@ public class ManagementController {
 
 	@PostMapping("/addUnitKey")
 	public ResponseEntity<?> addUnitKey(@Valid @RequestBody UnitKeysRequest request,
-			@CurrentSecurityContext(expression = "authentication")  Authentication auth) {
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth)throws Exception {
 		
 		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
 		request.setSubscriberId(subscriberId);
@@ -195,7 +195,7 @@ public class ManagementController {
 
 	@PostMapping("/addTenantUnit")
 	public ResponseEntity<?> addTenantUnit(@Valid @RequestBody TenantUnitRequest request,
-			@CurrentSecurityContext(expression = "authentication")  Authentication auth) {
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth)throws Exception{
 		
 		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
 		request.setSubscriberId(subscriberId);
@@ -206,7 +206,7 @@ public class ManagementController {
 	
 	@PostMapping("/addDepartment")
 	public ResponseEntity<?> addDepartment(@Valid @RequestBody DepartmentRequest request,
-			@CurrentSecurityContext(expression = "authentication")  Authentication auth) {
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth)throws Exception {
 		
 		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
 		request.setSubscriberId(subscriberId);

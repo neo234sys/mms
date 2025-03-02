@@ -1,5 +1,7 @@
 package com.sbmtech.mms.payload.request;
 
+import javax.persistence.Column;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 
 
@@ -26,6 +28,23 @@ public class UnitRequest {
 	private byte[] unitPic3;
 	private byte[] unitPic4;
 	private byte[] unitPic5;
+	
+	
+
+	@Min(value=1, message="min value 1")
+	private Double rentMonth;
+	
+
+	@Min(value=1, message="min value 1")
+	private Double rentYear;
+	
+
+	@Min(value=1, message="min value 1")
+	private Double securityDeposit;
+	
+	
+	private String waterConnNo;
+	private String ebConnNo;
 
 	public Integer getBuildingId() {
 		return buildingId;
@@ -137,6 +156,46 @@ public class UnitRequest {
 
 	public void setUnitPic5(byte[] unitPic5) {
 		this.unitPic5 = unitPic5;
+	}
+
+	public Double getRentMonth() {
+		return rentMonth;
+	}
+
+	public void setRentMonth(Double rentMonth) {
+		this.rentMonth = rentMonth;
+	}
+
+	public Double getRentYear() {
+		return rentYear;
+	}
+
+	public void setRentYear(Double rentYear) {
+		this.rentYear = rentYear;
+	}
+
+	public Double getSecurityDeposit() {
+		return securityDeposit;
+	}
+
+	public void setSecurityDeposit(Double securityDeposit) {
+		this.securityDeposit = securityDeposit;
+	}
+
+	public String getWaterConnNo() {
+		return waterConnNo;
+	}
+
+	public void setWaterConnNo(String waterConnNo) {
+		this.waterConnNo = waterConnNo;
+	}
+
+	public String getEbConnNo() {
+		return ebConnNo;
+	}
+
+	public void setEbConnNo(String ebConnNo) {
+		this.ebConnNo = ebConnNo;
 	}
 
 }

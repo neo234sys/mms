@@ -61,6 +61,21 @@ public class Unit implements Serializable {
 	@Column(name = "is_under_maintenance", columnDefinition = "TINYINT(1) DEFAULT 0")
 	private Boolean isUnderMaintenance;
 
+	@Column(name = "rent_month")
+	private Double rentMonth;
+	
+	@Column(name = "rent_year")
+	private Double rentYear;
+	
+	@Column(name = "security_deposit")
+	private Double securityDeposit;
+	
+	@Column(name = "water_conn_no")
+	private String waterConnNo;
+	
+	@Column(name = "eb_conn_no")
+	private String ebConnNo;
+	
 	@Lob
 	@Column(name = "unit_main_pic1")
 	private byte[] unitMainPic1;
@@ -225,8 +240,51 @@ public class Unit implements Serializable {
 		this.updatedTime = updatedTime;
 	}
 
-	public static long getSerialversionuid() {
-		return serialVersionUID;
+	public Double getRentMonth() {
+		return rentMonth;
 	}
+
+	public void setRentMonth(Double rentMonth) {
+		this.rentMonth = rentMonth;
+	}
+
+	public Double getRentYear() {
+		return rentYear;
+	}
+
+	public void setRentYear(Double rentYear) {
+		this.rentYear = rentYear;
+	}
+
+	public Double getSecurityDeposit() {
+		return securityDeposit;
+	}
+
+	public void setSecurityDeposit(Double securityDeposit) {
+		this.securityDeposit = securityDeposit;
+	}
+
+	public String getWaterConnNo() {
+		return waterConnNo;
+	}
+
+	public void setWaterConnNo(String waterConnNo) {
+		this.waterConnNo = waterConnNo;
+	}
+
+	public String getEbConnNo() {
+		return ebConnNo;
+	}
+
+	public void setEbConnNo(String ebConnNo) {
+		this.ebConnNo = ebConnNo;
+	}
+
+	@Override
+	public String toString() {
+		return "Unit [unitId=" + unitId + ", building=" + building + ", floor=" + floor + ", unitName=" + unitName
+				+ ", unitType=" + unitType + "]";
+	}
+	
 
 }

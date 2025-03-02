@@ -11,4 +11,6 @@ public interface TenantRepository extends JpaRepository<Tenant, Integer> {
 			+ " where T.tenantId=?1 and U.subscriber.subscriberId =?2")
 	public Tenant findByTenantIdAndSubscriberId(Integer unitId,Integer subscriberId);
 	
+	
+	
 }

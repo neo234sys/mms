@@ -33,7 +33,7 @@ import com.sbmtech.mms.payload.response.SubscriptionPlans;
 
 public interface SubscriberService {
 	
-	public Integer getSubscriberIdfromAuth( Authentication auth);
+	public Integer getSubscriberIdfromAuth( Authentication auth)throws Exception;
 	
 	public ApiResponse<String> createSubscriber(SubscriberRequest request) throws Exception;
 

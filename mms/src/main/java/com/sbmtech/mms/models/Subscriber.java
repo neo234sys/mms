@@ -226,8 +226,15 @@ public class Subscriber implements Serializable {
 		this.channelMaster = channelMaster;
 	}
 
-	public static long getSerialversionuid() {
-		return serialVersionUID;
+	@Override
+	public String toString() {
+		return "Subscriber [subscriberId=" + subscriberId + ", subscriberName=" + subscriberName + ", otpVerified="
+				+ otpVerified + ", createdDate=" + createdDate + ", active=" + active + ", channelMaster="
+				+ channelMaster + "]";
 	}
+
+	
+	
+	
 
 }
