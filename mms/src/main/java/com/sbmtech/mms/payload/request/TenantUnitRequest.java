@@ -2,10 +2,11 @@ package com.sbmtech.mms.payload.request;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 
 import com.sbmtech.mms.validator.ValidDateDDMMYYYY;
 import com.sbmtech.mms.validator.ValidFutureDate;
-import com.sbmtech.mms.validator.ValidSubscriberlId;
 
 public class TenantUnitRequest {
 
@@ -39,6 +40,11 @@ public class TenantUnitRequest {
 	@ValidDateDDMMYYYY
 	@ValidFutureDate
 	private String tenancyStartDate;
+	
+	@NotEmpty(message = "reserved should not be empty")
+    @Pattern(regexp = "^true$|^false$", message = "reserved: true or false")
+    private String reserved;
+	
 	
 	//@ValidSubscriberlId
 	private Integer subscriberId;
@@ -126,6 +132,16 @@ public class TenantUnitRequest {
 	public void setTenancyStartDate(String tenancyStartDate) {
 		this.tenancyStartDate = tenancyStartDate;
 	}
+
+	public String getReserved() {
+		return reserved;
+	}
+
+	public void setReserved(String reserved) {
+		this.reserved = reserved;
+	}
+
+	
 	
 	
 

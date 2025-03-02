@@ -32,7 +32,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.sbmtech.mms.config.VelocityEngineConfig;
 import com.sbmtech.mms.constant.CommonConstants;
 import com.sbmtech.mms.constant.SubscriptionStatus;
 import com.sbmtech.mms.dto.NotifEmailDTO;
@@ -51,6 +50,7 @@ import com.sbmtech.mms.models.Parking;
 import com.sbmtech.mms.models.ParkingTypeEnum;
 import com.sbmtech.mms.models.ParkingZone;
 import com.sbmtech.mms.models.PaymentMethod;
+import com.sbmtech.mms.models.ProductConfig;
 import com.sbmtech.mms.models.RentCycleEnum;
 import com.sbmtech.mms.models.RentPaymentModeEnum;
 import com.sbmtech.mms.models.Role;
@@ -66,6 +66,7 @@ import com.sbmtech.mms.models.TenantUnit;
 import com.sbmtech.mms.models.TenureDetails;
 import com.sbmtech.mms.models.Unit;
 import com.sbmtech.mms.models.UnitKeys;
+import com.sbmtech.mms.models.UnitStatusEnum;
 import com.sbmtech.mms.models.UnitSubTypeEnum;
 import com.sbmtech.mms.models.UnitTypeEnum;
 import com.sbmtech.mms.models.User;
@@ -114,6 +115,7 @@ import com.sbmtech.mms.repository.KeyMasterRepository;
 import com.sbmtech.mms.repository.OtpRepository;
 import com.sbmtech.mms.repository.ParkingRepository;
 import com.sbmtech.mms.repository.ParkingZoneRepository;
+import com.sbmtech.mms.repository.ProductConfigRepository;
 import com.sbmtech.mms.repository.RoleRepository;
 import com.sbmtech.mms.repository.StateRepository;
 import com.sbmtech.mms.repository.SubscriberLocationRepository;
@@ -225,6 +227,9 @@ public class SubscriberServiceImpl implements SubscriberService {
 	
 	@Autowired
 	private DepartmentMasRepository departmentMasRepository;
+	
+	@Autowired
+	private ProductConfigRepository productConfigRepository;
 	
 	
 	
@@ -781,8 +786,8 @@ public class SubscriberServiceImpl implements SubscriberService {
 		unit.setUnitSubType(request.getUnitSubType());
 		unit.setSize(request.getSize());
 		unit.setHasBalcony(request.getHasBalcony());
-		unit.setIsOccupied(request.getIsOccupied());
-		unit.setIsUnderMaintenance(request.getIsUnderMaintenance());
+		unit.setStatus(UnitStatusEnum.VACANT.getValue());
+		
 		unit.setUnitMainPic1(request.getUnitMainPic1());
 		unit.setUnitPic2(request.getUnitPic2());
 		unit.setUnitPic3(request.getUnitPic3());
@@ -1082,18 +1087,14 @@ public class SubscriberServiceImpl implements SubscriberService {
 		
 		//Checks this unit assigned for another
 		TenantUnit existingTenantUnit= tenantUnitRepository.findByUnit(unit);
-		if(existingTenantUnit!=null) {
-			logger.info("Already this Unit registered for another tenant, That tenant info :->{}",existingTenantUnit);
-			throw new BusinessException("Already this Unit registered for another tenant",null);
+		if(existingTenantUnit!=null && ( existingTenantUnit.getUnit().getStatus().equals(UnitStatusEnum.OCCUPIED.toString())
+				|| existingTenantUnit.getUnit().getStatus().equals(UnitStatusEnum.RESERVED .toString()))) {
+			logger.info("Already this Unit registered/reserved for another tenant,unit id->{}", existingTenantUnit.getUnit().getUnitId());
+			throw new BusinessException("Already this Unit registered / reserved for another tenant",null);
 		}
 		
-		//Checks this tenent having another unit;
-//		boolean tenantUnitRegistred=tenantUnitRepository.existsByTenantAndUnit(tenant, unit);
-//		if (tenantUnitRegistred) {
-//			
-//			throw new BusinessException("Already a Unit registered for this tenant",null);
-//		}
-
+		
+		
 		if(request.getParkingId()!=null) {
 			Parking parking = parkingRepository.findByParkingIdAndSubscriberId(request.getParkingId(),request.getSubscriberId());
 			
@@ -1117,7 +1118,11 @@ public class SubscriberServiceImpl implements SubscriberService {
 			throw new BusinessException("Invalid RentCycle, can be any one of MONTHLY/QUARTERLY/HALFLY/YEARLY",null);
 		}
 
-		
+		if( Boolean.valueOf(request.getReserved())) {
+			unit.setStatus(UnitStatusEnum.RESERVED.toString());
+		}else {
+			unit.setStatus(UnitStatusEnum.OCCUPIED.toString());
+		}
 		tenantUnit.setTenant(tenant);
 		tenantUnit.setUnit(unit);
 		tenantUnit.setTenurePeriodMonth(request.getTenurePeriodMonth());
@@ -1134,7 +1139,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		TenureDetails  tenureDetails=new TenureDetails();
 		tenureDetails.setTenancyStartDate(CommonUtil.getDatefromString(request.getTenancyStartDate(),DATE_ddMMyyyy));
 		tenureDetails.setTenantUnit(tenantUnit);
-		tenureDetails.setTenancyEndDate(calculateTenancyEndDate(request.getTenancyStartDate(),request.getTenurePeriodMonth()));
+		tenureDetails.setTenancyEndDate(calculateTenancyEndDate(request));
 		tenureDetails.setCreatedBy(request.getSubscriberId());
 		
 		tenureDetailsRepository.save(tenureDetails);
@@ -1148,10 +1153,17 @@ public class SubscriberServiceImpl implements SubscriberService {
 	}
 
 
-	private Date calculateTenancyEndDate(String tenancyStartDate, Integer tenurePeriodMonth) {
-		LocalDate tenStartDate=CommonUtil.getLocalDatefromString(tenancyStartDate, CommonConstants.DATE_ddMMyyyy);
-		LocalDate tenEndDate=tenStartDate.plusMonths(tenurePeriodMonth);
-		return CommonUtil.getDatefromLocalDate(tenEndDate);
+	private Date calculateTenancyEndDate(TenantUnitRequest request) {
+		if(Boolean.valueOf(request.getReserved())){
+			ProductConfig pc=productConfigRepository.findByCofigNameAndSubscriberId("unit.reserve.days",request.getSubscriberId());
+			LocalDate tenStartDate=CommonUtil.getLocalDatefromString(CommonUtil.getCurrentDate(), CommonConstants.DATE_ddMMyyyy);
+			LocalDate tenEndDate=tenStartDate.plusDays(CommonUtil.getLongValofObject(pc.getConfigValue()));
+			return CommonUtil.getDatefromLocalDate(tenEndDate);
+		}else {
+			LocalDate tenStartDate=CommonUtil.getLocalDatefromString(request.getTenancyStartDate(), CommonConstants.DATE_ddMMyyyy);
+			LocalDate tenEndDate=tenStartDate.plusMonths(request.getTenurePeriodMonth());
+			return CommonUtil.getDatefromLocalDate(tenEndDate);
+		}
 	}
 
 

@@ -55,11 +55,10 @@ public class Unit implements Serializable {
 	@Column(name = "has_balcony")
 	private Boolean hasBalcony;
 
-	@Column(name = "is_occupied", columnDefinition = "TINYINT(1) DEFAULT 0")
-	private Boolean isOccupied;
+	@Column(name = "status")
+	private String status;   //VACANT,OCCUPIED,UNDER_MAINTAINANCE, RESERVED
 
-	@Column(name = "is_under_maintenance", columnDefinition = "TINYINT(1) DEFAULT 0")
-	private Boolean isUnderMaintenance;
+	
 
 	@Column(name = "rent_month")
 	private Double rentMonth;
@@ -168,20 +167,13 @@ public class Unit implements Serializable {
 		this.hasBalcony = hasBalcony;
 	}
 
-	public Boolean getIsOccupied() {
-		return isOccupied;
+	
+	public String getStatus() {
+		return status;
 	}
 
-	public void setIsOccupied(Boolean isOccupied) {
-		this.isOccupied = isOccupied;
-	}
-
-	public Boolean getIsUnderMaintenance() {
-		return isUnderMaintenance;
-	}
-
-	public void setIsUnderMaintenance(Boolean isUnderMaintenance) {
-		this.isUnderMaintenance = isUnderMaintenance;
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 	public byte[] getUnitMainPic1() {
