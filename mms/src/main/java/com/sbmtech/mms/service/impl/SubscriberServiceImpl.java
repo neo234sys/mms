@@ -1086,14 +1086,13 @@ public class SubscriberServiceImpl implements SubscriberService {
 			throw new BusinessException("Unit not found with ID: " + request.getUnitId(),null);
 		}
 		
-		//Checks this unit assigned for another
-		TenantUnit existingTenantUnit= tenantUnitRepository.findByUnit(unit);
-		if(existingTenantUnit!=null && ( existingTenantUnit.getUnit().getStatus().equals(UnitStatusEnum.OCCUPIED.toString())
-				|| existingTenantUnit.getUnit().getStatus().equals(UnitStatusEnum.RESERVED .toString()))) {
-			logger.info("Already this Unit registered/reserved for another tenant,unit id->{}", existingTenantUnit.getUnit().getUnitId());
+
+		
+		if(unit.getStatus().equals(UnitStatusEnum.OCCUPIED.toString()) ||
+				unit.getStatus().equals(UnitStatusEnum.RESERVED.toString())) {
+			logger.info("Already this Unit registered/reserved for another tenant,unit id->{}", unit.getUnitId());
 			throw new BusinessException("Already this Unit registered / reserved for another tenant",null);
 		}
-		
 		
 		
 		if(request.getParkingId()!=null) {
@@ -1119,11 +1118,9 @@ public class SubscriberServiceImpl implements SubscriberService {
 			throw new BusinessException("Invalid RentCycle, can be any one of MONTHLY/QUARTERLY/HALFLY/YEARLY",null);
 		}
 
-		if( Boolean.valueOf(request.getReserved())) {
-			unit.setStatus(UnitStatusEnum.RESERVED.toString());
-		}else {
-			unit.setStatus(UnitStatusEnum.OCCUPIED.toString());
-		}
+		
+		unit.setStatus(UnitStatusEnum.OCCUPIED.toString());
+		
 		tenantUnit.setTenant(tenant);
 		tenantUnit.setUnit(unit);
 		tenantUnit.setTenurePeriodMonth(request.getTenurePeriodMonth());
@@ -1155,16 +1152,11 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 
 	private Date calculateTenancyEndDate(TenantUnitRequest request) {
-		if(Boolean.valueOf(request.getReserved())){
-			ProductConfig pc=productConfigRepository.findByCofigNameAndSubscriberId("unit.reserve.days",request.getSubscriberId());
-			LocalDate tenStartDate=CommonUtil.getLocalDatefromString(CommonUtil.getCurrentDate(), CommonConstants.DATE_ddMMyyyy);
-			LocalDate tenEndDate=tenStartDate.plusDays(CommonUtil.getLongValofObject(pc.getConfigValue()));
-			return CommonUtil.getDatefromLocalDate(tenEndDate);
-		}else {
-			LocalDate tenStartDate=CommonUtil.getLocalDatefromString(request.getTenancyStartDate(), CommonConstants.DATE_ddMMyyyy);
-			LocalDate tenEndDate=tenStartDate.plusMonths(request.getTenurePeriodMonth());
-			return CommonUtil.getDatefromLocalDate(tenEndDate);
-		}
+
+		LocalDate tenStartDate=CommonUtil.getLocalDatefromString(request.getTenancyStartDate(), CommonConstants.DATE_ddMMyyyy);
+		LocalDate tenEndDate=tenStartDate.plusMonths(request.getTenurePeriodMonth());
+		return CommonUtil.getDatefromLocalDate(tenEndDate);
+
 	}
 
 

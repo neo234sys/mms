@@ -41,9 +41,9 @@ public class TenantUnitRequest {
 	@ValidFutureDate
 	private String tenancyStartDate;
 	
-	@NotEmpty(message = "reserved should not be empty")
-    @Pattern(regexp = "^true$|^false$", message = "reserved: true or false")
-    private String reserved;
+//	@NotEmpty(message = "reserved should not be empty")
+//    @Pattern(regexp = "^true$|^false$", message = "reserved: true or false")
+//    private String reserved;
 	
 	
 	//@ValidSubscriberlId
@@ -133,13 +133,13 @@ public class TenantUnitRequest {
 		this.tenancyStartDate = tenancyStartDate;
 	}
 
-	public String getReserved() {
-		return reserved;
-	}
-
-	public void setReserved(String reserved) {
-		this.reserved = reserved;
-	}
+//	public String getReserved() {
+//		return reserved;
+//	}
+//
+//	public void setReserved(String reserved) {
+//		this.reserved = reserved;
+//	}
 
 	
 	
