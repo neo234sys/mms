@@ -14,8 +14,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -140,7 +142,7 @@ import com.sbmtech.mms.util.CommonUtil;
 @Service
 @Transactional
 public class SubscriberServiceImpl implements SubscriberService {
-	
+
 	private static final Logger logger = LogManager.getLogger(SubscriberServiceImpl.class);
 
 	@Autowired
@@ -187,7 +189,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	@Autowired
 	private SubscriberLocationRepository subscriberLocationRepository;
-	
+
 	@Autowired
 	private SubscriberLocationRepositoryCustom subscriberLocationRepoCustom;
 
@@ -220,57 +222,52 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	@Autowired
 	private TenantUnitRepository tenantUnitRepository;
-	
+
 	@Autowired
 	private TenureDetailsRepository tenureDetailsRepository;
-	
-	
-	
+
 	@Autowired
 	private DepartmentMasRepository departmentMasRepository;
-	
+
 	@Autowired
 	private ProductConfigRepository productConfigRepository;
-	
-	
-	
+
 	@Override
-	public Integer getSubscriberIdfromAuth( Authentication auth)throws Exception {
-		User user=null;
-		Integer subscriberId=null;
-		UserDetailsImpl userPrincipal = (UserDetailsImpl)auth.getPrincipal();
-		Optional<User> userOp=userRepository.findByEmail(userPrincipal.getUsername());
-		if(userOp.isPresent()) {
-	     	user=userOp.get();
-	    	if(user!=null && user.getRoles()!=null) {
-	    		Set <Role> roles=user.getRoles();
-	    		for(Role role:roles) {
-	    			if(role.getName().toString().equals(RoleEnum.ROLE_MGT_ADMIN.getName())) {
-	    				subscriberId=user.getSubscriber().getSubscriberId();
-	    				logger.info("getSubscriberIdfromAuth subscriber->= {}",user.getSubscriber());
-	    				break;
-	    			}
-	    		}
-	    		
-	    	}
-	    }
-		if(subscriberId!=null && subscriberId.intValue()!=0) {
-			boolean subscriberlIdExists=false;
-	    	subscriberlIdExists=subscriberRepository.existsBySubscriberIdAndActive(subscriberId,1);
-	    	if(!subscriberlIdExists) {
-	    		logger.info("Subscribtion subspended for subscriberId ->:{} ",subscriberId);
-	    		throw new BusinessException("Subscribtion subspended",null);
-	    	}
-	    	
-		}else {
-			subscriberId=0;
+	public Integer getSubscriberIdfromAuth(Authentication auth) throws Exception {
+		User user = null;
+		Integer subscriberId = null;
+		UserDetailsImpl userPrincipal = (UserDetailsImpl) auth.getPrincipal();
+		Optional<User> userOp = userRepository.findByEmail(userPrincipal.getUsername());
+		if (userOp.isPresent()) {
+			user = userOp.get();
+			if (user != null && user.getRoles() != null) {
+				Set<Role> roles = user.getRoles();
+				for (Role role : roles) {
+					if (role.getName().toString().equals(RoleEnum.ROLE_MGT_ADMIN.getName())) {
+						subscriberId = user.getSubscriber().getSubscriberId();
+						logger.info("getSubscriberIdfromAuth subscriber->= {}", user.getSubscriber());
+						break;
+					}
+				}
+
+			}
+		}
+		if (subscriberId != null && subscriberId.intValue() != 0) {
+			boolean subscriberlIdExists = false;
+			subscriberlIdExists = subscriberRepository.existsBySubscriberIdAndActive(subscriberId, 1);
+			if (!subscriberlIdExists) {
+				logger.info("Subscribtion subspended for subscriberId ->:{} ", subscriberId);
+				throw new BusinessException("Subscribtion subspended", null);
+			}
+
+		} else {
+			subscriberId = 0;
 		}
 		return subscriberId;
 	}
 
-
 	@Override
-	public ApiResponse<String> createSubscriber(SubscriberRequest request) throws Exception {
+	public Map<String, Object> createSubscriber(SubscriberRequest request) throws Exception {
 
 		ChannelMaster channelMaster = channelMasterRepository.findById(request.getChannelId()).orElse(null);
 		Countries country = countriesRepository.findById(request.getNatId()).orElse(null);
@@ -279,12 +276,29 @@ public class SubscriberServiceImpl implements SubscriberService {
 				.orElseThrow(() -> new RuntimeException("Default UserTypeMaster not found"));
 
 		Subscriber existingSubscriber = subscriberRepository.findByCompanyEmail(request.getCompanyEmail());
+		Map<String, Object> response = new HashMap<>();
+
 		if (existingSubscriber != null) {
-			if (existingSubscriber.getOtpVerified() != null && existingSubscriber.getOtpVerified() == 1) {
-				logger.info("Email is already registered and OTP is verified. Cannot register again for ->:{} ",existingSubscriber);
-				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
-						"Email is already registered and OTP is verified. Cannot register again.", null,
-						existingSubscriber.getSubscriberId());
+			boolean isOTPVerified = existingSubscriber.getOtpVerified() != null
+					&& existingSubscriber.getOtpVerified() == 1;
+
+			if (isOTPVerified) {
+				response.put("responseCode", FAILURE_CODE);
+				response.put("responseDesc", FAILURE_DESC);
+				response.put("data", "Email is already registered and OTP is verified. Cannot register again.");
+				response.put("isOTPVerified", true);
+				response.put("subscriberId", existingSubscriber.getSubscriberId());
+				return response;
+			}
+
+			if (existingSubscriber.getOtpVerified() == null || existingSubscriber.getOtpVerified() == 0) {
+				response.put("responseCode", FAILURE_CODE);
+				response.put("responseDesc", FAILURE_DESC);
+				response.put("data",
+						"Email address has been already associated with a business. We have sent an OTP to verify your email address..");
+				response.put("isOTPVerified", false);
+				response.put("subscriberId", existingSubscriber.getSubscriberId());
+				return response;
 			}
 
 			Long otpCode = generateOtp();
@@ -306,12 +320,17 @@ public class SubscriberServiceImpl implements SubscriberService {
 			NotificationEmailResponseDTO resp = notificationService.sendOTPEmail(dto);
 
 			if (resp != null && resp.isEmailSent()) {
-				logger.info("OTP sent successfully to the registered email for ->:{} ",dto.getEmailTo());
-				return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "OTP sent to the registered email.", null,
-						existingSubscriber.getSubscriberId());
+				response.put("responseCode", SUCCESS_CODE);
+				response.put("responseDesc", SUCCESS_DESC);
+				response.put("data", "OTP sent to the registered email.");
+				response.put("isOTPVerified", false); // OTP is not verified yet
+				response.put("subscriberId", existingSubscriber.getSubscriberId());
+				return response;
 			} else {
-				logger.info("Failed to send OTP email for ->:{} ",dto.getEmailTo());
-				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to send OTP email.", null, null);
+				response.put("responseCode", FAILURE_CODE);
+				response.put("responseDesc", FAILURE_DESC);
+				response.put("data", "Failed to send OTP email.");
+				return response;
 			}
 		}
 
@@ -330,14 +349,16 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		try {
 			Long mobileNo = Long.parseLong(request.getCompanyMobileNo());
-			user.setMobileNo(Long.valueOf(country.getPhonecode()+mobileNo));
+			user.setMobileNo(Long.valueOf(country.getPhonecode() + mobileNo));
 		} catch (NumberFormatException e) {
-			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Invalid mobile number format.", null, subscriber.getSubscriberId());
+			response.put("responseCode", FAILURE_CODE);
+			response.put("responseDesc", FAILURE_DESC);
+			response.put("data", "Invalid mobile number format.");
+			response.put("subscriberId", subscriber.getSubscriberId());
+			return response;
 		}
 
-		user.setPassword(request.getPassword());
-		//user.setPassword(encoder.encode(request.getPassword()));
-		user.setPassword(encoder.encode("123456"));//remove this
+		user.setPassword(encoder.encode("123456")); // remove this
 		user.setActive(true);
 		user.setSubscriber(subscriber);
 		user.setUserType(userType);
@@ -366,11 +387,17 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		NotificationEmailResponseDTO resp = notificationService.sendOTPEmail(dto);
 		if (resp != null && resp.isEmailSent()) {
-			logger.info("Subscriber and user created successfully. OTP sent email for ->:{}, userId:{}, SubscriberId:{} ",dto.getEmailTo(),user.getUserId(),subscriber.getSubscriberId());
-			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Subscriber and user created successfully. OTP sent.",
-					user.getUserId(), subscriber.getSubscriberId());
+			response.put("responseCode", SUCCESS_CODE);
+			response.put("responseDesc", SUCCESS_DESC);
+			response.put("data", "Subscriber and user created successfully. OTP sent.");
+			response.put("isOTPVerified", false); // OTP is not verified yet
+			response.put("subscriberId", subscriber.getSubscriberId());
+			return response;
 		} else {
-			throw new BusinessException("Subscription Not created",null);
+			response.put("responseCode", FAILURE_CODE);
+			response.put("responseDesc", FAILURE_DESC);
+			response.put("data", "Subscription Not created.");
+			return response;
 		}
 	}
 
@@ -388,11 +415,11 @@ public class SubscriberServiceImpl implements SubscriberService {
 		Otp otp = otpRepository.findByReferenceIdAndOtpCode(request.getSubscriberId(), request.getOtpCode());
 
 		if (otp == null) {
-			throw new BusinessException("Invalid OTP code",null);
+			throw new BusinessException("Invalid OTP code", null);
 		}
 
 		if (otp.getExpiresAt().before(new Timestamp(System.currentTimeMillis()))) {
-			throw new BusinessException("OTP has expired",null);
+			throw new BusinessException("OTP has expired", null);
 		}
 
 		otp.setVerified(true);
@@ -404,9 +431,9 @@ public class SubscriberServiceImpl implements SubscriberService {
 			subscriberRepository.save(subscriber);
 		}
 
-		return new ApiResponse<String>(SUCCESS_CODE, SUCCESS_DESC,"OTP verified successfully.", null, request.getSubscriberId());
+		return new ApiResponse<String>(SUCCESS_CODE, SUCCESS_DESC, "OTP verified successfully.", null,
+				request.getSubscriberId());
 	}
-
 
 	public ApiResponse<String> resendOtp(ResendOtpRequest request) {
 		try {
@@ -421,11 +448,8 @@ public class SubscriberServiceImpl implements SubscriberService {
 			Long newOtpCode = generateOtp();
 			Timestamp expiryTime = new Timestamp(calculateOtpExpiryTime().getTime());
 
-			Otp otp = otpRepository.findByReferenceId(request.getSubscriberId());
-			if (otp == null) {
-				otp = new Otp();
-				otp.setReferenceId(request.getSubscriberId());
-			}
+			Otp otp = new Otp();
+			otp.setReferenceId(request.getSubscriberId());
 			otp.setOtpCode(newOtpCode);
 			otp.setOtpType("S");
 			otp.setCreatedAt(new Timestamp(System.currentTimeMillis()));
@@ -441,7 +465,8 @@ public class SubscriberServiceImpl implements SubscriberService {
 			NotificationEmailResponseDTO resp = notificationService.sendOTPEmail(dto);
 
 			if (resp != null && resp.isEmailSent()) {
-				return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "OTP resent successfully.", null, subscriber.getSubscriberId());
+				return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "OTP resent successfully.", null,
+						subscriber.getSubscriberId());
 			} else {
 				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to send OTP email.", null, null);
 			}
@@ -466,7 +491,6 @@ public class SubscriberServiceImpl implements SubscriberService {
 		}
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, countries, null, null);
 	}
-
 
 	public ApiResponse<String> addAdditionalDetails(AdditionalDetailsRequest request) {
 		Subscriber subscriber = subscriberRepository.findById(request.getSubscriberId())
@@ -498,27 +522,26 @@ public class SubscriberServiceImpl implements SubscriberService {
 				subscriber.getSubscriberId());
 	}
 
-	
 	public ApiResponse<String> saveSubscription(SubscriptionRequest subscriptionRequest) {
 
 		SubscriptionPlanMaster planMaster = planMasterRepository.findById(subscriptionRequest.getPlanId()).orElse(null);
 
+		Subscriptions existingSubscription = subscriptionRepository
+				.findTopBySubscriber_SubscriberIdOrderBySubscriptionIdDesc(subscriptionRequest.getSubscriberId());
 
-		Subscriptions existingSubscription = subscriptionRepository.findTopBySubscriber_SubscriberIdOrderBySubscriptionIdDesc(
-				subscriptionRequest.getSubscriberId());
-
-		if (existingSubscription != null &&( existingSubscription.getStatus().equals(SubscriptionStatus.TRIAL.toString())
-				|| existingSubscription.getStatus().equals(SubscriptionStatus.ACTIVE.toString()))
-				) {
-			throw new BusinessException("Subscriber already has a subscription with status "+existingSubscription.getStatus(),null);
+		if (existingSubscription != null
+				&& (existingSubscription.getStatus().equals(SubscriptionStatus.TRIAL.toString())
+						|| existingSubscription.getStatus().equals(SubscriptionStatus.ACTIVE.toString()))) {
+			throw new BusinessException(
+					"Subscriber already has a subscription with status " + existingSubscription.getStatus(), null);
 		}
 
 		Subscriptions subscription = new Subscriptions();
 
-		subscription.setStartDate(CommonUtil.getLocalDateTimefromString(subscriptionRequest.getStartDate(),DATE_ddMMyyyy));
+		subscription
+				.setStartDate(CommonUtil.getLocalDateTimefromString(subscriptionRequest.getStartDate(), DATE_ddMMyyyy));
 		subscription.setEndDate(subscription.getStartDate().plusDays((planMaster.getPlanDurationDays())));
-		subscription.setStatus(SubscriptionStatus.TRIAL.toString()); 
-		
+		subscription.setStatus(SubscriptionStatus.TRIAL.toString());
 
 		SubscriptionPlanMaster plan = new SubscriptionPlanMaster();
 		plan.setPlanId(subscriptionRequest.getPlanId());
@@ -539,25 +562,24 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	public ApiResponse<List<SubscriptionPlans>> getAllSubscriptionPlans() {
 		List<SubscriptionPlanMaster> plansList = planMasterRepository.findAll();
-		List<SubscriptionPlans> result = plansList.stream()
-				  .filter(e -> e.getActive()==true)
-				  .map(e -> new SubscriptionPlans(e.getPlanId(), e.getPlanName(),e.getPlanDurationDays(),e.getPlanPrice(),e.getFeatures(),e.getTrialDays()))
-				  .collect(Collectors.toList());
+		List<SubscriptionPlans> result = plansList
+				.stream().filter(e -> e.getActive() == true).map(e -> new SubscriptionPlans(e.getPlanId(),
+						e.getPlanName(), e.getPlanDurationDays(), e.getPlanPrice(), e.getFeatures(), e.getTrialDays()))
+				.collect(Collectors.toList());
 		if (result.isEmpty()) {
 			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
 		}
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, result, null, null);
 	}
 
-	
 	public ApiResponse<String> makePayment(SubscriptionPaymentRequest paymentRequest) {
 		Subscriptions subscription = subscriptionRepository
 				.findTopBySubscriber_SubscriberIdAndStatusOrderByStartDateDesc(paymentRequest.getSubscriberId(),
 						"PAYMENT_PROCEEDED");
 
 		if (subscription == null) {
-			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "No payment proceeded subscription found for this subscriber",  null,
-					null);
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
+					"No payment proceeded subscription found for this subscriber", null, null);
 		}
 
 		SubscriptionPayment payment = new SubscriptionPayment();
@@ -587,7 +609,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		List<StateResponse> responses = new ArrayList<>();
 
 		if (states.isEmpty()) {
-			throw new BusinessException("Invalid CountryId",null);
+			throw new BusinessException("Invalid CountryId", null);
 		}
 
 		for (State state : states) {
@@ -599,7 +621,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			responses.add(stateResponse);
 		}
 
-		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC,  responses, null, null);
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, responses, null, null);
 	}
 
 	public ApiResponse<List<CityResponse>> getCitiesByStateAndCountryId(Integer stateId, Integer countryId) {
@@ -607,7 +629,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		List<CityResponse> responses = new ArrayList<>();
 
 		if (cities.isEmpty()) {
-			throw new BusinessException("Invalid Country/City Id",null);
+			throw new BusinessException("Invalid Country/City Id", null);
 		}
 
 		for (City city : cities) {
@@ -621,24 +643,22 @@ public class SubscriberServiceImpl implements SubscriberService {
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, responses, null, null);
 	}
 
-	
 	public ApiResponse<Object> addSubscriberLocation(SubscriberLocationRequest request) {
 		Optional<Subscriber> subscriberOpt = subscriberRepository.findById(request.getSubscriberId());
 
-
 		Optional<Countries> countryOpt = countriesRepository.findById(request.getCountryId());
 		if (!countryOpt.isPresent()) {
-			throw new BusinessException("Country not found with id: " + request.getCountryId(),null);
+			throw new BusinessException("Country not found with id: " + request.getCountryId(), null);
 		}
 
 		Optional<State> stateOpt = stateRepository.findById(request.getStateId());
 		if (!stateOpt.isPresent()) {
-			throw new BusinessException("State not found with id: " + request.getStateId(),null);
+			throw new BusinessException("State not found with id: " + request.getStateId(), null);
 		}
 
 		Optional<City> cityOpt = cityRepository.findById(request.getCityId());
 		if (!cityOpt.isPresent()) {
-			throw new BusinessException("City not found with id: " + request.getCityId(),null);
+			throw new BusinessException("City not found with id: " + request.getCityId(), null);
 		}
 
 		Subscriber subscriber = subscriberOpt.get();
@@ -654,24 +674,24 @@ public class SubscriberServiceImpl implements SubscriberService {
 		subscriberLocation.setSubscriber(subscriber);
 
 		subscriberLocationRepository.save(subscriberLocation);
-		
-		LocationResponse locResp=new LocationResponse();
+
+		LocationResponse locResp = new LocationResponse();
 		BeanUtils.copyProperties(subscriberLocation, locResp);
 
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, locResp, null,
 				subscriberLocation.getSubscriber().getSubscriberId());
 	}
 
-	
 	public ApiResponse<Object> addCommunity(CommunityRequest request) {
 
-		SubscriberLocation location= subscriberLocationRepoCustom.findByLocationIdAndSubscriberId(request.getLocationId(),request.getSubscriberId());
+		SubscriberLocation location = subscriberLocationRepoCustom
+				.findByLocationIdAndSubscriberId(request.getLocationId(), request.getSubscriberId());
 		if (ObjectUtils.isEmpty(location)) {
-			throw new BusinessException( "Location not found with id: " + request.getLocationId(),null);
+			throw new BusinessException("Location not found with id: " + request.getLocationId(), null);
 		}
-	
+
 		Optional<Subscriber> subscriberOptional = subscriberRepository.findById(request.getSubscriberId());
-		
+
 		Subscriber subscriber = subscriberOptional.get();
 
 		Community community = new Community();
@@ -681,22 +701,21 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		communityRepository.save(community);
 
-
-		CommunityResponse commuResp=new CommunityResponse();
+		CommunityResponse commuResp = new CommunityResponse();
 		BeanUtils.copyProperties(community, commuResp);
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, commuResp, null, request.getSubscriberId());
 	}
 
-	
 	public ApiResponse<Object> addBuilding(BuildingRequest request) {
-				
-		Community community = communityRepository.findByCommunityIdAndSubscriberId(request.getCommunityId(),request.getSubscriberId());
+
+		Community community = communityRepository.findByCommunityIdAndSubscriberId(request.getCommunityId(),
+				request.getSubscriberId());
 		if (ObjectUtils.isEmpty(community)) {
-			throw new BusinessException( "Community not found with id: " + request.getCommunityId(),null);
+			throw new BusinessException("Community not found with id: " + request.getCommunityId(), null);
 		}
 
 		Optional<Subscriber> subscriberOptional = subscriberRepository.findById(request.getSubscriberId());
-		
+
 		Subscriber subscriber = subscriberOptional.get();
 
 		BuildingResponse buildingResp;
@@ -714,11 +733,11 @@ public class SubscriberServiceImpl implements SubscriberService {
 			building.setCreatedAt(new Timestamp(System.currentTimeMillis()));
 
 			buildingRepository.save(building);
-			if(building.getBuildingId()!=null) {
-				Integer noOfFloors=request.getNoOfFloors();
-				for(int i=1;i<=noOfFloors;i++) {
+			if (building.getBuildingId() != null) {
+				Integer noOfFloors = request.getNoOfFloors();
+				for (int i = 1; i <= noOfFloors; i++) {
 					Floor floor = new Floor();
-					floor.setFloorName("Floor "+i);
+					floor.setFloorName("Floor " + i);
 					floor.setBuilding(building);
 					floorRepository.save(floor);
 				}
@@ -726,17 +745,16 @@ public class SubscriberServiceImpl implements SubscriberService {
 			buildingResp = new BuildingResponse();
 			BeanUtils.copyProperties(building, buildingResp);
 		} catch (Exception e) {
-			throw new BusinessException("addBuilding failed ",e);
+			throw new BusinessException("addBuilding failed ", e);
 		}
 
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, buildingResp, null, request.getSubscriberId());
 	}
 
-
 	public ApiResponse<Object> addFloor(FloorRequest request) {
 		Optional<Building> buildingOptional = buildingRepository.findById(request.getBuildingId());
 		if (!buildingOptional.isPresent()) {
-			throw new BusinessException("Building not found with id: " + request.getBuildingId(),null);
+			throw new BusinessException("Building not found with id: " + request.getBuildingId(), null);
 		}
 		Building building = buildingOptional.get();
 
@@ -745,37 +763,37 @@ public class SubscriberServiceImpl implements SubscriberService {
 		floor.setBuilding(building);
 
 		floorRepository.save(floor);
-		
-		FloorResponse floorResp=new FloorResponse();
+
+		FloorResponse floorResp = new FloorResponse();
 		BeanUtils.copyProperties(floor, floorResp);
 
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, floorResp, null, null);
 	}
 
-	
 	public ApiResponse<Object> addUnit(UnitRequest request) {
-		
-		
-		Optional<UnitTypeEnum> op=Arrays.stream(UnitTypeEnum.values()).filter(status -> status.getValue().toString().equals(request.getUnitType())).findAny();
-		if(!op.isPresent()) {
-			throw new BusinessException("Invalid unitType, can be any one APARTMENT/VILLA/COMMERCIAL",null);
+
+		Optional<UnitTypeEnum> op = Arrays.stream(UnitTypeEnum.values())
+				.filter(status -> status.getValue().toString().equals(request.getUnitType())).findAny();
+		if (!op.isPresent()) {
+			throw new BusinessException("Invalid unitType, can be any one APARTMENT/VILLA/COMMERCIAL", null);
 		}
-			
-		Optional<UnitSubTypeEnum> ops=Arrays.stream(UnitSubTypeEnum.values()).filter(status -> status.getValue().toString().equals(request.getUnitSubType())).findAny();
-		
-		if(!ops.isPresent()) {
-			throw new BusinessException("Invalid unitSubType, can be any one STUDIO/1BHK/2BHK/3BHK",null);
+
+		Optional<UnitSubTypeEnum> ops = Arrays.stream(UnitSubTypeEnum.values())
+				.filter(status -> status.getValue().toString().equals(request.getUnitSubType())).findAny();
+
+		if (!ops.isPresent()) {
+			throw new BusinessException("Invalid unitSubType, can be any one STUDIO/1BHK/2BHK/3BHK", null);
 		}
-				
+
 		Optional<Building> buildingOptional = buildingRepository.findById(request.getBuildingId());
 		if (!buildingOptional.isPresent()) {
-			throw new BusinessException("Building not found with id: " + request.getBuildingId(),null);
+			throw new BusinessException("Building not found with id: " + request.getBuildingId(), null);
 		}
 		Building building = buildingOptional.get();
 
 		Optional<Floor> floorOptional = floorRepository.findById(request.getFloorId());
 		if (!floorOptional.isPresent()) {
-			throw new BusinessException( "Floor not found with id: " + request.getFloorId(),null);
+			throw new BusinessException("Floor not found with id: " + request.getFloorId(), null);
 		}
 		Floor floor = floorOptional.get();
 
@@ -788,7 +806,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		unit.setSize(request.getSize());
 		unit.setHasBalcony(request.getHasBalcony());
 		unit.setStatus(UnitStatusEnum.VACANT.getValue());
-		
+
 		unit.setUnitMainPic1(request.getUnitMainPic1());
 		unit.setUnitPic2(request.getUnitPic2());
 		unit.setUnitPic3(request.getUnitPic3());
@@ -802,121 +820,115 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		unitRepository.save(unit);
 
-		UnitResponse unitResp=new UnitResponse();
+		UnitResponse unitResp = new UnitResponse();
 		BeanUtils.copyProperties(unit, unitResp);
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, unitResp, null, null);
 	}
 
-	
-	public ApiResponse<String> createUserAndMergeTenant(CreateUserRequest request)throws Exception {
-		User existingUser=null;
-		User user=null;
-		boolean existingTenant=false;
-		boolean existingSubscriber=false;
-		NotificationEmailResponseDTO resp=null;
+	public ApiResponse<String> createUserAndMergeTenant(CreateUserRequest request) throws Exception {
+		User existingUser = null;
+		User user = null;
+		boolean existingTenant = false;
+		boolean existingSubscriber = false;
+		NotificationEmailResponseDTO resp = null;
 		Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
 		if (userOptional.isPresent()) {
-			existingUser=userOptional.get();
-			Set <Role> exisingRoles=existingUser.getRoles();
+			existingUser = userOptional.get();
+			Set<Role> exisingRoles = existingUser.getRoles();
 			for (Role r : exisingRoles) {
-				if(r.getRoleId()==RoleEnum.ROLE_TENANT.getValue()) {
-					existingTenant=true;
-				}else if(r.getRoleId()==RoleEnum.ROLE_MGT_SUPERVISOR.getValue()) {
-					existingSubscriber=true;
+				if (r.getRoleId() == RoleEnum.ROLE_TENANT.getValue()) {
+					existingTenant = true;
+				} else if (r.getRoleId() == RoleEnum.ROLE_MGT_SUPERVISOR.getValue()) {
+					existingSubscriber = true;
 				}
 			}
-			
-			if(existingTenant) {
-				throw new BusinessException( "Tenant already Registered",null);
+
+			if (existingTenant) {
+				throw new BusinessException("Tenant already Registered", null);
 			}
-			
+
 		}
 		Countries nationality = countriesRepository.findById(request.getNationalityId()).orElse(null);
 
 		UserTypeMaster userType = userTypeMasterRepository.findById(UserTypeEnum.TENANT.getValue()).orElse(null);
 		if (userType == null) {
-			throw new BusinessException( "User Type not found",null);
+			throw new BusinessException("User Type not found", null);
 		}
 
 		Subscriber subscriber = subscriberRepository.findById(request.getSubscriberId()).orElse(null);
 
 		Role role = roleRepository.findById(RoleEnum.ROLE_TENANT.getValue()).orElse(null);
 		if (role == null) {
-			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, RoleEnum.ROLE_TENANT.getName()+" Role not found", null, null);
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, RoleEnum.ROLE_TENANT.getName() + " Role not found",
+					null, null);
 		}
 
-		
-		
-		
 		Tenant tenant = new Tenant();
 		tenant.setFirstName(request.getFirstName());
 		tenant.setLastName(request.getLastName());
 		tenant.setEmail(request.getEmail());
 		tenant.setPhoneNumber(request.getPhoneNumber());
-		tenant.setDateOfBirth(CommonUtil.getDatefromString(request.getDob(),DATE_ddMMyyyy));
+		tenant.setDateOfBirth(CommonUtil.getDatefromString(request.getDob(), DATE_ddMMyyyy));
 		tenant.setEmiratesId(CommonUtil.getLongValofObject(request.getEmiratesId()));
-		tenant.setEidaExpiryDate(CommonUtil.getDatefromString(request.getEidaExpiryDate(),DATE_ddMMyyyy));
+		tenant.setEidaExpiryDate(CommonUtil.getDatefromString(request.getEidaExpiryDate(), DATE_ddMMyyyy));
 		tenant.setEidaCopy(request.getEidaCopy());
 		tenant.setPassportNo(request.getPassportNo());
-		tenant.setPassportExpiryDate( CommonUtil.getDatefromString(request.getPassportExpiryDate(),DATE_ddMMyyyy) );
+		tenant.setPassportExpiryDate(CommonUtil.getDatefromString(request.getPassportExpiryDate(), DATE_ddMMyyyy));
 		tenant.setPassportCopy(request.getPassportCopy());
 		tenant.setPhoto(request.getPhoto());
 		tenant.setNationality(nationality);
 		tenant = tenantRepository.save(tenant);
-		String pwd=CommonUtil.generateRandomPwd();
-		pwd="123456";//remove this
-		if(existingUser!=null) {
-			//BeanUtils.copyProperties(request, existingUser);
-			
+		String pwd = CommonUtil.generateRandomPwd();
+		pwd = "123456";// remove this
+		if (existingUser != null) {
+			// BeanUtils.copyProperties(request, existingUser);
+
 			existingUser.setMobileNo(Long.valueOf(request.getMobileNo()));
 			existingUser.setActive(true);
 			existingUser.setActive(true);
 			existingUser.setEmiratesId(CommonUtil.getLongValofObject(request.getEmiratesId()));
-			existingUser.setDob(CommonUtil.getDatefromString(request.getDob(),DATE_ddMMyyyy));
+			existingUser.setDob(CommonUtil.getDatefromString(request.getDob(), DATE_ddMMyyyy));
 			existingUser.setGender(request.getGender());
 			existingUser.setAddress(request.getAddress());
-			if(request.getEidaCopy()!=null && request.getEidaCopy().length>1) {
+			if (request.getEidaCopy() != null && request.getEidaCopy().length > 1) {
 				existingUser.setEidaCopy(request.getEidaCopy());
 			}
 			existingUser.setNationality(nationality);
-			
-			
-			//user.setUserType(userType);
+
+			// user.setUserType(userType);
 			existingUser.setSubscriber(subscriber);
-			existingUser.setUpdatedDate (new Date());
-			Set <Role> exisingRoles=existingUser.getRoles();
+			existingUser.setUpdatedDate(new Date());
+			Set<Role> exisingRoles = existingUser.getRoles();
 			exisingRoles.add(role);
 			existingUser.setTenantId(tenant.getTenantId());
 			user = userRepository.save(existingUser);
-			
-			
+
 			NotifEmailDTO dto = new NotifEmailDTO();
 			dto.setEmailTo(request.getEmail());
 			dto.setCustomerName(request.getFirstName());
 			resp = notificationService.sendTenentAccountCreationEmailExistingUser(dto);
-		}else {
+		} else {
 			user = new User();
 			user.setEmail(request.getEmail());
 			user.setMobileNo(Long.valueOf(request.getMobileNo()));
 			user.setPassword(encoder.encode(pwd));
 			user.setActive(true);
 			user.setEmiratesId(CommonUtil.getLongValofObject(request.getEmiratesId()));
-			user.setDob(CommonUtil.getDatefromString(request.getDob(),DATE_ddMMyyyy));
+			user.setDob(CommonUtil.getDatefromString(request.getDob(), DATE_ddMMyyyy));
 			user.setGender(request.getGender());
 			user.setAddress(request.getAddress());
 			user.setEidaCopy(request.getEidaCopy());
 			user.setNationality(nationality);
-			//user.setUserType(userType);
+			// user.setUserType(userType);
 			user.setSubscriber(subscriber);
 			user.setCreatedDate(new Date());
-	
+
 			Set<Role> roles = new HashSet<>();
 			roles.add(role);
 			user.setRoles(roles);
-	
+
 			user.setTenantId(tenant.getTenantId());
 			user = userRepository.save(user);
-			
 
 			NotifEmailDTO dto = new NotifEmailDTO();
 			dto.setEmailTo(request.getEmail());
@@ -924,22 +936,21 @@ public class SubscriberServiceImpl implements SubscriberService {
 			dto.setPwd(pwd);
 			resp = notificationService.sendTenentAccountCreationEmail(dto);
 		}
-		
+
 		if (resp != null && resp.isEmailSent()) {
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Tenant created successfully.", user.getUserId(),
 					null);
 		} else {
-			throw new BusinessException("Tenant Not created",null);
+			throw new BusinessException("Tenant Not created", null);
 		}
 
-		
 	}
 
 	public ApiResponse<String> createParkingZone(ParkingZoneRequest request) {
 		Optional<Subscriber> subscriberOptional = subscriberRepository.findById(request.getSubscriberId());
 		if (!subscriberOptional.isPresent()) {
-			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Subscriber not found with ID: " + request.getSubscriberId(), null,
-					null);
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
+					"Subscriber not found with ID: " + request.getSubscriberId(), null, null);
 		}
 
 		ParkingZone parkingZone = new ParkingZone();
@@ -951,28 +962,27 @@ public class SubscriberServiceImpl implements SubscriberService {
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Parking Zone created successfully.", null, null);
 	}
 
-	
 	public ApiResponse<Object> createParking(ParkingRequest request) {
-		
-		Building building = buildingRepository.findByBuildingIdAndSubscriberId(request.getBuildingId(),request.getSubscriberId());
+
+		Building building = buildingRepository.findByBuildingIdAndSubscriberId(request.getBuildingId(),
+				request.getSubscriberId());
 		if (ObjectUtils.isEmpty(building)) {
-			throw new BusinessException("Building not found with id: " + request.getBuildingId(),null);
+			throw new BusinessException("Building not found with id: " + request.getBuildingId(), null);
 		}
-	
-		
-		
-		ParkingZone parkZone= parkingZoneRepository.findByParkZoneIdAndSubscriberId(request.getParkZoneId(),request.getSubscriberId());
+
+		ParkingZone parkZone = parkingZoneRepository.findByParkZoneIdAndSubscriberId(request.getParkZoneId(),
+				request.getSubscriberId());
 		if (ObjectUtils.isEmpty(parkZone)) {
 			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Parking Zone not found", null, null);
 		}
-		
-		Optional<ParkingTypeEnum> ops=Arrays.stream(ParkingTypeEnum.values()).filter(status -> status.getValue().toString().equals(request.getParkingType())).findAny();
-		
-		if(!ops.isPresent()) {
-			throw new BusinessException("Invalid ParkingType, can be any one COVERED/OPEN/GARAGE",null);
+
+		Optional<ParkingTypeEnum> ops = Arrays.stream(ParkingTypeEnum.values())
+				.filter(status -> status.getValue().toString().equals(request.getParkingType())).findAny();
+
+		if (!ops.isPresent()) {
+			throw new BusinessException("Invalid ParkingType, can be any one COVERED/OPEN/GARAGE", null);
 		}
 
-		
 		Parking parking = new Parking();
 		parking.setParkingName(request.getParkingName());
 		parking.setParkZone(parkZone);
@@ -982,22 +992,19 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		parkingRepository.save(parking);
 
-		
-		
-		ParkingResponse parkResp=new ParkingResponse();
+		ParkingResponse parkResp = new ParkingResponse();
 		BeanUtils.copyProperties(parking, parkResp);
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, parkResp, null, null);
 	}
 
-	
 	public ApiResponse<Object> addKey(KeyMasterRequest request) {
-		if (keyMasterRepository.findByKeyNameAndSubscriberId(request.getKeyName(),request.getSubscriberId())!=null) {
-			
-			throw new BusinessException("Key name already exists.",null);
+		if (keyMasterRepository.findByKeyNameAndSubscriberId(request.getKeyName(), request.getSubscriberId()) != null) {
+
+			throw new BusinessException("Key name already exists.", null);
 		}
-		
+
 		Optional<Subscriber> subscriberOptional = subscriberRepository.findById(request.getSubscriberId());
-		
+
 		Subscriber subscriber = subscriberOptional.get();
 
 		KeyMaster keyMaster = new KeyMaster();
@@ -1005,53 +1012,48 @@ public class SubscriberServiceImpl implements SubscriberService {
 		keyMaster.setSubscriber(subscriber);
 		keyMasterRepository.save(keyMaster);
 
-		KeyResponse keyResp=new KeyResponse();
+		KeyResponse keyResp = new KeyResponse();
 		BeanUtils.copyProperties(keyMaster, keyResp);
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, keyResp, null, null);
 	}
 
-	
 	public ApiResponse<Object> addUnitKey(UnitKeysRequest request) {
-		
 
-		
-		Unit unit=unitRepository.findByUnitIdAndSubscriberId(request.getUnitId(),request.getSubscriberId());
-		
+		Unit unit = unitRepository.findByUnitIdAndSubscriberId(request.getUnitId(), request.getSubscriberId());
+
 		if (ObjectUtils.isEmpty(unit)) {
-			
-			throw new BusinessException( "Unit not found with ID: " + request.getUnitId(),null);
+
+			throw new BusinessException("Unit not found with ID: " + request.getUnitId(), null);
 		}
 
 		List<KeyMaster> masterKeys = keyMasterRepository.findAllKeysBySubscriberId(request.getSubscriberId());
-		if(ObjectUtils.isNotEmpty(masterKeys) && ObjectUtils.isNotEmpty(request.getKeyIds()) ) {
-			List<Integer> masterKeysId = masterKeys
-		            .stream()
-		            .map(KeyMaster::getKeyId)
-		            .collect(Collectors.toList());
-			boolean validKeys =	masterKeysId.containsAll(request.getKeyIds());
-			if(!validKeys) {
-				
-				throw new BusinessException("One of the keyIds not found",null);
+		if (ObjectUtils.isNotEmpty(masterKeys) && ObjectUtils.isNotEmpty(request.getKeyIds())) {
+			List<Integer> masterKeysId = masterKeys.stream().map(KeyMaster::getKeyId).collect(Collectors.toList());
+			boolean validKeys = masterKeysId.containsAll(request.getKeyIds());
+			if (!validKeys) {
+
+				throw new BusinessException("One of the keyIds not found", null);
 			}
 		}
-		
-		UnitKeys unitKeys=null;
-		if(ObjectUtils.isNotEmpty(request.getKeyId()) ) {
-			KeyMaster keyMaster = keyMasterRepository.findBykeyIdAndSubscriberId(request.getKeyId(),request.getSubscriberId());
+
+		UnitKeys unitKeys = null;
+		if (ObjectUtils.isNotEmpty(request.getKeyId())) {
+			KeyMaster keyMaster = keyMasterRepository.findBykeyIdAndSubscriberId(request.getKeyId(),
+					request.getSubscriberId());
 			if (ObjectUtils.isEmpty(keyMaster)) {
-				
-				throw new BusinessException("Key not found with ID: " + request.getKeyId(),null);
+
+				throw new BusinessException("Key not found with ID: " + request.getKeyId(), null);
 			}
 			unitKeys = new UnitKeys();
 			unitKeys.setUnit(unit);
 			unitKeys.setKeyMaster(keyMaster);
 			unitKeysRepository.save(unitKeys);
-		}else if(ObjectUtils.isNotEmpty(request.getKeyIds()) ) {
-			for (Integer keyId:request.getKeyIds()) {
-				KeyMaster keyMaster = keyMasterRepository.findBykeyIdAndSubscriberId(keyId,request.getSubscriberId());
+		} else if (ObjectUtils.isNotEmpty(request.getKeyIds())) {
+			for (Integer keyId : request.getKeyIds()) {
+				KeyMaster keyMaster = keyMasterRepository.findBykeyIdAndSubscriberId(keyId, request.getSubscriberId());
 				if (ObjectUtils.isEmpty(keyMaster)) {
-					
-					throw new BusinessException("Key not found with ID: " + keyId,null);
+
+					throw new BusinessException("Key not found with ID: " + keyId, null);
 				}
 				unitKeys = new UnitKeys();
 				unitKeys.setUnit(unit);
@@ -1059,68 +1061,65 @@ public class SubscriberServiceImpl implements SubscriberService {
 				unitKeysRepository.save(unitKeys);
 			}
 		}
-		
 
-		if(unitKeys!=null) {
-			UniKeyResponse unitKeyResp=new UniKeyResponse();
+		if (unitKeys != null) {
+			UniKeyResponse unitKeyResp = new UniKeyResponse();
 			BeanUtils.copyProperties(unitKeys, unitKeyResp);
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, unitKeyResp, null, null);
 		}
 		return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
 	}
 
-	
 	public ApiResponse<Object> addTenantUnit(TenantUnitRequest request) {
 		TenantUnit tenantUnit = new TenantUnit();
-		Tenant tenant = tenantRepository.findByTenantIdAndSubscriberId(request.getTenantId(),request.getSubscriberId());
-		
+		Tenant tenant = tenantRepository.findByTenantIdAndSubscriberId(request.getTenantId(),
+				request.getSubscriberId());
+
 		if (ObjectUtils.isEmpty(tenant)) {
-			
-			throw new BusinessException("Tenant not found with ID: " + request.getTenantId(),null);
+
+			throw new BusinessException("Tenant not found with ID: " + request.getTenantId(), null);
 		}
 
-
-		Unit unit=unitRepository.findByUnitIdAndSubscriberId(request.getUnitId(),request.getSubscriberId());
+		Unit unit = unitRepository.findByUnitIdAndSubscriberId(request.getUnitId(), request.getSubscriberId());
 		if (unit == null) {
-			
-			throw new BusinessException("Unit not found with ID: " + request.getUnitId(),null);
-		}
-		
 
-		
-		if(unit.getStatus().equals(UnitStatusEnum.OCCUPIED.toString()) ||
-				unit.getStatus().equals(UnitStatusEnum.RESERVED.toString())) {
-			logger.info("Already this Unit registered/reserved for another tenant,unit id->{}", unit.getUnitId());
-			throw new BusinessException("Already this Unit registered / reserved for another tenant",null);
+			throw new BusinessException("Unit not found with ID: " + request.getUnitId(), null);
 		}
-		
-		
-		if(request.getParkingId()!=null) {
-			Parking parking = parkingRepository.findByParkingIdAndSubscriberId(request.getParkingId(),request.getSubscriberId());
-			
+
+		if (unit.getStatus().equals(UnitStatusEnum.OCCUPIED.toString())
+				|| unit.getStatus().equals(UnitStatusEnum.RESERVED.toString())) {
+			logger.info("Already this Unit registered/reserved for another tenant,unit id->{}", unit.getUnitId());
+			throw new BusinessException("Already this Unit registered / reserved for another tenant", null);
+		}
+
+		if (request.getParkingId() != null) {
+			Parking parking = parkingRepository.findByParkingIdAndSubscriberId(request.getParkingId(),
+					request.getSubscriberId());
+
 			if (parking == null) {
-				
-				throw new BusinessException( "Parking not found with ID: " + request.getParkingId(),null);
+
+				throw new BusinessException("Parking not found with ID: " + request.getParkingId(), null);
 			}
 			tenantUnit.setParking(parking);
 		}
 
-	
-		Optional<RentPaymentModeEnum> ops=Arrays.stream(RentPaymentModeEnum.values()).filter(status -> status.getValue().equals(request.getRentPaymentMode())).findAny();
-		
-		if(!ops.isPresent()) {
-			throw new BusinessException("Invalid RentPaymentMode, can be any one CREDIT_CARD/BANK_TRANSFER/CASH/CHEQUE",null);
-		}
-		
-		Optional<RentCycleEnum> rentCycle=Arrays.stream(RentCycleEnum.values()).filter(status -> status.getValue().equals(request.getRentCycle()  )).findAny();
-		
-		if(!rentCycle.isPresent()) {
-			throw new BusinessException("Invalid RentCycle, can be any one of MONTHLY/QUARTERLY/HALFLY/YEARLY",null);
+		Optional<RentPaymentModeEnum> ops = Arrays.stream(RentPaymentModeEnum.values())
+				.filter(status -> status.getValue().equals(request.getRentPaymentMode())).findAny();
+
+		if (!ops.isPresent()) {
+			throw new BusinessException("Invalid RentPaymentMode, can be any one CREDIT_CARD/BANK_TRANSFER/CASH/CHEQUE",
+					null);
 		}
 
-		
+		Optional<RentCycleEnum> rentCycle = Arrays.stream(RentCycleEnum.values())
+				.filter(status -> status.getValue().equals(request.getRentCycle())).findAny();
+
+		if (!rentCycle.isPresent()) {
+			throw new BusinessException("Invalid RentCycle, can be any one of MONTHLY/QUARTERLY/HALFLY/YEARLY", null);
+		}
+
 		unit.setStatus(UnitStatusEnum.OCCUPIED.toString());
-		
+
 		tenantUnit.setTenant(tenant);
 		tenantUnit.setUnit(unit);
 		tenantUnit.setTenurePeriodMonth(request.getTenurePeriodMonth());
@@ -1132,42 +1131,41 @@ public class SubscriberServiceImpl implements SubscriberService {
 		tenantUnit.setCreatedBy(request.getSubscriberId());
 
 		tenantUnitRepository.save(tenantUnit);
-		
-		
-		TenureDetails  tenureDetails=new TenureDetails();
-		tenureDetails.setTenancyStartDate(CommonUtil.getDatefromString(request.getTenancyStartDate(),DATE_ddMMyyyy));
+
+		TenureDetails tenureDetails = new TenureDetails();
+		tenureDetails.setTenancyStartDate(CommonUtil.getDatefromString(request.getTenancyStartDate(), DATE_ddMMyyyy));
 		tenureDetails.setTenantUnit(tenantUnit);
 		tenureDetails.setTenancyEndDate(calculateTenancyEndDate(request));
 		tenureDetails.setCreatedBy(request.getSubscriberId());
-		
+
 		tenureDetailsRepository.save(tenureDetails);
-		
-		if(tenureDetails!=null && tenureDetails.getTenantTenureId()!=null) {
-			TenantUnitResponse tenantUnitResp=new TenantUnitResponse();
+
+		if (tenureDetails != null && tenureDetails.getTenantTenureId() != null) {
+			TenantUnitResponse tenantUnitResp = new TenantUnitResponse();
 			BeanUtils.copyProperties(tenantUnit, tenantUnitResp);
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, tenantUnitResp, null, null);
 		}
 		return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
 	}
 
-
 	private Date calculateTenancyEndDate(TenantUnitRequest request) {
 
-		LocalDate tenStartDate=CommonUtil.getLocalDatefromString(request.getTenancyStartDate(), CommonConstants.DATE_ddMMyyyy);
-		LocalDate tenEndDate=tenStartDate.plusMonths(request.getTenurePeriodMonth());
+		LocalDate tenStartDate = CommonUtil.getLocalDatefromString(request.getTenancyStartDate(),
+				CommonConstants.DATE_ddMMyyyy);
+		LocalDate tenEndDate = tenStartDate.plusMonths(request.getTenurePeriodMonth());
 		return CommonUtil.getDatefromLocalDate(tenEndDate);
 
 	}
 
-
 	@Override
 	public ApiResponse<Object> addDepartment(@Valid DepartmentRequest request) {
-		
-		if (departmentMasRepository.findByDeptNameAndSubscriberId(request.getDeptName(),request.getSubscriberId())!=null) {
-			throw new BusinessException("Dept name already exists.",null);
+
+		if (departmentMasRepository.findByDeptNameAndSubscriberId(request.getDeptName(),
+				request.getSubscriberId()) != null) {
+			throw new BusinessException("Dept name already exists.", null);
 		}
 		Optional<Subscriber> subscriberOptional = subscriberRepository.findById(request.getSubscriberId());
-		
+
 		Subscriber subscriber = subscriberOptional.get();
 
 		DepartmentMaster deptMas = new DepartmentMaster();
@@ -1176,8 +1174,8 @@ public class SubscriberServiceImpl implements SubscriberService {
 		deptMas.setSubscriber(subscriber);
 
 		departmentMasRepository.save(deptMas);
-		if(deptMas!=null) {
-			DeptMasResponse deptMasResp=new DeptMasResponse();
+		if (deptMas != null) {
+			DeptMasResponse deptMasResp = new DeptMasResponse();
 			BeanUtils.copyProperties(deptMas, deptMasResp);
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, deptMasResp, null, null);
 		}

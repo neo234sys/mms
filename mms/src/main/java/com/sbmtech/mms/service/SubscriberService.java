@@ -1,6 +1,7 @@
 package com.sbmtech.mms.service;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.validation.Valid;
 
@@ -32,10 +33,10 @@ import com.sbmtech.mms.payload.response.StateResponse;
 import com.sbmtech.mms.payload.response.SubscriptionPlans;
 
 public interface SubscriberService {
-	
-	public Integer getSubscriberIdfromAuth( Authentication auth)throws Exception;
-	
-	public ApiResponse<String> createSubscriber(SubscriberRequest request) throws Exception;
+
+	public Integer getSubscriberIdfromAuth(Authentication auth) throws Exception;
+
+	public Map<String, Object> createSubscriber(SubscriberRequest request) throws Exception;
 
 	public ApiResponse<?> verifyOtp(VerifyOtpRequest request);
 
@@ -67,7 +68,7 @@ public interface SubscriberService {
 
 	public ApiResponse<Object> addUnit(UnitRequest request);
 
-	public ApiResponse<String> createUserAndMergeTenant(CreateUserRequest request)throws Exception;
+	public ApiResponse<String> createUserAndMergeTenant(CreateUserRequest request) throws Exception;
 
 	public ApiResponse<String> createParkingZone(ParkingZoneRequest request);
 
@@ -79,5 +80,5 @@ public interface SubscriberService {
 
 	public ApiResponse<Object> addTenantUnit(TenantUnitRequest request);
 
-	public ApiResponse<Object>  addDepartment(@Valid DepartmentRequest request);
+	public ApiResponse<Object> addDepartment(@Valid DepartmentRequest request);
 }

@@ -10,6 +10,4 @@ public interface OtpRepository extends JpaRepository<Otp, Integer> {
 
 	Otp findByReferenceIdAndOtpCode(Integer referenceId, Long otpCode);
 
-	Otp findByReferenceId(Integer referenceId);
-
 }

@@ -1,6 +1,8 @@
 package com.sbmtech.mms.controllers;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -24,10 +26,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sbmtech.mms.constant.CommonConstants;
-import com.sbmtech.mms.exception.BusinessException;
 import com.sbmtech.mms.models.Subscriber;
 import com.sbmtech.mms.models.User;
-import com.sbmtech.mms.payload.request.ApiResponse;
 import com.sbmtech.mms.payload.request.LoginRequest;
 import com.sbmtech.mms.payload.request.ResendOtpRequest;
 import com.sbmtech.mms.payload.request.SubscriberRequest;
@@ -38,16 +38,15 @@ import com.sbmtech.mms.repository.UserRepository;
 import com.sbmtech.mms.security.jwt.JwtUtils;
 import com.sbmtech.mms.security.services.UserDetailsImpl;
 import com.sbmtech.mms.service.SubscriberService;
-import com.sbmtech.mms.service.impl.SubscriberServiceImpl;
+import com.sbmtech.mms.util.CommonUtil;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/subs")
 public class SubscriberController {
-	
-	
+
 	private static final Logger logger = LogManager.getLogger(SubscriberController.class);
-	
+
 	@Autowired
 	AuthenticationManager authenticationManager;
 
@@ -67,10 +66,12 @@ public class SubscriberController {
 	private SubscriberService subscriberService;
 
 	@PostMapping("/signin")
-	public ResponseEntity<ApiResponse<Object>> authenticateUser(@RequestBody LoginRequest loginRequest) {
-		Subscriber subscriber=null;
-		User user =null;
-		JwtResponse jwtResponse=null;
+	public ResponseEntity<Map<String, Object>> authenticateUser(@RequestBody LoginRequest loginRequest) {
+		Subscriber subscriber = null;
+		User user = null;
+		JwtResponse jwtResponse = null;
+		boolean isOTPVerified = false;
+
 		try {
 			Authentication authentication = authenticationManager.authenticate(
 					new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
@@ -84,53 +85,56 @@ public class SubscriberController {
 
 			Optional<User> userOptional = userRepository.findByEmail(loginRequest.getEmail());
 
+			if (userOptional.isPresent()) {
 				user = userOptional.get();
-				if (userOptional.isPresent()) {
 				subscriber = user.getSubscriber();
-							
-				boolean isOTPVerified=false;
-				boolean isSuspended=false;
-				if(subscriber != null) {
-					logger.info("authenticateUser = {} ",subscriber);
+
+				if (subscriber != null) {
+					logger.info("authenticateUser = {}", subscriber);
+
+					if (subscriber.getOtpVerified() == null || subscriber.getOtpVerified() != 1) {
+						isOTPVerified = false;
+						return CommonUtil.buildErrorResponse("OTP verification required before login.", isOTPVerified,
+								subscriber.getSubscriberId());
+					} else {
+						isOTPVerified = true;
+					}
+
+					if (subscriber.getActive() == 0) {
+						return CommonUtil.buildErrorResponse("Subscription suspended", isOTPVerified,
+								subscriber.getSubscriberId());
+					}
+
 					jwtResponse = new JwtResponse(jwt, userDetails.getUserId(), userDetails.getUsername(),
 							userDetails.getMobileNo(), roles);
-					if ( subscriber.getOtpVerified() == 1 ) {
-						
-						isOTPVerified=true;
-					}else {
-						throw new BusinessException("OTP not verified. Please verify your OTP to login",null);
-					}
-					if ( subscriber.getActive() == 0 ) {
-						isSuspended=true;
-						throw new BusinessException("Subscribtion subspended",null);
-					}
-					
-
 				}
 
-				
 			} else {
-				logger.info("User not found with email:{} ",loginRequest.getEmail());
-				throw new BusinessException("User not found with email: " + loginRequest.getEmail(),null);
+				logger.info("User not found with email: {}", loginRequest.getEmail());
+				return CommonUtil.buildErrorResponse("User not found with email: " + loginRequest.getEmail(),
+						isOTPVerified, null);
 			}
 
 		} catch (BadCredentialsException e) {
-			throw new BusinessException("Invalid username or password!",e);
+			return CommonUtil.buildErrorResponse("Invalid username or password!", isOTPVerified, null);
 
-		} catch (BusinessException e) {
-			//e.printStackTrace();
-			throw new BusinessException(e.getMessage(),e);
-			
-		}catch (Exception e) {
-			throw new BusinessException("An error occurred during authentication!",e);
-			
+		} catch (Exception e) {
+			return CommonUtil.buildErrorResponse("An error occurred during authentication!", isOTPVerified, null);
 		}
-		return ResponseEntity.ok(new ApiResponse<>(CommonConstants.SUCCESS_CODE, CommonConstants.SUCCESS_DESC, jwtResponse,
-				user.getUserId(), subscriber.getSubscriberId()));
+
+		Map<String, Object> response = new HashMap<>();
+		response.put("responseCode", CommonConstants.SUCCESS_CODE);
+		response.put("responseDesc", CommonConstants.SUCCESS_DESC);
+		response.put("data", jwtResponse);
+		response.put("userId", user.getUserId());
+		response.put("subscriberId", subscriber != null ? subscriber.getSubscriberId() : null);
+		response.put("isOTPVerified", isOTPVerified);
+
+		return ResponseEntity.ok(response);
 	}
 
 	@PostMapping("/createSubscriber")
-	public ResponseEntity<?> createSubscriber( @Valid @RequestBody SubscriberRequest request) throws Exception {
+	public ResponseEntity<?> createSubscriber(@Valid @RequestBody SubscriberRequest request) throws Exception {
 		return ResponseEntity.ok(subscriberService.createSubscriber(request));
 	}
 

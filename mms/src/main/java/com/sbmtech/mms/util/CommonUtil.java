@@ -31,6 +31,8 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tomcat.util.json.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.NodeList;
@@ -42,15 +44,10 @@ import com.sbmtech.mms.models.User;
 import com.sbmtech.mms.repository.UserRepository;
 import com.sbmtech.mms.security.services.UserDetailsImpl;
 
-
-
 public class CommonUtil {
 
-	
-	public static ZoneId ZONE_DUBAI = ZoneId.of( "Asia/Dubai" );
-	
+	public static ZoneId ZONE_DUBAI = ZoneId.of("Asia/Dubai");
 
-	
 	public static String getStringValue(String fieldName) {
 		String result = "";
 		if (fieldName != null && !fieldName.equalsIgnoreCase("-1")) {
@@ -58,19 +55,15 @@ public class CommonUtil {
 		}
 		return result;
 	}
-	
-	
-	
-	
-	
+
 	public static LocalDateTime getLocalDateTimefromString(String paramVal, String datePattern) {
-		
+
 		if (paramVal != null && !paramVal.isEmpty()) {
 			SimpleDateFormat sdf = new SimpleDateFormat(datePattern, Locale.ENGLISH);
 			try {
 				if (paramVal != null && paramVal.trim().length() > 0 && !(paramVal.equalsIgnoreCase("null"))) {
-					
-					Date date=sdf.parse(paramVal);
+
+					Date date = sdf.parse(paramVal);
 					return date.toInstant().atZone(ZONE_DUBAI).toLocalDateTime();
 				} else {
 					return null;
@@ -81,16 +74,16 @@ public class CommonUtil {
 		}
 		return null;
 	}
-	
+
 	public static LocalDate getLocalDatefromString(String paramVal, String datePattern) {
-		
+
 		if (paramVal != null && !paramVal.isEmpty()) {
 			SimpleDateFormat sdf = new SimpleDateFormat(datePattern, Locale.ENGLISH);
 			try {
 				if (paramVal != null && paramVal.trim().length() > 0 && !(paramVal.equalsIgnoreCase("null"))) {
-					
-					Date date=sdf.parse(paramVal);
-					 return date.toInstant().atZone(ZONE_DUBAI).toLocalDate();
+
+					Date date = sdf.parse(paramVal);
+					return date.toInstant().atZone(ZONE_DUBAI).toLocalDate();
 				} else {
 					return null;
 				}
@@ -100,9 +93,9 @@ public class CommonUtil {
 		}
 		return null;
 	}
-	
+
 	public static Date getDatefromLocalDate(LocalDate localDate) {
-		return  Date.from(localDate.atStartOfDay(ZONE_DUBAI).toInstant());
+		return Date.from(localDate.atStartOfDay(ZONE_DUBAI).toInstant());
 	}
 //	public static LocalDate getLocalDatefromDate(Date date,String datePattern) {
 //		if(StringUtils.isBlank(datePattern)) {
@@ -112,8 +105,7 @@ public class CommonUtil {
 //		Date dateOb=sdf.parse(date);
 //		return  Date.from(localDate.atStartOfDay(ZONE_DUBAI).toInstant());
 //	}
-	
-	
+
 	public static String getFormattedDate(Object dateToFormat) {
 		String strDate = null;
 		try {
@@ -237,8 +229,6 @@ public class CommonUtil {
 		}
 		return null;
 	}
-	
-	
 
 	public static String formatSysDate(String dateStr) throws ParseException {
 		if (dateStr != null && !dateStr.isEmpty()) {
@@ -435,8 +425,6 @@ public class CommonUtil {
 		return currentDate.getTime().before(endDate) || currentDate.getTime().equals(endDate);
 	}
 
-	
-
 	public static String getCurrentDate() {
 		String s = "";
 		try {
@@ -464,7 +452,6 @@ public class CommonUtil {
 		return formattedDate;
 	}
 
-	
 	public static String getDefaultIfNull(String paramVal, String defaultVal) {
 		if ((paramVal != null) && (paramVal.trim().length() > 0) && !(paramVal.equalsIgnoreCase("null"))) {
 			return paramVal;
@@ -518,10 +505,22 @@ public class CommonUtil {
 		final String[] values = credentials.split(":", 2);
 		return values.length == 2 && values[0].equals(username) && values[1].equals(password);
 	}
-	
+
 	public static String generateRandomPwd() {
 		String characters = "ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789~`!@#$%^&*()-_=+[{]}\\|;:\'\",<.>/?";
-		String pwd = RandomStringUtils.random( 10, characters );
+		String pwd = RandomStringUtils.random(10, characters);
 		return pwd;
 	}
+
+	public static ResponseEntity<Map<String, Object>> buildErrorResponse(String errorMessage, boolean isOTPVerified,
+			Integer integer) {
+		Map<String, Object> errorResponse = new HashMap<>();
+		errorResponse.put("responseCode", CommonConstants.FAILURE_CODE);
+		errorResponse.put("responseDesc", CommonConstants.FAILURE_DESC);
+		errorResponse.put("message", errorMessage);
+		errorResponse.put("isOTPVerified", isOTPVerified);
+		errorResponse.put("subscriberId", integer);
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+	}
+
 }
