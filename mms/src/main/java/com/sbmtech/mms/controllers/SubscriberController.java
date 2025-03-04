@@ -94,6 +94,9 @@ public class SubscriberController {
 
 					if (subscriber.getOtpVerified() == null || subscriber.getOtpVerified() != 1) {
 						isOTPVerified = false;
+						ResendOtpRequest request=new  ResendOtpRequest();
+						request.setSubscriberId(subscriber.getSubscriberId());
+						subscriberService.resendOtp(request);
 						return CommonUtil.buildErrorResponse("OTP verification required before login.", isOTPVerified,
 								subscriber.getSubscriberId());
 					} else {

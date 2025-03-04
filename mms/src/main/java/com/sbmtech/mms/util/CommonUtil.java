@@ -520,7 +520,7 @@ public class CommonUtil {
 		errorResponse.put("message", errorMessage);
 		errorResponse.put("isOTPVerified", isOTPVerified);
 		errorResponse.put("subscriberId", integer);
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+		return ResponseEntity.status(HttpStatus.OK).body(errorResponse);
 	}
 
 }
