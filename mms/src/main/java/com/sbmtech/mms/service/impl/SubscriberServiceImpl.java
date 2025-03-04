@@ -62,6 +62,7 @@ import com.sbmtech.mms.models.State;
 import com.sbmtech.mms.models.Subscriber;
 import com.sbmtech.mms.models.SubscriberLocation;
 import com.sbmtech.mms.models.SubscriptionPayment;
+import com.sbmtech.mms.models.SubscriptionPlan;
 import com.sbmtech.mms.models.SubscriptionPlanMaster;
 import com.sbmtech.mms.models.Subscriptions;
 import com.sbmtech.mms.models.Tenant;
@@ -126,6 +127,7 @@ import com.sbmtech.mms.repository.SubscriberLocationRepositoryCustom;
 import com.sbmtech.mms.repository.SubscriberRepository;
 import com.sbmtech.mms.repository.SubscriptionPaymentRepository;
 import com.sbmtech.mms.repository.SubscriptionPlanMasterRepository;
+import com.sbmtech.mms.repository.SubscriptionPlanRepository;
 import com.sbmtech.mms.repository.SubscriptionRepository;
 import com.sbmtech.mms.repository.TenantRepository;
 import com.sbmtech.mms.repository.TenantUnitRepository;
@@ -231,6 +233,13 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	@Autowired
 	private ProductConfigRepository productConfigRepository;
+	
+	@Autowired
+	private SubscriptionPlanRepository subscriptionPlanRepository;
+	
+	
+	
+	
 
 	@Override
 	public Integer getSubscriberIdfromAuth(Authentication auth) throws Exception {
@@ -1180,6 +1189,15 @@ public class SubscriberServiceImpl implements SubscriberService {
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, deptMasResp, null, null);
 		}
 		return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
+	}
+
+	@Override
+	public ApiResponse<List<SubscriptionPlan>> getAllSubscriptionPlansJson() {
+		 List<SubscriptionPlan> result = subscriptionPlanRepository.findAll();
+		if (result.isEmpty()) {
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
+		}
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, result, null, null);
 	}
 
 }

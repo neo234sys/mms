@@ -212,6 +212,15 @@ public class ManagementController {
 		request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.addDepartment(request));
 	}
+	
+	@GetMapping("/subscriptionPlansJson")
+	public ResponseEntity<?> subscriptionPlansJson(
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth)throws Exception {
+		
+		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
+		
+		return ResponseEntity.ok(subscriberService.getAllSubscriptionPlansJson());
+	}
 
 	@Scheduled(cron = "0 */5 * * * ?") //every 5 hrs
 	public void expireSubscriptionsEvery5Seconds() {

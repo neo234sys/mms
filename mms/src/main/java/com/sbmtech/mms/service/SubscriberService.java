@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication;
 
 import com.sbmtech.mms.models.ChannelMaster;
 import com.sbmtech.mms.models.Countries;
+import com.sbmtech.mms.models.SubscriptionPlan;
 import com.sbmtech.mms.payload.request.AdditionalDetailsRequest;
 import com.sbmtech.mms.payload.request.ApiResponse;
 import com.sbmtech.mms.payload.request.BuildingRequest;
@@ -81,4 +82,6 @@ public interface SubscriberService {
 	public ApiResponse<Object> addTenantUnit(TenantUnitRequest request);
 
 	public ApiResponse<Object> addDepartment(@Valid DepartmentRequest request);
+
+	public ApiResponse<List<SubscriptionPlan>> getAllSubscriptionPlansJson();
 }
