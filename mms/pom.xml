@@ -24,7 +24,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
-
+	
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
@@ -44,6 +44,13 @@
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>8.0.29</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>io.hypersistence</groupId>
+			<artifactId>hypersistence-utils-hibernate-55</artifactId>
+			<version>3.8.1</version>
 		</dependency>
 
 		<dependency>
@@ -102,15 +109,15 @@
 			<artifactId>commons-io</artifactId>
 			<version>2.11.0</version>
 		</dependency>
-<dependency>
-                        <groupId>com.googlecode.json-simple</groupId>
-                        <artifactId>json-simple</artifactId>
-                        <version>1.1</version>
-                </dependency>
-                <dependency>
-                        <groupId>com.google.code.gson</groupId>
-                        <artifactId>gson</artifactId>
-                </dependency>
+		<dependency>
+			<groupId>com.googlecode.json-simple</groupId>
+			<artifactId>json-simple</artifactId>
+			<version>1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>javax.activation</groupId>
 			<artifactId>activation</artifactId>
