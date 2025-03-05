@@ -27,21 +27,29 @@ public class SubscriptionPlan {
 
     @Id
     @Column(name = "id")
-    private String id;
+    private Integer id;
 
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "price", nullable = false)
-    private Double price;
+    @Column(name = "price_month", nullable = false)
+    private Double priceMonthly;
+    
+    @Column(name = "price_year", nullable = false)
+    private Double priceYearly;
 
-    @Column(name = "duration_in_months", nullable = false)
-    private Integer durationInMonths;
-
-    @Column(name = "description")
+    @Column(name = "currency", nullable = false)
+    private String currency;
+    
+    @Column(name = "duration_in_days", nullable = false)
+    private Integer durationInDays;
+    
+    @Column(name = "description", nullable = false)
     private String description;
 
-   
+    @Column(name = "trial_days")
+    private Integer trialDays;
+    
     @Type(type = "json")
     @Column(columnDefinition = "json")
     private List<String> features;
