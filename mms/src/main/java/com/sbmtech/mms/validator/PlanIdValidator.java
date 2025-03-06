@@ -24,7 +24,7 @@ public class PlanIdValidator implements ConstraintValidator<ValidPlanId, Integer
     	boolean planExists=false;
     	
     	if(planId!=null) {
-    		planExists = planMasterRepository.existsByPlanIdAndActive(planId,true);
+    		planExists = planMasterRepository.existsByPlanIdAndActive(planId,1);
     		
     	}
     	

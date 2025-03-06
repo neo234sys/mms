@@ -62,7 +62,6 @@ import com.sbmtech.mms.models.State;
 import com.sbmtech.mms.models.Subscriber;
 import com.sbmtech.mms.models.SubscriberLocation;
 import com.sbmtech.mms.models.SubscriptionPayment;
-import com.sbmtech.mms.models.SubscriptionPlan;
 import com.sbmtech.mms.models.SubscriptionPlanMaster;
 import com.sbmtech.mms.models.Subscriptions;
 import com.sbmtech.mms.models.Tenant;
@@ -127,7 +126,7 @@ import com.sbmtech.mms.repository.SubscriberLocationRepositoryCustom;
 import com.sbmtech.mms.repository.SubscriberRepository;
 import com.sbmtech.mms.repository.SubscriptionPaymentRepository;
 import com.sbmtech.mms.repository.SubscriptionPlanMasterRepository;
-import com.sbmtech.mms.repository.SubscriptionPlanRepository;
+import com.sbmtech.mms.repository.SubscriptionPlanMasterRepository;
 import com.sbmtech.mms.repository.SubscriptionRepository;
 import com.sbmtech.mms.repository.TenantRepository;
 import com.sbmtech.mms.repository.TenantUnitRepository;
@@ -235,7 +234,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 	private ProductConfigRepository productConfigRepository;
 	
 	@Autowired
-	private SubscriptionPlanRepository subscriptionPlanRepository;
+	private SubscriptionPlanMasterRepository subscriptionPlanRepository;
 	
 	
 	
@@ -549,7 +548,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		subscription
 				.setStartDate(CommonUtil.getLocalDateTimefromString(subscriptionRequest.getStartDate(), DATE_ddMMyyyy));
-		subscription.setEndDate(subscription.getStartDate().plusDays((planMaster.getPlanDurationDays())));
+		subscription.setEndDate(subscription.getStartDate().plusDays((planMaster.getDurationInDays())));
 		subscription.setStatus(SubscriptionStatus.TRIAL.toString());
 
 		SubscriptionPlanMaster plan = new SubscriptionPlanMaster();
@@ -570,10 +569,13 @@ public class SubscriberServiceImpl implements SubscriberService {
 	}
 
 	public ApiResponse<List<SubscriptionPlans>> getAllSubscriptionPlans() {
-		List<SubscriptionPlanMaster> plansList = planMasterRepository.findAll();
+		List<SubscriptionPlanMaster> plansList = subscriptionPlanRepository.findAll();
 		List<SubscriptionPlans> result = plansList
-				.stream().filter(e -> e.getActive() == true).map(e -> new SubscriptionPlans(e.getPlanId(),
-						e.getPlanName(), e.getPlanDurationDays(), e.getPlanPrice(), e.getFeatures(), e.getTrialDays()))
+				.stream().filter(e -> e.getActive() == 1).map(e ->
+				new SubscriptionPlans(e.getPlanId(),
+						e.getPlanName(), e.getPriceMonth(), e.getPriceYear(), e.getCurrency(),e.getDurationInDays(),e.getTrialDays(),
+						e.getDescription(),e.getFeatures(), e.getMetadata())
+						)
 				.collect(Collectors.toList());
 		if (result.isEmpty()) {
 			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
@@ -1191,13 +1193,6 @@ public class SubscriberServiceImpl implements SubscriberService {
 		return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
 	}
 
-	@Override
-	public ApiResponse<List<SubscriptionPlan>> getAllSubscriptionPlansJson() {
-		 List<SubscriptionPlan> result = subscriptionPlanRepository.findAll();
-		if (result.isEmpty()) {
-			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
-		}
-		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, result, null, null);
-	}
+
 
 }

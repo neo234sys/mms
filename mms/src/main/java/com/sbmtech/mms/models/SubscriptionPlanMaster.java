@@ -1,126 +1,67 @@
 package com.sbmtech.mms.models;
 
-import java.io.Serializable;
-import java.util.Date;
+
+import java.util.List;
+import java.util.Map;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 
+import io.hypersistence.utils.hibernate.type.json.JsonType; 
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
+@Data
 @Entity
 @Table(name = "subscription_plan_master")
-public class SubscriptionPlanMaster implements Serializable {
+@Setter
+@Getter
+@TypeDef(name = "json", typeClass = JsonType.class)
+public class SubscriptionPlanMaster {
 
-	private static final long serialVersionUID = 1L;
+    @Id
+    @Column(name = "plan_id")
+    private Integer planId;
 
-	@Id
-	@Column(name = "plan_id")
-	private Integer planId;
+    @Column(name = "plan_name", nullable = false)
+    private String planName;
 
-	@Column(name = "plan_name")
-	private String planName;
+    @Column(name = "price_month", nullable = false)
+    private Double priceMonth;
+    
+    @Column(name = "price_year", nullable = false)
+    private Double priceYear;
+    
+    @Column(name = "currency", nullable = false)
+    private String currency;
 
-	@Column(name = "plan_duration_days")
-	private Integer planDurationDays;
+    @Column(name = "duration_in_days", nullable = false)
+    private Integer durationInDays;
+    
+    @Column(name = "trial_days", nullable = false)
+    private Integer trialDays;
 
-	@Column(name = "plan_price")
-	private Float planPrice;
+    
+    @Column(name = "description")
+    private String description;
 
-	@Column(name = "features")
-	private String features;
-
-	@Column(name = "active")
-	private Boolean active;
-
-	@Column(name = "created_by")
-	private Integer createdBy;
-
-	@Column(name = "created_date")
-	@Temporal(TemporalType.TIMESTAMP)
-	private Date createdDate;
-	
-	
-	@Column(name = "trial_days")
-	private Integer trialDays;
-	
-	
-	public Integer getPlanId() {
-		return planId;
-	}
-
-	public void setPlanId(Integer planId) {
-		this.planId = planId;
-	}
-
-	public String getPlanName() {
-		return planName;
-	}
-
-	public void setPlanName(String planName) {
-		this.planName = planName;
-	}
-
-	public Integer getPlanDurationDays() {
-		return planDurationDays;
-	}
-
-	public void setPlanDurationDays(Integer planDurationDays) {
-		this.planDurationDays = planDurationDays;
-	}
-
-	public Float getPlanPrice() {
-		return planPrice;
-	}
-
-	public void setPlanPrice(Float planPrice) {
-		this.planPrice = planPrice;
-	}
-
-	public String getFeatures() {
-		return features;
-	}
-
-	public void setFeatures(String features) {
-		this.features = features;
-	}
-
-	public Boolean getActive() {
-		return active;
-	}
-
-	public void setActive(Boolean active) {
-		this.active = active;
-	}
-
-	public Integer getCreatedBy() {
-		return createdBy;
-	}
-
-	public void setCreatedBy(Integer createdBy) {
-		this.createdBy = createdBy;
-	}
-
-	public Date getCreatedDate() {
-		return createdDate;
-	}
-
-	public void setCreatedDate(Date createdDate) {
-		this.createdDate = createdDate;
-	}
-
-	public static long getSerialversionuid() {
-		return serialVersionUID;
-	}
-
-	public Integer getTrialDays() {
-		return trialDays;
-	}
-
-	public void setTrialDays(Integer trialDays) {
-		this.trialDays = trialDays;
-	}
-
+   
+    @Type(type = "json")
+    @Column(columnDefinition = "json")
+    private List<String> features;
+    
+    
+    @Type(type = "json")
+    @Column(columnDefinition = "json")
+    private Map<String, String> metadata;
+    
+    
+    @Column(name = "active", nullable = false)
+    private Integer active;
 }
