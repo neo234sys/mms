@@ -30,7 +30,7 @@ public class SubscriptionPlans {
 
 	private Map<String, String> metadata;
 
-	private Integer active;
+
 
 	public SubscriptionPlans(Integer planId, String planName, Double priceMonth, Double priceYear, String currency,
 			Integer durationInDays, Integer trialDays, String description, List<String> features,
