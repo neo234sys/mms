@@ -26,7 +26,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sbmtech.mms.constant.CommonConstants;
+import com.sbmtech.mms.constant.SubscriptionStatus;
 import com.sbmtech.mms.models.Subscriber;
+import com.sbmtech.mms.models.Subscriptions;
 import com.sbmtech.mms.models.User;
 import com.sbmtech.mms.payload.request.LoginRequest;
 import com.sbmtech.mms.payload.request.ResendOtpRequest;
@@ -34,6 +36,7 @@ import com.sbmtech.mms.payload.request.SubscriberRequest;
 import com.sbmtech.mms.payload.request.VerifyOtpRequest;
 import com.sbmtech.mms.payload.response.JwtResponse;
 import com.sbmtech.mms.repository.RoleRepository;
+import com.sbmtech.mms.repository.SubscriptionRepository;
 import com.sbmtech.mms.repository.UserRepository;
 import com.sbmtech.mms.security.jwt.JwtUtils;
 import com.sbmtech.mms.security.services.UserDetailsImpl;
@@ -64,6 +67,9 @@ public class SubscriberController {
 
 	@Autowired
 	private SubscriberService subscriberService;
+	
+	@Autowired
+	private SubscriptionRepository subscriptionRepository;
 
 	@PostMapping("/signin")
 	public ResponseEntity<Map<String, Object>> authenticateUser(@RequestBody LoginRequest loginRequest) {
@@ -71,6 +77,7 @@ public class SubscriberController {
 		User user = null;
 		JwtResponse jwtResponse = null;
 		boolean isOTPVerified = false;
+		boolean validSubscription = false;
 
 		try {
 			Authentication authentication = authenticationManager.authenticate(
@@ -108,6 +115,19 @@ public class SubscriberController {
 								subscriber.getSubscriberId());
 					}
 
+					Subscriptions existingSubscription = subscriptionRepository
+							.findTopBySubscriber_SubscriberIdOrderBySubscriptionIdDesc(subscriber.getSubscriberId());
+					if (existingSubscription != null
+							//&& (existingSubscription.getStatus().equals(SubscriptionStatus.TRIAL.toString())
+							//		|| existingSubscription.getStatus().equals(SubscriptionStatus.ACTIVE.toString()))
+							) {
+						if( CommonUtil.getCurrentLocalDate().isAfter(existingSubscription.getStartDate()) &&
+							CommonUtil.getCurrentLocalDate().isBefore(existingSubscription.getEndDate())) {
+						
+							validSubscription=true;
+						}
+					}
+
 					jwtResponse = new JwtResponse(jwt, userDetails.getUserId(), userDetails.getUsername(),
 							userDetails.getMobileNo(), roles);
 				}
@@ -132,6 +152,7 @@ public class SubscriberController {
 		response.put("userId", user.getUserId());
 		response.put("subscriberId", subscriber != null ? subscriber.getSubscriberId() : null);
 		response.put("isOTPVerified", isOTPVerified);
+		response.put("validSubscription", validSubscription);
 
 		return ResponseEntity.ok(response);
 	}

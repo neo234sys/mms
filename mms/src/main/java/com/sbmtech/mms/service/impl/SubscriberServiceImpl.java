@@ -538,8 +538,10 @@ public class SubscriberServiceImpl implements SubscriberService {
 				.findTopBySubscriber_SubscriberIdOrderBySubscriptionIdDesc(subscriptionRequest.getSubscriberId());
 
 		if (existingSubscription != null
-				&& (existingSubscription.getStatus().equals(SubscriptionStatus.TRIAL.toString())
-						|| existingSubscription.getStatus().equals(SubscriptionStatus.ACTIVE.toString()))) {
+				//&& (existingSubscription.getStatus().equals(SubscriptionStatus.TRIAL.toString())
+				//		|| existingSubscription.getStatus().equals(SubscriptionStatus.ACTIVE.toString()))
+				&& CommonUtil.getCurrentLocalDate().isAfter(existingSubscription.getStartDate()) &&
+						CommonUtil.getCurrentLocalDate().isBefore(existingSubscription.getEndDate())) {
 			throw new BusinessException(
 					"Subscriber already has a subscription with status " + existingSubscription.getStatus(), null);
 		}
@@ -547,7 +549,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		Subscriptions subscription = new Subscriptions();
 
 		subscription
-				.setStartDate(CommonUtil.getLocalDateTimefromString(subscriptionRequest.getStartDate(), DATE_ddMMyyyy));
+				.setStartDate(CommonUtil.getLocalDatefromString(subscriptionRequest.getStartDate(), DATE_ddMMyyyy));
 		subscription.setEndDate(subscription.getStartDate().plusDays((planMaster.getDurationInDays())));
 		subscription.setStatus(SubscriptionStatus.TRIAL.toString());
 

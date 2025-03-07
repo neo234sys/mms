@@ -205,6 +205,13 @@ public class CommonUtil {
 		calNow.add(Calendar.DAY_OF_MONTH, daysToAdd);
 		return calNow.getTime();
 	}
+	
+	public static LocalDate getCurrentLocalDate() {
+		LocalDate currentDate = LocalDate.now(ZONE_DUBAI);
+		return currentDate;
+	}
+	
+	
 
 	public static Integer getIntegerFromString(String text) {
 		Integer intText = null;

@@ -1,6 +1,7 @@
 package com.sbmtech.mms.models;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import javax.persistence.Column;
@@ -34,10 +35,10 @@ public class Subscriptions implements Serializable {
 	private SubscriptionPlanMaster plan;
 
 	@Column(name = "start_date")
-	private LocalDateTime startDate;
+	private LocalDate startDate;
 
 	@Column(name = "end_date")
-	private LocalDateTime endDate;
+	private LocalDate endDate;
 
 	@Column(name = "status")
 	private String status;
@@ -78,19 +79,19 @@ public class Subscriptions implements Serializable {
 		this.plan = plan;
 	}
 
-	public LocalDateTime getStartDate() {
+	public LocalDate getStartDate() {
 		return startDate;
 	}
 
-	public void setStartDate(LocalDateTime startDate) {
+	public void setStartDate(LocalDate startDate) {
 		this.startDate = startDate;
 	}
 
-	public LocalDateTime getEndDate() {
+	public LocalDate getEndDate() {
 		return endDate;
 	}
 
-	public void setEndDate(LocalDateTime endDate) {
+	public void setEndDate(LocalDate endDate) {
 		this.endDate = endDate;
 	}
 

@@ -4,6 +4,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 
 import com.sbmtech.mms.validator.ValidChannelId;
+import com.sbmtech.mms.validator.ValidCurrentAndFutureDate;
 import com.sbmtech.mms.validator.ValidDateDDMMYYYY;
 import com.sbmtech.mms.validator.ValidFutureDate;
 import com.sbmtech.mms.validator.ValidPlanId;
@@ -20,7 +21,8 @@ public class SubscriptionRequest {
 	@NotBlank (message = "startDate cannot be null")
 	@NotEmpty(message = "startDate cannot be null")
 	@ValidDateDDMMYYYY
-	@ValidFutureDate
+	//@ValidFutureDate
+	@ValidCurrentAndFutureDate
 	private String startDate;
 	
 	
