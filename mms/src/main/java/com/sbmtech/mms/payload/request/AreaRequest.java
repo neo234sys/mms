@@ -2,7 +2,7 @@ package com.sbmtech.mms.payload.request;
 
 import com.sbmtech.mms.validator.ValidSubscriberlId;
 
-public class SubscriberLocationRequest {
+public class AreaRequest {
 
 	private String locationName;
 	private Integer countryId;

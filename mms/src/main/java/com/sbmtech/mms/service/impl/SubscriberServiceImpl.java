@@ -25,6 +25,7 @@ import org.json.simple.JSONObject;
 import javax.validation.Valid;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeanUtils;
@@ -40,6 +41,7 @@ import com.sbmtech.mms.constant.SubscriptionStatus;
 import com.sbmtech.mms.dto.NotifEmailDTO;
 import com.sbmtech.mms.dto.NotificationEmailResponseDTO;
 import com.sbmtech.mms.exception.BusinessException;
+import com.sbmtech.mms.models.Area;
 import com.sbmtech.mms.models.Building;
 import com.sbmtech.mms.models.ChannelMaster;
 import com.sbmtech.mms.models.City;
@@ -60,7 +62,6 @@ import com.sbmtech.mms.models.Role;
 import com.sbmtech.mms.models.RoleEnum;
 import com.sbmtech.mms.models.State;
 import com.sbmtech.mms.models.Subscriber;
-import com.sbmtech.mms.models.SubscriberLocation;
 import com.sbmtech.mms.models.SubscriptionPayment;
 import com.sbmtech.mms.models.SubscriptionPlanMaster;
 import com.sbmtech.mms.models.Subscriptions;
@@ -86,7 +87,7 @@ import com.sbmtech.mms.payload.request.KeyMasterRequest;
 import com.sbmtech.mms.payload.request.ParkingRequest;
 import com.sbmtech.mms.payload.request.ParkingZoneRequest;
 import com.sbmtech.mms.payload.request.ResendOtpRequest;
-import com.sbmtech.mms.payload.request.SubscriberLocationRequest;
+import com.sbmtech.mms.payload.request.AreaRequest;
 import com.sbmtech.mms.payload.request.SubscriberRequest;
 import com.sbmtech.mms.payload.request.SubscriptionPaymentRequest;
 import com.sbmtech.mms.payload.request.SubscriptionRequest;
@@ -100,13 +101,14 @@ import com.sbmtech.mms.payload.response.CommunityResponse;
 import com.sbmtech.mms.payload.response.DeptMasResponse;
 import com.sbmtech.mms.payload.response.FloorResponse;
 import com.sbmtech.mms.payload.response.KeyResponse;
-import com.sbmtech.mms.payload.response.LocationResponse;
+import com.sbmtech.mms.payload.response.AreaResponse;
 import com.sbmtech.mms.payload.response.ParkingResponse;
 import com.sbmtech.mms.payload.response.StateResponse;
 import com.sbmtech.mms.payload.response.SubscriptionPlans;
 import com.sbmtech.mms.payload.response.TenantUnitResponse;
 import com.sbmtech.mms.payload.response.UniKeyResponse;
 import com.sbmtech.mms.payload.response.UnitResponse;
+import com.sbmtech.mms.repository.AreaRepository;
 import com.sbmtech.mms.repository.BuildingRepository;
 import com.sbmtech.mms.repository.ChannelMasterRepository;
 import com.sbmtech.mms.repository.CityRepository;
@@ -121,11 +123,9 @@ import com.sbmtech.mms.repository.ParkingZoneRepository;
 import com.sbmtech.mms.repository.ProductConfigRepository;
 import com.sbmtech.mms.repository.RoleRepository;
 import com.sbmtech.mms.repository.StateRepository;
-import com.sbmtech.mms.repository.SubscriberLocationRepository;
-import com.sbmtech.mms.repository.SubscriberLocationRepositoryCustom;
+import com.sbmtech.mms.repository.AreaRepositoryCustom;
 import com.sbmtech.mms.repository.SubscriberRepository;
 import com.sbmtech.mms.repository.SubscriptionPaymentRepository;
-import com.sbmtech.mms.repository.SubscriptionPlanMasterRepository;
 import com.sbmtech.mms.repository.SubscriptionPlanMasterRepository;
 import com.sbmtech.mms.repository.SubscriptionRepository;
 import com.sbmtech.mms.repository.TenantRepository;
@@ -188,11 +188,15 @@ public class SubscriberServiceImpl implements SubscriberService {
 	@Autowired
 	private CityRepository cityRepository;
 
+//	@Autowired
+//	private SubscriberLocationRepository subscriberLocationRepository;
+	
 	@Autowired
-	private SubscriberLocationRepository subscriberLocationRepository;
-
+	private AreaRepository areaRepository;
+	
+	
 	@Autowired
-	private SubscriberLocationRepositoryCustom subscriberLocationRepoCustom;
+	private AreaRepositoryCustom areaRepoCustom;
 
 	@Autowired
 	private CommunityRepository communityRepository;
@@ -265,6 +269,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			subscriberlIdExists = subscriberRepository.existsBySubscriberIdAndActive(subscriberId, 1);
 			if (!subscriberlIdExists) {
 				logger.info("Subscribtion subspended for subscriberId ->:{} ", subscriberId);
+				
 				throw new BusinessException("Subscribtion subspended", null);
 			}
 
@@ -655,7 +660,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, responses, null, null);
 	}
 
-	public ApiResponse<Object> addSubscriberLocation(SubscriberLocationRequest request) {
+	public ApiResponse<Object> addArea(AreaRequest request) {
 		Optional<Subscriber> subscriberOpt = subscriberRepository.findById(request.getSubscriberId());
 
 		Optional<Countries> countryOpt = countriesRepository.findById(request.getCountryId());
@@ -678,28 +683,28 @@ public class SubscriberServiceImpl implements SubscriberService {
 		State state = stateOpt.get();
 		City city = cityOpt.get();
 
-		SubscriberLocation subscriberLocation = new SubscriberLocation();
-		subscriberLocation.setLocationName(request.getLocationName());
-		subscriberLocation.setCountry(country);
-		subscriberLocation.setState(state);
-		subscriberLocation.setCity(city);
-		subscriberLocation.setSubscriber(subscriber);
+		Area area = new Area();
+		area.setAreaName(request.getLocationName());
+		area.setCountry(country);
+		area.setState(state);
+		area.setCity(city);
+		area.setSubscriber(subscriber);
 
-		subscriberLocationRepository.save(subscriberLocation);
+		areaRepository.save(area);
 
-		LocationResponse locResp = new LocationResponse();
-		BeanUtils.copyProperties(subscriberLocation, locResp);
+		AreaResponse locResp = new AreaResponse();
+		BeanUtils.copyProperties(area, locResp);
 
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, locResp, null,
-				subscriberLocation.getSubscriber().getSubscriberId());
+				area.getSubscriber().getSubscriberId());
 	}
 
 	public ApiResponse<Object> addCommunity(CommunityRequest request) {
 
-		SubscriberLocation location = subscriberLocationRepoCustom
-				.findByLocationIdAndSubscriberId(request.getLocationId(), request.getSubscriberId());
+		Area location = areaRepoCustom
+				.findByAreaIdAndSubscriberId(request.getLocationId(), request.getSubscriberId());
 		if (ObjectUtils.isEmpty(location)) {
-			throw new BusinessException("Location not found with id: " + request.getLocationId(), null);
+			throw new BusinessException("Area not found with id: " + request.getLocationId(), null);
 		}
 
 		Optional<Subscriber> subscriberOptional = subscriberRepository.findById(request.getSubscriberId());
@@ -708,7 +713,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		Community community = new Community();
 		community.setCommunityName(request.getCommunityName());
-		community.setLocation(location);
+	//	community.setLocation(location);
 		community.setSubscriber(subscriber);
 
 		communityRepository.save(community);
@@ -719,16 +724,72 @@ public class SubscriberServiceImpl implements SubscriberService {
 	}
 
 	public ApiResponse<Object> addBuilding(BuildingRequest request) {
+		
+		Countries country =null;
+		State state = null;
+		City city = null;
+		Subscriber subscriber = null;
+		
+		Optional<Subscriber> subscriberOpt = subscriberRepository.findById(request.getSubscriberId());
+		
+		Optional<Countries> countryOpt = countriesRepository.findById(request.getCountryId());
+		if (!countryOpt.isPresent()) {
+			throw new BusinessException("Country not found with id: " + request.getCountryId(), null);
+		}
 
-		Community community = communityRepository.findByCommunityIdAndSubscriberId(request.getCommunityId(),
-				request.getSubscriberId());
-//		if (ObjectUtils.isEmpty(community)) {
-//			throw new BusinessException("Community not found with id: " + request.getCommunityId(), null);
-//		}
 
-		Optional<Subscriber> subscriberOptional = subscriberRepository.findById(request.getSubscriberId());
+		Optional<State> stateOpt = stateRepository.findById(request.getStateId());
+		if (!stateOpt.isPresent()) {
+			throw new BusinessException("State not found with id: " + request.getStateId(), null);
+		}else {
+			state = stateOpt.get();
+			country=state.getCountry();
+			if(country.getCountryId().intValue()!=request.getCountryId().intValue()) {
+				throw new BusinessException("Invalid stateId /stateId not matching with CountryId", null);
+			}
+		}
+		
 
-		Subscriber subscriber = subscriberOptional.get();
+		
+		Optional<City> cityOpt = cityRepository.findById(request.getCityId());
+		if (!cityOpt.isPresent()) {
+			throw new BusinessException("City not found with id: " + request.getCityId(), null);
+		}else {
+			city = cityOpt.get();
+			state=city.getState();
+			country=city.getCountry();
+			if(country.getCountryId().intValue()!=request.getCountryId().intValue()
+					|| state.getStateId().intValue()!=request.getStateId().intValue()
+					|| city.getCityId().intValue()!=request.getCityId().intValue()) {
+				throw new BusinessException("countryId / stateId / cityId is not matching each other", null);
+			}
+		}
+	
+
+		subscriber = subscriberOpt.get();
+		
+		
+		Area area = new Area();
+		area.setAreaName(request.getAreaName());
+		area.setCountry(country);
+		area.setState(state);
+		area.setCity(city);
+		area.setSubscriber(subscriber);
+
+		areaRepository.save(area);
+
+		Community community =null;
+		if(area!=null && area.getAreaId()!=null) {
+			if(StringUtils.isNotBlank(request.getCommunityName()) ) {
+				community = new Community();
+				community.setCommunityName(request.getCommunityName());
+				community.setArea(area);
+				community.setSubscriber(subscriber);
+				communityRepository.save(community);
+			
+			}
+			
+		}
 
 		BuildingResponse buildingResp;
 		try {
@@ -740,20 +801,15 @@ public class SubscriberServiceImpl implements SubscriberService {
 			building.setHasSwimpool(request.getHasSwimpool());
 			building.setHasKidsPlayground(request.getHasKidsPlayground());
 			building.setHasPlaycourt(request.getHasPlaycourt());
+			building.setNoOfFloors(request.getNoOfFloors());
+			building.setNoOfUnits(request.getNoOfunits());
+			building.setArea(area);
 			building.setCommunity((community!=null)?community:null);
 			building.setSubscriber(subscriber);
 			building.setCreatedAt(new Timestamp(System.currentTimeMillis()));
 
 			buildingRepository.save(building);
-			if (building.getBuildingId() != null) {
-				Integer noOfFloors = request.getNoOfFloors();
-				for (int i = 1; i <= noOfFloors; i++) {
-					Floor floor = new Floor();
-					floor.setFloorName("Floor " + i);
-					floor.setBuilding(building);
-					floorRepository.save(floor);
-				}
-			}
+
 			buildingResp = new BuildingResponse();
 			BeanUtils.copyProperties(building, buildingResp);
 		} catch (Exception e) {

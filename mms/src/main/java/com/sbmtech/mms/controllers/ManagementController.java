@@ -31,7 +31,7 @@ import com.sbmtech.mms.payload.request.FloorRequest;
 import com.sbmtech.mms.payload.request.KeyMasterRequest;
 import com.sbmtech.mms.payload.request.ParkingRequest;
 import com.sbmtech.mms.payload.request.ParkingZoneRequest;
-import com.sbmtech.mms.payload.request.SubscriberLocationRequest;
+import com.sbmtech.mms.payload.request.AreaRequest;
 import com.sbmtech.mms.payload.request.SubscriptionPaymentRequest;
 import com.sbmtech.mms.payload.request.SubscriptionRequest;
 import com.sbmtech.mms.payload.request.TenantUnitRequest;
@@ -105,13 +105,13 @@ public class ManagementController {
 		return ResponseEntity.ok(subscriberService.makePayment(subscriptionPayment));
 	}
 
-	@PostMapping("/addSubscriberLocation")
-	public ResponseEntity<?> addSubscriberLocation(@Valid @RequestBody SubscriberLocationRequest request,
+	@PostMapping("/addArea")
+	public ResponseEntity<?> addSubscriberLocation(@Valid @RequestBody AreaRequest request,
 			@CurrentSecurityContext(expression = "authentication")  Authentication auth)throws Exception{
 		
 		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
 		request.setSubscriberId(subscriberId);
-		return ResponseEntity.ok(subscriberService.addSubscriberLocation(request));
+		return ResponseEntity.ok(subscriberService.addArea(request));
 	}
 
 	@PostMapping("/addCommunity")

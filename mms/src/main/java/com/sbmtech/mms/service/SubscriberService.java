@@ -21,7 +21,7 @@ import com.sbmtech.mms.payload.request.KeyMasterRequest;
 import com.sbmtech.mms.payload.request.ParkingRequest;
 import com.sbmtech.mms.payload.request.ParkingZoneRequest;
 import com.sbmtech.mms.payload.request.ResendOtpRequest;
-import com.sbmtech.mms.payload.request.SubscriberLocationRequest;
+import com.sbmtech.mms.payload.request.AreaRequest;
 import com.sbmtech.mms.payload.request.SubscriberRequest;
 import com.sbmtech.mms.payload.request.SubscriptionPaymentRequest;
 import com.sbmtech.mms.payload.request.SubscriptionRequest;
@@ -59,7 +59,7 @@ public interface SubscriberService {
 
 	public ApiResponse<List<CityResponse>> getCitiesByStateAndCountryId(Integer stateId, Integer countryId);
 
-	public ApiResponse<Object> addSubscriberLocation(SubscriberLocationRequest request);
+	public ApiResponse<Object> addArea(AreaRequest request);
 
 	public ApiResponse<Object> addCommunity(CommunityRequest request);
 

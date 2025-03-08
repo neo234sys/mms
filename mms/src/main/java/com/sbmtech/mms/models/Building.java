@@ -54,10 +54,21 @@ public class Building implements Serializable {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "community_id")
 	private Community community;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "area_id")
+	private Area area;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "subscriber_id")
 	private Subscriber subscriber;
+	
+	
+	@Column(name = "no_of_floors")
+	private Integer noOfFloors;
+	
+	@Column(name = "no_of_units")
+	private Integer noOfUnits;
 
 	@Column(name = "created_at")
 	@Temporal(TemporalType.TIMESTAMP)
@@ -152,8 +163,30 @@ public class Building implements Serializable {
 		this.createdAt = createdAt;
 	}
 
-	public static long getSerialversionuid() {
-		return serialVersionUID;
+	public Area getArea() {
+		return area;
 	}
+
+	public void setArea(Area area) {
+		this.area = area;
+	}
+
+	public Integer getNoOfFloors() {
+		return noOfFloors;
+	}
+
+	public void setNoOfFloors(Integer noOfFloors) {
+		this.noOfFloors = noOfFloors;
+	}
+
+	public Integer getNoOfUnits() {
+		return noOfUnits;
+	}
+
+	public void setNoOfUnits(Integer noOfUnits) {
+		this.noOfUnits = noOfUnits;
+	}
+
+	
 
 }
