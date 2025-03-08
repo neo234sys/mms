@@ -1,5 +1,6 @@
 package com.sbmtech.mms.controllers;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -117,11 +118,8 @@ public class SubscriberController {
 
 					Subscriptions existingSubscription = subscriptionRepository
 							.findTopBySubscriber_SubscriberIdOrderBySubscriptionIdDesc(subscriber.getSubscriberId());
-					if (existingSubscription != null
-							//&& (existingSubscription.getStatus().equals(SubscriptionStatus.TRIAL.toString())
-							//		|| existingSubscription.getStatus().equals(SubscriptionStatus.ACTIVE.toString()))
-							) {
-						if( CommonUtil.getCurrentLocalDate().isAfter(existingSubscription.getStartDate()) &&
+					if (existingSubscription != null) {
+						if( CommonUtil.getCurrentLocalDate().isAfter(existingSubscription.getStartDate().minusDays(1)) &&
 							CommonUtil.getCurrentLocalDate().isBefore(existingSubscription.getEndDate())) {
 						
 							validSubscription=true;

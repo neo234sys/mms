@@ -538,9 +538,8 @@ public class SubscriberServiceImpl implements SubscriberService {
 				.findTopBySubscriber_SubscriberIdOrderBySubscriptionIdDesc(subscriptionRequest.getSubscriberId());
 
 		if (existingSubscription != null
-				//&& (existingSubscription.getStatus().equals(SubscriptionStatus.TRIAL.toString())
-				//		|| existingSubscription.getStatus().equals(SubscriptionStatus.ACTIVE.toString()))
-				&& CommonUtil.getCurrentLocalDate().isAfter(existingSubscription.getStartDate()) &&
+				
+				&& CommonUtil.getCurrentLocalDate().isAfter(existingSubscription.getStartDate().minusDays(1)) &&
 						CommonUtil.getCurrentLocalDate().isBefore(existingSubscription.getEndDate())) {
 			throw new BusinessException(
 					"Subscriber already has a subscription with status " + existingSubscription.getStatus(), null);
