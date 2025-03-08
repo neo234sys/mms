@@ -722,9 +722,9 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		Community community = communityRepository.findByCommunityIdAndSubscriberId(request.getCommunityId(),
 				request.getSubscriberId());
-		if (ObjectUtils.isEmpty(community)) {
-			throw new BusinessException("Community not found with id: " + request.getCommunityId(), null);
-		}
+//		if (ObjectUtils.isEmpty(community)) {
+//			throw new BusinessException("Community not found with id: " + request.getCommunityId(), null);
+//		}
 
 		Optional<Subscriber> subscriberOptional = subscriberRepository.findById(request.getSubscriberId());
 
@@ -740,7 +740,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			building.setHasSwimpool(request.getHasSwimpool());
 			building.setHasKidsPlayground(request.getHasKidsPlayground());
 			building.setHasPlaycourt(request.getHasPlaycourt());
-			building.setCommunity(community);
+			building.setCommunity((community!=null)?community:null);
 			building.setSubscriber(subscriber);
 			building.setCreatedAt(new Timestamp(System.currentTimeMillis()));
 
