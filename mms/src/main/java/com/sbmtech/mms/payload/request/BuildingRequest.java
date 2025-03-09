@@ -41,6 +41,9 @@ public class BuildingRequest {
 
 	private Integer subscriberId;
 	
+	private String latitude;
+	private String longitude;
+	
 	@Min(value=1, message="noOfFloors min value should 1")
 	@NotNull(message = "noOfFloors field cannot be null")
 	private Integer noOfFloors;

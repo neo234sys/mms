@@ -807,7 +807,8 @@ public class SubscriberServiceImpl implements SubscriberService {
 			building.setCommunity((community!=null)?community:null);
 			building.setSubscriber(subscriber);
 			building.setCreatedAt(new Timestamp(System.currentTimeMillis()));
-
+			building.setLatitude(request.getLatitude());
+			building.setLongitude(request.getLongitude());
 			buildingRepository.save(building);
 
 			buildingResp = new BuildingResponse();

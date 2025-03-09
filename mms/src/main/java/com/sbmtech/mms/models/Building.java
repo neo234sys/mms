@@ -69,6 +69,12 @@ public class Building implements Serializable {
 	
 	@Column(name = "no_of_units")
 	private Integer noOfUnits;
+	
+	@Column(name = "latitude")
+	private String latitude;
+	
+	@Column(name = "longitude")
+	private String longitude;
 
 	@Column(name = "created_at")
 	@Temporal(TemporalType.TIMESTAMP)
@@ -185,6 +191,22 @@ public class Building implements Serializable {
 
 	public void setNoOfUnits(Integer noOfUnits) {
 		this.noOfUnits = noOfUnits;
+	}
+
+	public String getLatitude() {
+		return latitude;
+	}
+
+	public void setLatitude(String latitude) {
+		this.latitude = latitude;
+	}
+
+	public String getLongitude() {
+		return longitude;
+	}
+
+	public void setLongitude(String longitude) {
+		this.longitude = longitude;
 	}
 
 	
