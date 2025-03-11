@@ -1218,17 +1218,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		}
 		
 		PaymentMode paymentMode=paymentModeOp.get();
-//		if(paymentMode.getPaymentModeId() !=request.getRentPaymentMode().intValue()) {
-//			throw new BusinessException("UnitTypeId not match with unitSubTypeId", null);
-//		}
-		
-//		Optional<PaymentModeEnum> ops = Arrays.stream(PaymentModeEnum.values())
-//				.filter(status -> status.getValue().equals(request.getRentPaymentMode())).findAny();
-//
-//		if (!ops.isPresent()) {
-//			throw new BusinessException("Invalid RentPaymentMode, can be any one CREDIT_CARD/BANK_TRANSFER/CASH/CHEQUE",
-//					null);
-//		}
+
 		
 		Optional<RentCycle> rentCycleOp = rentCycleRepository.findById(request.getRentCycleId());
 		if (!rentCycleOp.isPresent()) {
@@ -1237,12 +1227,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		
 		RentCycle rentCycle=rentCycleOp.get();
 
-//		Optional<RentCycleEnum> rentCycle = Arrays.stream(RentCycleEnum.values())
-//				.filter(status -> status.getValue().equals(request.getRentCycle())).findAny();
-//
-//		if (!rentCycle.isPresent()) {
-//			throw new BusinessException("Invalid RentCycle, can be any one of MONTHLY/QUARTERLY/HALFLY/YEARLY", null);
-//		}
+
 		
 		Optional<UnitStatus> unitStatusop = unitStatusRepository.findById(UnitStatusEnum.OCCUPIED.getValue());
 		if (!unitStatusop.isPresent()) {
