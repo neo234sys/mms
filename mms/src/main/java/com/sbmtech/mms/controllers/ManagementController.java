@@ -233,6 +233,7 @@ public class ManagementController {
 		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
 		
 		return ResponseEntity.ok(constantLookupService.getUnitTypeLookup());
+	
 	}
 	
 	@GetMapping("/getUnitSubtypeLookup")

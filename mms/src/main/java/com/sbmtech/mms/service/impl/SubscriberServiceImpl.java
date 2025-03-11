@@ -38,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.google.gson.Gson;
 import com.sbmtech.mms.constant.CommonConstants;
 import com.sbmtech.mms.constant.SubscriptionStatus;
+import com.sbmtech.mms.dto.KeyValuePairDTO;
 import com.sbmtech.mms.dto.NotifEmailDTO;
 import com.sbmtech.mms.dto.NotificationEmailResponseDTO;
 import com.sbmtech.mms.exception.BusinessException;
@@ -99,14 +100,12 @@ import com.sbmtech.mms.payload.request.UnitKeysRequest;
 import com.sbmtech.mms.payload.request.UnitRequest;
 import com.sbmtech.mms.payload.request.VerifyOtpRequest;
 import com.sbmtech.mms.payload.response.BuildingResponse;
-import com.sbmtech.mms.payload.response.CityResponse;
 import com.sbmtech.mms.payload.response.CommunityResponse;
 import com.sbmtech.mms.payload.response.DeptMasResponse;
 import com.sbmtech.mms.payload.response.FloorResponse;
 import com.sbmtech.mms.payload.response.KeyResponse;
 import com.sbmtech.mms.payload.response.AreaResponse;
 import com.sbmtech.mms.payload.response.ParkingResponse;
-import com.sbmtech.mms.payload.response.StateResponse;
 import com.sbmtech.mms.payload.response.SubscriptionPlans;
 import com.sbmtech.mms.payload.response.TenantUnitResponse;
 import com.sbmtech.mms.payload.response.UniKeyResponse;
@@ -646,9 +645,9 @@ public class SubscriberServiceImpl implements SubscriberService {
 				paymentRequest.getSubscriberId());
 	}
 
-	public ApiResponse<List<StateResponse>> getStatesByCountryId(Integer countryId) {
+	public ApiResponse<Object> getStatesByCountryId(Integer countryId) {
 		List<State> states = stateRepository.findByCountryCountryId(countryId);
-		List<StateResponse> responses = new ArrayList<>();
+		List<KeyValuePairDTO> responses = new ArrayList<>();
 
 		if (states.isEmpty()) {
 			throw new BusinessException("Invalid CountryId", null);
@@ -656,9 +655,9 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		for (State state : states) {
 
-			StateResponse stateResponse = new StateResponse();
-			stateResponse.setStateId(state.getStateId());
-			stateResponse.setName(state.getName());
+			KeyValuePairDTO stateResponse = new KeyValuePairDTO();
+			stateResponse.setKey(state.getStateId());
+			stateResponse.setValue(state.getName());
 
 			responses.add(stateResponse);
 		}
@@ -666,18 +665,18 @@ public class SubscriberServiceImpl implements SubscriberService {
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, responses, null, null);
 	}
 
-	public ApiResponse<List<CityResponse>> getCitiesByStateAndCountryId(Integer stateId, Integer countryId) {
+	public ApiResponse<Object> getCitiesByStateAndCountryId(Integer stateId, Integer countryId) {
 		List<City> cities = cityRepository.findByStateStateIdAndCountryCountryId(stateId, countryId);
-		List<CityResponse> responses = new ArrayList<>();
+		List<KeyValuePairDTO> responses = new ArrayList<>();
 
 		if (cities.isEmpty()) {
 			throw new BusinessException("Invalid Country/City Id", null);
 		}
 
 		for (City city : cities) {
-			CityResponse cityResponse = new CityResponse();
-			cityResponse.setCityId(city.getCityId());
-			cityResponse.setName(city.getName());
+			KeyValuePairDTO cityResponse = new KeyValuePairDTO();
+			cityResponse.setKey(city.getCityId());
+			cityResponse.setValue(city.getName());
 
 			responses.add(cityResponse);
 		}

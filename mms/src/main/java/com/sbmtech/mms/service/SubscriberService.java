@@ -29,8 +29,6 @@ import com.sbmtech.mms.payload.request.TenantUnitRequest;
 import com.sbmtech.mms.payload.request.UnitKeysRequest;
 import com.sbmtech.mms.payload.request.UnitRequest;
 import com.sbmtech.mms.payload.request.VerifyOtpRequest;
-import com.sbmtech.mms.payload.response.CityResponse;
-import com.sbmtech.mms.payload.response.StateResponse;
 import com.sbmtech.mms.payload.response.SubscriptionPlans;
 
 public interface SubscriberService {
@@ -55,9 +53,9 @@ public interface SubscriberService {
 
 	public ApiResponse<String> makePayment(SubscriptionPaymentRequest paymentRequest);
 
-	public ApiResponse<List<StateResponse>> getStatesByCountryId(Integer countryId);
+	public ApiResponse<Object> getStatesByCountryId(Integer countryId);
 
-	public ApiResponse<List<CityResponse>> getCitiesByStateAndCountryId(Integer stateId, Integer countryId);
+	public ApiResponse<Object> getCitiesByStateAndCountryId(Integer stateId, Integer countryId);
 
 	public ApiResponse<Object> addArea(AreaRequest request);
 

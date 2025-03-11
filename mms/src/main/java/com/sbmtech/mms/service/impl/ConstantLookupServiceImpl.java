@@ -7,10 +7,12 @@ import static com.sbmtech.mms.constant.CommonConstants.SUCCESS_DESC;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.sbmtech.mms.dto.KeyValuePairDTO;
 import com.sbmtech.mms.exception.BusinessException;
 import com.sbmtech.mms.models.PaymentMode;
 import com.sbmtech.mms.models.RentCycle;
@@ -50,20 +52,28 @@ public class ConstantLookupServiceImpl implements ConstantLookupService {
 	
 	
 	@Override
-	public  ApiResponse<List<UnitType>>  getUnitTypeLookup()throws Exception {
+	public  ApiResponse<Object>  getUnitTypeLookup()throws Exception {
 	
 		List <UnitType> result= unitTypeRepository.findAll();
 
 		if (result.isEmpty()) {
 			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
 		}
-		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, result, null, null);
+		List<KeyValuePairDTO> listDto = result.stream()
+                .map(p->{
+                	KeyValuePairDTO kv=new KeyValuePairDTO();
+                	kv.setKey(p.getUnitTypeId());
+                	kv.setValue(p.getUnitTypeName());
+                	return kv;
+                }).collect(Collectors.toList());
+		
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, listDto, null, null);
 	}
 
 	@Override
-	public ApiResponse<List<UnitSubTypeResponse>> getUnitSubtypeLookup(Integer unitTypId) throws Exception {
+	public ApiResponse<Object> getUnitSubtypeLookup(Integer unitTypId) throws Exception {
 		List<UnitSubType> unitSubTypeList = UnitSubTypeRepository.findByUnitTypeUnitTypeId(unitTypId);
-		List<UnitSubTypeResponse> responses = new ArrayList<>();
+		List<KeyValuePairDTO> responses = new ArrayList<>();
 
 		if (unitSubTypeList.isEmpty()) {
 			throw new BusinessException("Invalid unitTypId", null);
@@ -71,9 +81,9 @@ public class ConstantLookupServiceImpl implements ConstantLookupService {
 
 		for (UnitSubType unitSubType : unitSubTypeList) {
 
-			UnitSubTypeResponse unitSubTypeResponse = new UnitSubTypeResponse();
-			unitSubTypeResponse.setUnitSubtypeId(unitSubType.getUnitSubtypeId());
-			unitSubTypeResponse.setUnitSubtypeName(unitSubType.getUnitSubtypeName());
+			KeyValuePairDTO unitSubTypeResponse = new KeyValuePairDTO();
+			unitSubTypeResponse.setKey(unitSubType.getUnitSubtypeId());
+			unitSubTypeResponse.setValue(unitSubType.getUnitSubtypeName());
 
 			responses.add(unitSubTypeResponse);
 		}
@@ -81,35 +91,60 @@ public class ConstantLookupServiceImpl implements ConstantLookupService {
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, responses, null, null);
 		
 	}
+	
+	
 
 	@Override
-	public ApiResponse<List<UnitStatus>> getUnitStatusLookup() throws Exception {
+	public ApiResponse<Object> getUnitStatusLookup() throws Exception {
 		List <UnitStatus> result= unitStatusRepository.findAll();
 
 		if (result.isEmpty()) {
 			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
 		}
-		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, result, null, null);
+		List<KeyValuePairDTO> listDto = result.stream()
+                .map(p->{
+                	KeyValuePairDTO kv=new KeyValuePairDTO();
+                	kv.setKey(p.getUnitStatusId());
+                	kv.setValue(p.getUnitStatusName());
+                	return kv;
+                }).collect(Collectors.toList());
+		
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, listDto, null, null);
 	}
 
 	@Override
-	public ApiResponse<List<PaymentMode>> getPaymentModeLookup() throws Exception {
+	public ApiResponse<Object> getPaymentModeLookup() throws Exception {
 		List <PaymentMode> result= paymentModeRepository.findAll();
 
 		if (result.isEmpty()) {
 			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
 		}
-		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, result, null, null);
+		List<KeyValuePairDTO> listDto = result.stream()
+                .map(p->{
+                	KeyValuePairDTO kv=new KeyValuePairDTO();
+                	kv.setKey(p.getPaymentModeId());
+                	kv.setValue(p.getPaymentModeName());
+                	return kv;
+                }).collect(Collectors.toList());
+		
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, listDto, null, null);
 	}
 
 	@Override
-	public ApiResponse<List<RentCycle>> getRentCycleLookup() throws Exception {
+	public ApiResponse<Object> getRentCycleLookup() throws Exception {
 		List <RentCycle> result= rentCycleRepository.findAll();
 
 		if (result.isEmpty()) {
 			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
 		}
-		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, result, null, null);
+		List<KeyValuePairDTO> listDto = result.stream()
+                .map(p->{
+                	KeyValuePairDTO kv=new KeyValuePairDTO();
+                	kv.setKey(p.getRentCycleId());
+                	kv.setValue(p.getRentCycleName());
+                	return kv;
+                }).collect(Collectors.toList());
+		
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, listDto, null, null);
 	}
-
 }
