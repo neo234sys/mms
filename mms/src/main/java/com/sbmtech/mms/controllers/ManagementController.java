@@ -14,13 +14,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.CurrentSecurityContext;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sbmtech.mms.constant.CommonConstants;
 import com.sbmtech.mms.constant.SubscriptionStatus;
 import com.sbmtech.mms.models.ProductConfig;
 import com.sbmtech.mms.models.Subscriber;
@@ -158,7 +158,6 @@ public class ManagementController {
 			@CurrentSecurityContext(expression = "authentication")  Authentication auth)throws Exception {
 		
 		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
-		//request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.addUnit(request));
 	}
 
@@ -288,6 +287,18 @@ public class ManagementController {
     }
     
     
+    
+    @GetMapping("/getAllBuildings")
+	public ResponseEntity<?> getAllBuildings(@CurrentSecurityContext(expression = "authentication")  Authentication auth,
+			 @RequestParam(defaultValue = CommonConstants.DEFAULT_PAGE_NUMBER, required = false) int pageNo,
+	            @RequestParam(defaultValue = CommonConstants.DEFAULT_PAGE_SIZE, required = false) int pageSize,
+	            @RequestParam(defaultValue = CommonConstants.DEFAULT_SORT_BY, required = false) String sortBy,
+	            @RequestParam(defaultValue = CommonConstants.DEFAULT_SORT_DIRECTION, required = false) String sortDir)throws Exception {
+		
+		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
+		
+		return ResponseEntity.ok(subscriberService.getAllBuildings(subscriberId,pageNo, pageSize, sortBy, sortDir));
+	}
 
 	@Scheduled(cron = "0 */5 * * * ?") //every 5 hrs
 	public void expireSubscriptionsEvery5Seconds() {

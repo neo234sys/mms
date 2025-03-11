@@ -80,5 +80,7 @@ public interface SubscriberService {
 
 	public ApiResponse<Object> addDepartment(@Valid DepartmentRequest request);
 
+	public  ApiResponse<Object> getAllBuildings(Integer subscriberId,int pageNo, int pageSize, String sortBy, String sortDir)throws Exception;
+
 	
 }

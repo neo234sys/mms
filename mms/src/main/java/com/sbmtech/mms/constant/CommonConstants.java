@@ -25,6 +25,10 @@ public class CommonConstants {
     public static final String RESPONSE_CODE="responseCode";
     public static final String RESPONSE_DESC="responseDesc";
     
+    public static final String DEFAULT_PAGE_NUMBER = "0";
+    public  static final String DEFAULT_PAGE_SIZE = "2";
+    public static final String DEFAULT_SORT_BY = "userId";
+    public static final String DEFAULT_SORT_DIRECTION = "asc";
 	
 	public static final String CHARSET_UTF8 = ";charset=" + "UTF-8";
 	public static final String[] ATTACHMENT_IMAGE_TYPES = {"image/jpeg", "image/png", "image/jpg","application/pdf"};

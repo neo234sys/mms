@@ -30,6 +30,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -1296,6 +1297,12 @@ public class SubscriberServiceImpl implements SubscriberService {
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, deptMasResp, null, null);
 		}
 		return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
+	}
+
+	@Override
+	public ApiResponse<Object> getAllBuildings(Integer subscriberId,int pageNo, int pageSize, String sortBy, String sortDir) throws Exception {
+		PageRequest pageable = PageRequest.of(pageNo, pageSize);
+		return null;
 	}
 
 
