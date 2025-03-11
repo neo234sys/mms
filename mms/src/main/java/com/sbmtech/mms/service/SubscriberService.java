@@ -9,9 +9,9 @@ import org.springframework.security.core.Authentication;
 
 import com.sbmtech.mms.models.ChannelMaster;
 import com.sbmtech.mms.models.Countries;
-import com.sbmtech.mms.models.SubscriptionPlanMaster;
 import com.sbmtech.mms.payload.request.AdditionalDetailsRequest;
 import com.sbmtech.mms.payload.request.ApiResponse;
+import com.sbmtech.mms.payload.request.AreaRequest;
 import com.sbmtech.mms.payload.request.BuildingRequest;
 import com.sbmtech.mms.payload.request.CommunityRequest;
 import com.sbmtech.mms.payload.request.CreateUserRequest;
@@ -21,7 +21,6 @@ import com.sbmtech.mms.payload.request.KeyMasterRequest;
 import com.sbmtech.mms.payload.request.ParkingRequest;
 import com.sbmtech.mms.payload.request.ParkingZoneRequest;
 import com.sbmtech.mms.payload.request.ResendOtpRequest;
-import com.sbmtech.mms.payload.request.AreaRequest;
 import com.sbmtech.mms.payload.request.SubscriberRequest;
 import com.sbmtech.mms.payload.request.SubscriptionPaymentRequest;
 import com.sbmtech.mms.payload.request.SubscriptionRequest;
