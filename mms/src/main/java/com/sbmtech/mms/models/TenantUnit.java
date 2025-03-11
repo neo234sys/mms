@@ -14,6 +14,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -50,8 +51,8 @@ public class TenantUnit implements Serializable {
 	private Integer tenurePeriodMonth;
 
 	
-	@Column(name = "rent_cycle")
-	private String rentCycle;
+//	@Column(name = "rent_cycle")
+//	private String rentCycle;
 
 	@Column(name = "expired")
 	private Boolean expired;
@@ -60,8 +61,17 @@ public class TenantUnit implements Serializable {
 	private Boolean active;
 
 
-	@Column(name = "rent_payment_mode")
-	private String rentPaymentMode;
+//	@Column(name = "rent_payment_mode")
+//	private String rentPaymentMode;
+	
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "payment_mode_id", referencedColumnName = "payment_mode_id")
+	private PaymentMode paymentMode;
+	
+	
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "rent_cycle_id", referencedColumnName = "rent_cycle_id")
+	private RentCycle rentCycle;
 
 	@Column(name = "created_time")
 	@CreationTimestamp
@@ -111,11 +121,11 @@ public class TenantUnit implements Serializable {
 
 
 
-	public String getRentCycle() {
+	public RentCycle getRentCycle() {
 		return rentCycle;
 	}
 
-	public void setRentCycle(String rentCycle) {
+	public void setRentCycle(RentCycle rentCycle) {
 		this.rentCycle = rentCycle;
 	}
 
@@ -135,12 +145,14 @@ public class TenantUnit implements Serializable {
 		this.active = active;
 	}
 
-	public String getRentPaymentMode() {
-		return rentPaymentMode;
+	
+
+	public PaymentMode getPaymentMode() {
+		return paymentMode;
 	}
 
-	public void setRentPaymentMode(String rentPaymentMode) {
-		this.rentPaymentMode = rentPaymentMode;
+	public void setPaymentMode(PaymentMode paymentMode) {
+		this.paymentMode = paymentMode;
 	}
 
 	public Date getCreatedTime() {

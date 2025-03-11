@@ -254,6 +254,24 @@ public class ManagementController {
 		return ResponseEntity.ok(constantLookupService.getUnitStatusLookup());
 	}
 	
+	@GetMapping("/getPaymentModeLookup")
+	public ResponseEntity<?> getPaymentModeLookup(
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth)throws Exception {
+		
+		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
+		
+		return ResponseEntity.ok(constantLookupService.getPaymentModeLookup());
+	}
+	
+	@GetMapping("/getRentCycleLookup")
+	public ResponseEntity<?> getRentCycleLookup(
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth)throws Exception {
+		
+		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
+		
+		return ResponseEntity.ok(constantLookupService.getRentCycleLookup());
+	}
+	
 	
 	@GetMapping("/getProductConfig")
     public ProductConfig getProductConfig(@CurrentSecurityContext(expression = "authentication")  Authentication auth) throws Exception{

@@ -30,11 +30,13 @@ public class TenantUnitRequest {
 	@Min(value=1, message="min value 1")
 	private Integer tenurePeriodMonth;
 	
-	@NotEmpty(message = "rentCycle cannot be null")
-	private String rentCycle;
+	//@NotEmpty(message = "rentCycle cannot be null")
+	@NotNull(message = "rentPaymentMode cannot be null")
+	private Integer rentCycleId;
 	
-	@NotEmpty(message = "rentPaymentMode cannot be null")
-	private String rentPaymentMode;
+	//@NotEmpty(message = "rentPaymentMode cannot be null")
+	@NotNull(message = "rentPaymentMode cannot be null")
+	private Integer paymentModeId;
 	
 	@NotEmpty(message = "tenancyStartDate cannot be null")
 	@ValidDateDDMMYYYY
@@ -93,20 +95,22 @@ public class TenantUnitRequest {
 		this.rent = rent;
 	}
 
-	public String getRentCycle() {
-		return rentCycle;
+	
+
+	public Integer getRentCycleId() {
+		return rentCycleId;
 	}
 
-	public void setRentCycle(String rentCycle) {
-		this.rentCycle = rentCycle;
+	public void setRentCycleId(Integer rentCycleId) {
+		this.rentCycleId = rentCycleId;
 	}
 
-	public String getRentPaymentMode() {
-		return rentPaymentMode;
+	public Integer getPaymentModeId() {
+		return paymentModeId;
 	}
 
-	public void setRentPaymentMode(String rentPaymentMode) {
-		this.rentPaymentMode = rentPaymentMode;
+	public void setPaymentModeId(Integer paymentModeId) {
+		this.paymentModeId = paymentModeId;
 	}
 
 	public Integer getSubscriberId() {

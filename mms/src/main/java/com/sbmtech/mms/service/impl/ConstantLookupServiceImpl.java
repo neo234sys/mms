@@ -12,11 +12,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.sbmtech.mms.exception.BusinessException;
+import com.sbmtech.mms.models.PaymentMode;
+import com.sbmtech.mms.models.RentCycle;
 import com.sbmtech.mms.models.UnitStatus;
 import com.sbmtech.mms.models.UnitSubType;
 import com.sbmtech.mms.models.UnitType;
 import com.sbmtech.mms.payload.request.ApiResponse;
 import com.sbmtech.mms.payload.response.UnitSubTypeResponse;
+import com.sbmtech.mms.repository.PaymentModeRepository;
+import com.sbmtech.mms.repository.RentCycleRepository;
 import com.sbmtech.mms.repository.UnitStatusRepository;
 import com.sbmtech.mms.repository.UnitSubTypeRepository;
 import com.sbmtech.mms.repository.UnitTypeRepository;
@@ -36,6 +40,14 @@ public class ConstantLookupServiceImpl implements ConstantLookupService {
 	
 	@Autowired
 	UnitStatusRepository unitStatusRepository;
+	
+	@Autowired
+	PaymentModeRepository paymentModeRepository;
+	
+	@Autowired
+	RentCycleRepository rentCycleRepository;
+	
+	
 	
 	@Override
 	public  ApiResponse<List<UnitType>>  getUnitTypeLookup()throws Exception {
@@ -73,6 +85,26 @@ public class ConstantLookupServiceImpl implements ConstantLookupService {
 	@Override
 	public ApiResponse<List<UnitStatus>> getUnitStatusLookup() throws Exception {
 		List <UnitStatus> result= unitStatusRepository.findAll();
+
+		if (result.isEmpty()) {
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
+		}
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, result, null, null);
+	}
+
+	@Override
+	public ApiResponse<List<PaymentMode>> getPaymentModeLookup() throws Exception {
+		List <PaymentMode> result= paymentModeRepository.findAll();
+
+		if (result.isEmpty()) {
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
+		}
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, result, null, null);
+	}
+
+	@Override
+	public ApiResponse<List<RentCycle>> getRentCycleLookup() throws Exception {
+		List <RentCycle> result= rentCycleRepository.findAll();
 
 		if (result.isEmpty()) {
 			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);

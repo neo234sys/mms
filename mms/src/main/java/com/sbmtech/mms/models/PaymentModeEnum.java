@@ -1,16 +1,16 @@
 package com.sbmtech.mms.models;
 
-public enum RentCycleEnum {
-	MONTHLY(1),
-	QUARTERLY(2),
-	HALFLY(3), 
-	YEARLY(4);
-
+public enum PaymentModeEnum {
+	CREDIT_CARD(1),
+	BANK_TRANSFER(2), 
+	CASH(3),
+	CHEQUE(4);
+	
 	
 	
 	private Integer value;
 	
-	private RentCycleEnum(Integer value){
+	private PaymentModeEnum(Integer value){
 		
 		this.value = value;
 	}
@@ -20,4 +20,5 @@ public enum RentCycleEnum {
 		return this.value;
 	}
 
+	
 }

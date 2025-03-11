@@ -55,9 +55,11 @@ import com.sbmtech.mms.models.Parking;
 import com.sbmtech.mms.models.ParkingTypeEnum;
 import com.sbmtech.mms.models.ParkingZone;
 import com.sbmtech.mms.models.PaymentMethod;
+import com.sbmtech.mms.models.PaymentMode;
 import com.sbmtech.mms.models.ProductConfig;
+import com.sbmtech.mms.models.RentCycle;
 import com.sbmtech.mms.models.RentCycleEnum;
-import com.sbmtech.mms.models.RentPaymentModeEnum;
+import com.sbmtech.mms.models.PaymentModeEnum;
 import com.sbmtech.mms.models.Role;
 import com.sbmtech.mms.models.RoleEnum;
 import com.sbmtech.mms.models.State;
@@ -121,7 +123,9 @@ import com.sbmtech.mms.repository.KeyMasterRepository;
 import com.sbmtech.mms.repository.OtpRepository;
 import com.sbmtech.mms.repository.ParkingRepository;
 import com.sbmtech.mms.repository.ParkingZoneRepository;
+import com.sbmtech.mms.repository.PaymentModeRepository;
 import com.sbmtech.mms.repository.ProductConfigRepository;
+import com.sbmtech.mms.repository.RentCycleRepository;
 import com.sbmtech.mms.repository.RoleRepository;
 import com.sbmtech.mms.repository.StateRepository;
 import com.sbmtech.mms.repository.AreaRepositoryCustom;
@@ -253,6 +257,14 @@ public class SubscriberServiceImpl implements SubscriberService {
 	
 	@Autowired
 	private UnitStatusRepository unitStatusRepository;
+	
+	@Autowired
+	private PaymentModeRepository paymentModeRepository;
+	
+	@Autowired
+	private RentCycleRepository rentCycleRepository;
+	
+	
 	
 	
 	
@@ -1201,20 +1213,37 @@ public class SubscriberServiceImpl implements SubscriberService {
 			tenantUnit.setParking(parking);
 		}
 
-		Optional<RentPaymentModeEnum> ops = Arrays.stream(RentPaymentModeEnum.values())
-				.filter(status -> status.getValue().equals(request.getRentPaymentMode())).findAny();
-
-		if (!ops.isPresent()) {
-			throw new BusinessException("Invalid RentPaymentMode, can be any one CREDIT_CARD/BANK_TRANSFER/CASH/CHEQUE",
-					null);
+		Optional<PaymentMode> paymentModeOp = paymentModeRepository.findById(request.getPaymentModeId());
+		if (!paymentModeOp.isPresent()) {
+			throw new BusinessException("paymentMode not found with id: " + request.getPaymentModeId(), null);
 		}
-
-		Optional<RentCycleEnum> rentCycle = Arrays.stream(RentCycleEnum.values())
-				.filter(status -> status.getValue().equals(request.getRentCycle())).findAny();
-
-		if (!rentCycle.isPresent()) {
-			throw new BusinessException("Invalid RentCycle, can be any one of MONTHLY/QUARTERLY/HALFLY/YEARLY", null);
+		
+		PaymentMode paymentMode=paymentModeOp.get();
+//		if(paymentMode.getPaymentModeId() !=request.getRentPaymentMode().intValue()) {
+//			throw new BusinessException("UnitTypeId not match with unitSubTypeId", null);
+//		}
+		
+//		Optional<PaymentModeEnum> ops = Arrays.stream(PaymentModeEnum.values())
+//				.filter(status -> status.getValue().equals(request.getRentPaymentMode())).findAny();
+//
+//		if (!ops.isPresent()) {
+//			throw new BusinessException("Invalid RentPaymentMode, can be any one CREDIT_CARD/BANK_TRANSFER/CASH/CHEQUE",
+//					null);
+//		}
+		
+		Optional<RentCycle> rentCycleOp = rentCycleRepository.findById(request.getRentCycleId());
+		if (!rentCycleOp.isPresent()) {
+			throw new BusinessException("rentCycle not found with id: " + request.getRentCycleId(), null);
 		}
+		
+		RentCycle rentCycle=rentCycleOp.get();
+
+//		Optional<RentCycleEnum> rentCycle = Arrays.stream(RentCycleEnum.values())
+//				.filter(status -> status.getValue().equals(request.getRentCycle())).findAny();
+//
+//		if (!rentCycle.isPresent()) {
+//			throw new BusinessException("Invalid RentCycle, can be any one of MONTHLY/QUARTERLY/HALFLY/YEARLY", null);
+//		}
 		
 		Optional<UnitStatus> unitStatusop = unitStatusRepository.findById(UnitStatusEnum.OCCUPIED.getValue());
 		if (!unitStatusop.isPresent()) {
@@ -1226,10 +1255,10 @@ public class SubscriberServiceImpl implements SubscriberService {
 		tenantUnit.setTenant(tenant);
 		tenantUnit.setUnit(unit);
 		tenantUnit.setTenurePeriodMonth(request.getTenurePeriodMonth());
-		tenantUnit.setRentCycle(request.getRentCycle());
+		tenantUnit.setRentCycle(rentCycle);
 		tenantUnit.setExpired(false);
 		tenantUnit.setActive(true);
-		tenantUnit.setRentPaymentMode(request.getRentPaymentMode());
+		tenantUnit.setPaymentMode(paymentMode);
 		tenantUnit.setCreatedTime(new Date());
 		tenantUnit.setCreatedBy(request.getSubscriberId());
 
