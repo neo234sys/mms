@@ -6,5 +6,5 @@ import com.sbmtech.mms.models.ProductConfig;
 
 @Repository
 public interface ProductConfigRepository extends JpaRepository<ProductConfig, Integer> {
-    // Custom query methods can be added here if needed
+	ProductConfig findBySubscriberId(Integer subscriberId);
 }

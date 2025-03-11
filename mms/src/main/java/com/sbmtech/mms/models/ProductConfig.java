@@ -30,7 +30,6 @@ public class ProductConfig implements Serializable{
 	private static final long serialVersionUID = 1L;
 
 	@Id
-	//@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="subscriber_id")
 	private Integer subscriberId;
 

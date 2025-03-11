@@ -2,6 +2,7 @@ package com.sbmtech.mms.controllers;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import javax.validation.Valid;
 
@@ -13,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.CurrentSecurityContext;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,9 +22,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sbmtech.mms.constant.SubscriptionStatus;
+import com.sbmtech.mms.models.ProductConfig;
 import com.sbmtech.mms.models.Subscriber;
 import com.sbmtech.mms.models.Subscriptions;
 import com.sbmtech.mms.payload.request.AdditionalDetailsRequest;
+import com.sbmtech.mms.payload.request.AreaRequest;
 import com.sbmtech.mms.payload.request.BuildingRequest;
 import com.sbmtech.mms.payload.request.CommunityRequest;
 import com.sbmtech.mms.payload.request.CreateUserRequest;
@@ -31,7 +35,6 @@ import com.sbmtech.mms.payload.request.FloorRequest;
 import com.sbmtech.mms.payload.request.KeyMasterRequest;
 import com.sbmtech.mms.payload.request.ParkingRequest;
 import com.sbmtech.mms.payload.request.ParkingZoneRequest;
-import com.sbmtech.mms.payload.request.AreaRequest;
 import com.sbmtech.mms.payload.request.SubscriptionPaymentRequest;
 import com.sbmtech.mms.payload.request.SubscriptionRequest;
 import com.sbmtech.mms.payload.request.TenantUnitRequest;
@@ -40,6 +43,7 @@ import com.sbmtech.mms.payload.request.UnitRequest;
 import com.sbmtech.mms.repository.SubscriberRepository;
 import com.sbmtech.mms.repository.SubscriptionRepository;
 import com.sbmtech.mms.service.ConstantLookupService;
+import com.sbmtech.mms.service.ProductConfigService;
 import com.sbmtech.mms.service.SubscriberService;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -59,6 +63,9 @@ public class ManagementController {
 	
 	@Autowired
 	ConstantLookupService constantLookupService;
+	
+	 @Autowired
+	 private ProductConfigService productConfigService;
 	 
 	
 	@PostMapping("/addAdditionalDetails")
@@ -246,6 +253,22 @@ public class ManagementController {
 		
 		return ResponseEntity.ok(constantLookupService.getUnitStatusLookup());
 	}
+	
+	
+	@GetMapping("/getProductConfig")
+    public ProductConfig getProductConfig(@CurrentSecurityContext(expression = "authentication")  Authentication auth) throws Exception{
+		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
+        return productConfigService.getProductConfigBySubscriberId(subscriberId);
+    }
+
+    @PostMapping("saveOrUpdateProductConfig")
+    public ProductConfig saveOrUpdateProductConfig(@CurrentSecurityContext(expression = "authentication")  Authentication auth,
+            @RequestBody Map<String, String> config) throws Exception{
+    	Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
+        return productConfigService.saveOrUpdateProductConfig(subscriberId, config);
+    }
+    
+    
 
 	@Scheduled(cron = "0 */5 * * * ?") //every 5 hrs
 	public void expireSubscriptionsEvery5Seconds() {
