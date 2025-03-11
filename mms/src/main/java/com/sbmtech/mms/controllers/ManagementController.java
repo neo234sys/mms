@@ -263,7 +263,7 @@ public class ManagementController {
 
     @PostMapping("saveOrUpdateProductConfig")
     public ProductConfig saveOrUpdateProductConfig(@CurrentSecurityContext(expression = "authentication")  Authentication auth,
-            @RequestBody Map<String, String> config) throws Exception{
+            @RequestBody Map<String, Object> config) throws Exception{
     	Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
         return productConfigService.saveOrUpdateProductConfig(subscriberId, config);
     }

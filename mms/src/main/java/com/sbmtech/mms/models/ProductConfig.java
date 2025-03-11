@@ -35,7 +35,7 @@ public class ProductConfig implements Serializable{
 
 	 @Type(type = "json")
 	 @Column(columnDefinition = "json")
-	 private Map<String, String> configjson;
+	 private Map<String, Object> configjson;
 	
 
 

@@ -21,7 +21,7 @@ public class ProductConfigServiceImpl implements ProductConfigService {
     }
 
     @Override
-    public ProductConfig saveOrUpdateProductConfig(Integer subscriberId, Map<String, String> config) {
+    public ProductConfig saveOrUpdateProductConfig(Integer subscriberId, Map<String, Object> config) {
         ProductConfig productConfig = productConfigRepository.findBySubscriberId(subscriberId);
         if (productConfig == null) {
             productConfig = new ProductConfig();
