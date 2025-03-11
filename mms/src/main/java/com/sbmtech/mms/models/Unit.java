@@ -14,6 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -42,21 +43,35 @@ public class Unit implements Serializable {
 	private String unitName;
 
 	//@Enumerated(EnumType.STRING)
-	@Column(name = "unit_type")
-	private String unitType;
+//	@Column(name = "unit_type")
+//	private String unitType;
+	
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "unit_type_id", referencedColumnName = "unit_type_id")
+	private UnitType unitType;
 
 	//@Enumerated(EnumType.STRING)
-	@Column(name = "unit_sub_type")
-	private String unitSubType;
+//	@Column(name = "unit_sub_type")
+//	private String unitSubType;
 
+	
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "unit_subtype_id", referencedColumnName = "unit_subtype_id")
+	private UnitSubType unitSubType;
+	
+	
 	@Column(name = "size")
 	private String size;
 
 	@Column(name = "has_balcony")
 	private Boolean hasBalcony;
 
-	@Column(name = "status")
-	private String status;   //VACANT,OCCUPIED,UNDER_MAINTAINANCE, RESERVED
+//	@Column(name = "status")
+//	private UnitStatus status;   //VACANT,OCCUPIED,UNDER_MAINTAINANCE, RESERVED
+	
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "unit_status_id", referencedColumnName = "unit_status_id")
+	private UnitStatus unitStatus;
 
 	
 
@@ -135,24 +150,42 @@ public class Unit implements Serializable {
 		this.unitName = unitName;
 	}
 
-	public String getUnitType() {
-		return unitType;
-	}
-
-	public void setUnitType(String unitType) {
-		this.unitType = unitType;
-	}
-
-	public String getUnitSubType() {
-		return unitSubType;
-	}
-
-	public void setUnitSubType(String unitSubType) {
-		this.unitSubType = unitSubType;
-	}
+//	public String getUnitType() {
+//		return unitType;
+//	}
+//
+//	public void setUnitType(String unitType) {
+//		this.unitType = unitType;
+//	}
+//
+//	public String getUnitSubType() {
+//		return unitSubType;
+//	}
+//
+//	public void setUnitSubType(String unitSubType) {
+//		this.unitSubType = unitSubType;
+//	}
+	
+	
 
 	public String getSize() {
 		return size;
+	}
+
+	public UnitType getUnitType() {
+		return unitType;
+	}
+
+	public void setUnitType(UnitType unitType) {
+		this.unitType = unitType;
+	}
+
+	public UnitSubType getUnitSubType() {
+		return unitSubType;
+	}
+
+	public void setUnitSubType(UnitSubType unitSubType) {
+		this.unitSubType = unitSubType;
 	}
 
 	public void setSize(String size) {
@@ -168,12 +201,14 @@ public class Unit implements Serializable {
 	}
 
 	
-	public String getStatus() {
-		return status;
+	
+
+	public UnitStatus getUnitStatus() {
+		return unitStatus;
 	}
 
-	public void setStatus(String status) {
-		this.status = status;
+	public void setUnitStatus(UnitStatus unitStatus) {
+		this.unitStatus = unitStatus;
 	}
 
 	public byte[] getUnitMainPic1() {

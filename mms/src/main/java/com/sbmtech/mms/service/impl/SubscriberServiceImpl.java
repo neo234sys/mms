@@ -70,9 +70,10 @@ import com.sbmtech.mms.models.TenantUnit;
 import com.sbmtech.mms.models.TenureDetails;
 import com.sbmtech.mms.models.Unit;
 import com.sbmtech.mms.models.UnitKeys;
+import com.sbmtech.mms.models.UnitStatus;
 import com.sbmtech.mms.models.UnitStatusEnum;
-import com.sbmtech.mms.models.UnitSubTypeEnum;
-import com.sbmtech.mms.models.UnitTypeEnum;
+import com.sbmtech.mms.models.UnitSubType;
+import com.sbmtech.mms.models.UnitType;
 import com.sbmtech.mms.models.User;
 import com.sbmtech.mms.models.UserTypeEnum;
 import com.sbmtech.mms.models.UserTypeMaster;
@@ -133,6 +134,9 @@ import com.sbmtech.mms.repository.TenantUnitRepository;
 import com.sbmtech.mms.repository.TenureDetailsRepository;
 import com.sbmtech.mms.repository.UnitKeysRepository;
 import com.sbmtech.mms.repository.UnitRepository;
+import com.sbmtech.mms.repository.UnitStatusRepository;
+import com.sbmtech.mms.repository.UnitSubTypeRepository;
+import com.sbmtech.mms.repository.UnitTypeRepository;
 import com.sbmtech.mms.repository.UserRepository;
 import com.sbmtech.mms.repository.UserTypeMasterRepository;
 import com.sbmtech.mms.security.services.UserDetailsImpl;
@@ -240,6 +244,15 @@ public class SubscriberServiceImpl implements SubscriberService {
 	@Autowired
 	private SubscriptionPlanMasterRepository subscriptionPlanRepository;
 	
+	
+	@Autowired
+	private UnitTypeRepository unitTypeRepository;
+	
+	@Autowired
+	private UnitSubTypeRepository unitSubTypeRepository;
+	
+	@Autowired
+	private UnitStatusRepository unitStatusRepository;
 	
 	
 	
@@ -841,24 +854,37 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	public ApiResponse<Object> addUnit(UnitRequest request) {
 
-		Optional<UnitTypeEnum> op = Arrays.stream(UnitTypeEnum.values())
-				.filter(status -> status.getValue().toString().equals(request.getUnitType())).findAny();
-		if (!op.isPresent()) {
-			throw new BusinessException("Invalid unitType, can be any one APARTMENT/VILLA/COMMERCIAL", null);
+
+		
+		Optional<UnitType> unitTypeOptional = unitTypeRepository.findById(request.getUnitTypeId());
+		if (!unitTypeOptional.isPresent()) {
+			throw new BusinessException("UnitType not found with id: " + request.getUnitTypeId(), null);
 		}
 
-		Optional<UnitSubTypeEnum> ops = Arrays.stream(UnitSubTypeEnum.values())
-				.filter(status -> status.getValue().toString().equals(request.getUnitSubType())).findAny();
 
-		if (!ops.isPresent()) {
-			throw new BusinessException("Invalid unitSubType, can be any one STUDIO/1BHK/2BHK/3BHK", null);
+		
+		Optional<UnitSubType> unitSubTypeOptional = unitSubTypeRepository.findById(request.getUnitSubTypeId());
+		if (!unitSubTypeOptional.isPresent()) {
+			throw new BusinessException("UnitSubType not found with id: " + request.getUnitSubTypeId(), null);
 		}
 
+		UnitType unitType=unitSubTypeOptional.get().getUnitType();
+		if(unitType.getUnitTypeId()!=request.getUnitTypeId().intValue()) {
+			throw new BusinessException("UnitTypeId not match with unitSubTypeId", null);
+		}
+		
 		Optional<Building> buildingOptional = buildingRepository.findById(request.getBuildingId());
 		if (!buildingOptional.isPresent()) {
 			throw new BusinessException("Building not found with id: " + request.getBuildingId(), null);
 		}
 		Building building = buildingOptional.get();
+		
+		
+		Optional<UnitStatus> unitStatusTypeOp=unitStatusRepository.findById(1);
+		
+		if (!unitStatusTypeOp.isPresent()) {
+			throw new BusinessException("UnitStatus not found", null);
+		}
 
 		Optional<Floor> floorOptional = floorRepository.findById(request.getFloorId());
 		if (!floorOptional.isPresent()) {
@@ -870,11 +896,11 @@ public class SubscriberServiceImpl implements SubscriberService {
 		unit.setBuilding(building);
 		unit.setFloor(floor);
 		unit.setUnitName(request.getUnitName());
-		unit.setUnitType(request.getUnitType());
-		unit.setUnitSubType(request.getUnitSubType());
+		unit.setUnitType(unitType);
+		unit.setUnitSubType(unitSubTypeOptional.get());
 		unit.setSize(request.getSize());
 		unit.setHasBalcony(request.getHasBalcony());
-		unit.setStatus(UnitStatusEnum.VACANT.getValue());
+		unit.setUnitStatus(unitStatusTypeOp.get());
 
 		unit.setUnitMainPic1(request.getUnitMainPic1());
 		unit.setUnitPic2(request.getUnitPic2());
@@ -1154,12 +1180,15 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 			throw new BusinessException("Unit not found with ID: " + request.getUnitId(), null);
 		}
-
-		if (unit.getStatus().equals(UnitStatusEnum.OCCUPIED.toString())
-				|| unit.getStatus().equals(UnitStatusEnum.RESERVED.toString())) {
+		
+		UnitStatus unitStatus=unit.getUnitStatus();
+		if(unitStatus!=null && unitStatus.getUnitStatusId()==UnitStatusEnum.OCCUPIED.getValue() || unitStatus.getUnitStatusId()== UnitStatusEnum.RESERVED.getValue()) { //Occupied or Reserved
 			logger.info("Already this Unit registered/reserved for another tenant,unit id->{}", unit.getUnitId());
 			throw new BusinessException("Already this Unit registered / reserved for another tenant", null);
 		}
+		
+
+
 
 		if (request.getParkingId() != null) {
 			Parking parking = parkingRepository.findByParkingIdAndSubscriberId(request.getParkingId(),
@@ -1186,8 +1215,13 @@ public class SubscriberServiceImpl implements SubscriberService {
 		if (!rentCycle.isPresent()) {
 			throw new BusinessException("Invalid RentCycle, can be any one of MONTHLY/QUARTERLY/HALFLY/YEARLY", null);
 		}
+		
+		Optional<UnitStatus> unitStatusop = unitStatusRepository.findById(UnitStatusEnum.OCCUPIED.getValue());
+		if (!unitStatusop.isPresent()) {
+			throw new BusinessException("Invalid UnitStatus",null);
+		}
 
-		unit.setStatus(UnitStatusEnum.OCCUPIED.toString());
+		unit.setUnitStatus(unitStatusop.get());
 
 		tenantUnit.setTenant(tenant);
 		tenantUnit.setUnit(unit);

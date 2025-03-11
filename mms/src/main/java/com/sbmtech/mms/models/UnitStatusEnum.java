@@ -1,21 +1,21 @@
 package com.sbmtech.mms.models;
 
 public enum UnitStatusEnum {
-	VACANT("VACANT"),
-	OCCUPIED("OCCUPIED"),
-	RESERVED("RESERVED"), 
-	UNDER_MAINTAINANCE("UNDER_MAINTAINANCE");
+	VACANT(1),
+	OCCUPIED(2),
+	RESERVED(3), 
+	UNDER_MAINTAINANCE(4);
 
 	
 	
-	private String value;
+	private Integer value;
 	
-	private UnitStatusEnum(String value){
+	private UnitStatusEnum(Integer value){
 		
 		this.value = value;
 	}
 	
-	public String getValue(){
+	public Integer getValue(){
 		
 		return this.value;
 	}

@@ -39,6 +39,7 @@ import com.sbmtech.mms.payload.request.UnitKeysRequest;
 import com.sbmtech.mms.payload.request.UnitRequest;
 import com.sbmtech.mms.repository.SubscriberRepository;
 import com.sbmtech.mms.repository.SubscriptionRepository;
+import com.sbmtech.mms.service.ConstantLookupService;
 import com.sbmtech.mms.service.SubscriberService;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -55,6 +56,10 @@ public class ManagementController {
 	
 	@Autowired
 	private SubscriberRepository subscriberRepository;
+	
+	@Autowired
+	ConstantLookupService constantLookupService;
+	 
 	
 	@PostMapping("/addAdditionalDetails")
 	public ResponseEntity<?> addAdditionalDetails(@Valid @RequestBody AdditionalDetailsRequest request,
@@ -214,6 +219,33 @@ public class ManagementController {
 	}
 	
 
+	@GetMapping("/getUnitTypeLookup")
+	public ResponseEntity<?> getUnitTypeLookup(
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth)throws Exception {
+		
+		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
+		
+		return ResponseEntity.ok(constantLookupService.getUnitTypeLookup());
+	}
+	
+	@GetMapping("/getUnitSubtypeLookup")
+	public ResponseEntity<?> getUnitSubtypeLookup(
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth,
+			@RequestParam Integer unitTypId)throws Exception {
+		
+		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
+		
+		return ResponseEntity.ok(constantLookupService.getUnitSubtypeLookup(unitTypId));
+	}
+	
+	@GetMapping("/getUnitStatusLookup")
+	public ResponseEntity<?> getUnitStatusLookup(
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth)throws Exception {
+		
+		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
+		
+		return ResponseEntity.ok(constantLookupService.getUnitStatusLookup());
+	}
 
 	@Scheduled(cron = "0 */5 * * * ?") //every 5 hrs
 	public void expireSubscriptionsEvery5Seconds() {

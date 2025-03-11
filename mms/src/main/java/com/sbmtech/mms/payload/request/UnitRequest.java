@@ -1,8 +1,8 @@
 package com.sbmtech.mms.payload.request;
 
-import javax.persistence.Column;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 
 public class UnitRequest {
@@ -13,11 +13,13 @@ public class UnitRequest {
 	@NotEmpty(message = "unitName cannot be null")
 	private String unitName;
 	
-	@NotEmpty(message = "unitType cannot be null")
-	private String unitType;
+
+	@NotNull(message = "unitTypeId cannot be null")
+	private Integer unitTypeId;
 	
-	@NotEmpty(message = "unitSubType cannot be null")
-	private String unitSubType;
+
+	@NotNull(message = "unitSubTypeId cannot be null")
+	private Integer unitSubTypeId;
 	
 	private String size;
 	private Boolean hasBalcony;
@@ -70,20 +72,24 @@ public class UnitRequest {
 		this.unitName = unitName;
 	}
 
-	public String getUnitType() {
-		return unitType;
+	
+
+	
+
+	public Integer getUnitTypeId() {
+		return unitTypeId;
 	}
 
-	public void setUnitType(String unitType) {
-		this.unitType = unitType;
+	public void setUnitTypeId(Integer unitTypeId) {
+		this.unitTypeId = unitTypeId;
 	}
 
-	public String getUnitSubType() {
-		return unitSubType;
+	public Integer getUnitSubTypeId() {
+		return unitSubTypeId;
 	}
 
-	public void setUnitSubType(String unitSubType) {
-		this.unitSubType = unitSubType;
+	public void setUnitSubTypeId(Integer unitSubTypeId) {
+		this.unitSubTypeId = unitSubTypeId;
 	}
 
 	public String getSize() {

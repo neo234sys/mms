@@ -8,6 +8,7 @@ import static com.sbmtech.mms.constant.CommonConstants.SUCCESS_DESC;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.sbmtech.mms.models.PaymentPurpose;
 import com.sbmtech.mms.payload.request.ApiResponse;
@@ -17,6 +18,7 @@ import com.sbmtech.mms.repository.OrderRepository;
 import com.sbmtech.mms.repository.PaymentPurposeRepository;
 import com.sbmtech.mms.service.PaymentService;
 
+@Service
 public class PaymentServiceImpl implements PaymentService {
 	
 	@Autowired
