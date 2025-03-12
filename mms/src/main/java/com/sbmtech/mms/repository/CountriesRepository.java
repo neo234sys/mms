@@ -8,4 +8,6 @@ import com.sbmtech.mms.models.Countries;
 @Repository
 public interface CountriesRepository extends JpaRepository<Countries, Integer> {
 
+	Countries findByName(String name);
+
 }

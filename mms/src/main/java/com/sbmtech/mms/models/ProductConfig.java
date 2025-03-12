@@ -16,27 +16,24 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
-
 @Data
 @Entity
 @Table(name = "product_config")
 @Setter
 @Getter
 @TypeDef(name = "json", typeClass = JsonType.class)
-public class ProductConfig implements Serializable{
+public class ProductConfig implements Serializable {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 
 	@Id
-	@Column(name="subscriber_id")
+	@Column(name = "subscriber_id")
 	private Integer subscriberId;
 
-	 @Type(type = "json")
-	 @Column(columnDefinition = "json")
-	 private Map<String, Object> configjson;
-	
-
+	@Type(type = "json")
+	@Column(columnDefinition = "json")
+	private Map<String, Object> configjson;
 
 }

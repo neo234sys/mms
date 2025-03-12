@@ -74,6 +74,7 @@ import com.sbmtech.mms.models.TenantUnit;
 import com.sbmtech.mms.models.TenureDetails;
 import com.sbmtech.mms.models.Unit;
 import com.sbmtech.mms.models.UnitKeys;
+import com.sbmtech.mms.models.UnitReserveDetails;
 import com.sbmtech.mms.models.UnitStatus;
 import com.sbmtech.mms.models.UnitStatusEnum;
 import com.sbmtech.mms.models.UnitSubType;
@@ -92,6 +93,7 @@ import com.sbmtech.mms.payload.request.KeyMasterRequest;
 import com.sbmtech.mms.payload.request.ParkingRequest;
 import com.sbmtech.mms.payload.request.ParkingZoneRequest;
 import com.sbmtech.mms.payload.request.ResendOtpRequest;
+import com.sbmtech.mms.payload.request.ReserveUnitRequest;
 import com.sbmtech.mms.payload.request.AreaRequest;
 import com.sbmtech.mms.payload.request.SubscriberRequest;
 import com.sbmtech.mms.payload.request.SubscriptionPaymentRequest;
@@ -138,6 +140,7 @@ import com.sbmtech.mms.repository.TenantUnitRepository;
 import com.sbmtech.mms.repository.TenureDetailsRepository;
 import com.sbmtech.mms.repository.UnitKeysRepository;
 import com.sbmtech.mms.repository.UnitRepository;
+import com.sbmtech.mms.repository.UnitReserveDetailsRepository;
 import com.sbmtech.mms.repository.UnitStatusRepository;
 import com.sbmtech.mms.repository.UnitSubTypeRepository;
 import com.sbmtech.mms.repository.UnitTypeRepository;
@@ -198,11 +201,10 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 //	@Autowired
 //	private SubscriberLocationRepository subscriberLocationRepository;
-	
+
 	@Autowired
 	private AreaRepository areaRepository;
-	
-	
+
 	@Autowired
 	private AreaRepositoryCustom areaRepoCustom;
 
@@ -243,31 +245,28 @@ public class SubscriberServiceImpl implements SubscriberService {
 	private DepartmentMasRepository departmentMasRepository;
 
 	@Autowired
-	private ProductConfigRepository productConfigRepository;
-	
-	@Autowired
 	private SubscriptionPlanMasterRepository subscriptionPlanRepository;
-	
-	
+
 	@Autowired
 	private UnitTypeRepository unitTypeRepository;
-	
+
 	@Autowired
 	private UnitSubTypeRepository unitSubTypeRepository;
-	
+
 	@Autowired
 	private UnitStatusRepository unitStatusRepository;
-	
+
 	@Autowired
 	private PaymentModeRepository paymentModeRepository;
-	
+
 	@Autowired
 	private RentCycleRepository rentCycleRepository;
-	
-	
-	
-	
-	
+
+	@Autowired
+	private UnitReserveDetailsRepository unitReserveDetailsRepository;
+
+	@Autowired
+	private ProductConfigRepository productConfigRepository;
 
 	@Override
 	public Integer getSubscriberIdfromAuth(Authentication auth) throws Exception {
@@ -294,7 +293,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			subscriberlIdExists = subscriberRepository.existsBySubscriberIdAndActive(subscriberId, 1);
 			if (!subscriberlIdExists) {
 				logger.info("Subscribtion subspended for subscriberId ->:{} ", subscriberId);
-				
+
 				throw new BusinessException("Subscribtion subspended", null);
 			}
 
@@ -568,17 +567,16 @@ public class SubscriberServiceImpl implements SubscriberService {
 				.findTopBySubscriber_SubscriberIdOrderBySubscriptionIdDesc(subscriptionRequest.getSubscriberId());
 
 		if (existingSubscription != null
-				
-				&& CommonUtil.getCurrentLocalDate().isAfter(existingSubscription.getStartDate().minusDays(1)) &&
-						CommonUtil.getCurrentLocalDate().isBefore(existingSubscription.getEndDate())) {
+
+				&& CommonUtil.getCurrentLocalDate().isAfter(existingSubscription.getStartDate().minusDays(1))
+				&& CommonUtil.getCurrentLocalDate().isBefore(existingSubscription.getEndDate())) {
 			throw new BusinessException(
 					"Subscriber already has a subscription with status " + existingSubscription.getStatus(), null);
 		}
 
 		Subscriptions subscription = new Subscriptions();
 
-		subscription
-				.setStartDate(CommonUtil.getLocalDatefromString(subscriptionRequest.getStartDate(), DATE_ddMMyyyy));
+		subscription.setStartDate(CommonUtil.getLocalDatefromString(subscriptionRequest.getStartDate(), DATE_ddMMyyyy));
 		subscription.setEndDate(subscription.getStartDate().plusDays((planMaster.getDurationInDays())));
 		subscription.setStatus(SubscriptionStatus.TRIAL.toString());
 
@@ -601,12 +599,10 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	public ApiResponse<List<SubscriptionPlans>> getAllSubscriptionPlans() {
 		List<SubscriptionPlanMaster> plansList = subscriptionPlanRepository.findAll();
-		List<SubscriptionPlans> result = plansList
-				.stream().filter(e -> e.getActive() == 1).map(e ->
-				new SubscriptionPlans(e.getPlanId(),
-						e.getPlanName(), e.getPriceMonth(), e.getPriceYear(), e.getCurrency(),e.getDurationInDays(),e.getTrialDays(),
-						e.getDescription(),e.getFeatures(), e.getMetadata())
-						)
+		List<SubscriptionPlans> result = plansList.stream().filter(e -> e.getActive() == 1)
+				.map(e -> new SubscriptionPlans(e.getPlanId(), e.getPlanName(), e.getPriceMonth(), e.getPriceYear(),
+						e.getCurrency(), e.getDurationInDays(), e.getTrialDays(), e.getDescription(), e.getFeatures(),
+						e.getMetadata()))
 				.collect(Collectors.toList());
 		if (result.isEmpty()) {
 			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
@@ -720,14 +716,12 @@ public class SubscriberServiceImpl implements SubscriberService {
 		AreaResponse locResp = new AreaResponse();
 		BeanUtils.copyProperties(area, locResp);
 
-		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, locResp, null,
-				area.getSubscriber().getSubscriberId());
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, locResp, null, area.getSubscriber().getSubscriberId());
 	}
 
 	public ApiResponse<Object> addCommunity(CommunityRequest request) {
 
-		Area location = areaRepoCustom
-				.findByAreaIdAndSubscriberId(request.getLocationId(), request.getSubscriberId());
+		Area location = areaRepoCustom.findByAreaIdAndSubscriberId(request.getLocationId(), request.getSubscriberId());
 		if (ObjectUtils.isEmpty(location)) {
 			throw new BusinessException("Area not found with id: " + request.getLocationId(), null);
 		}
@@ -738,7 +732,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		Community community = new Community();
 		community.setCommunityName(request.getCommunityName());
-	//	community.setLocation(location);
+		// community.setLocation(location);
 		community.setSubscriber(subscriber);
 
 		communityRepository.save(community);
@@ -749,51 +743,46 @@ public class SubscriberServiceImpl implements SubscriberService {
 	}
 
 	public ApiResponse<Object> addBuilding(BuildingRequest request) {
-		
-		Countries country =null;
+
+		Countries country = null;
 		State state = null;
 		City city = null;
 		Subscriber subscriber = null;
-		
+
 		Optional<Subscriber> subscriberOpt = subscriberRepository.findById(request.getSubscriberId());
-		
+
 		Optional<Countries> countryOpt = countriesRepository.findById(request.getCountryId());
 		if (!countryOpt.isPresent()) {
 			throw new BusinessException("Country not found with id: " + request.getCountryId(), null);
 		}
 
-
 		Optional<State> stateOpt = stateRepository.findById(request.getStateId());
 		if (!stateOpt.isPresent()) {
 			throw new BusinessException("State not found with id: " + request.getStateId(), null);
-		}else {
+		} else {
 			state = stateOpt.get();
-			country=state.getCountry();
-			if(country.getCountryId().intValue()!=request.getCountryId().intValue()) {
+			country = state.getCountry();
+			if (country.getCountryId().intValue() != request.getCountryId().intValue()) {
 				throw new BusinessException("Invalid stateId /stateId not matching with CountryId", null);
 			}
 		}
-		
 
-		
 		Optional<City> cityOpt = cityRepository.findById(request.getCityId());
 		if (!cityOpt.isPresent()) {
 			throw new BusinessException("City not found with id: " + request.getCityId(), null);
-		}else {
+		} else {
 			city = cityOpt.get();
-			state=city.getState();
-			country=city.getCountry();
-			if(country.getCountryId().intValue()!=request.getCountryId().intValue()
-					|| state.getStateId().intValue()!=request.getStateId().intValue()
-					|| city.getCityId().intValue()!=request.getCityId().intValue()) {
+			state = city.getState();
+			country = city.getCountry();
+			if (country.getCountryId().intValue() != request.getCountryId().intValue()
+					|| state.getStateId().intValue() != request.getStateId().intValue()
+					|| city.getCityId().intValue() != request.getCityId().intValue()) {
 				throw new BusinessException("countryId / stateId / cityId is not matching each other", null);
 			}
 		}
-	
 
 		subscriber = subscriberOpt.get();
-		
-		
+
 		Area area = new Area();
 		area.setAreaName(request.getAreaName());
 		area.setCountry(country);
@@ -803,17 +792,17 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		areaRepository.save(area);
 
-		Community community =null;
-		if(area!=null && area.getAreaId()!=null) {
-			if(StringUtils.isNotBlank(request.getCommunityName()) ) {
+		Community community = null;
+		if (area != null && area.getAreaId() != null) {
+			if (StringUtils.isNotBlank(request.getCommunityName())) {
 				community = new Community();
 				community.setCommunityName(request.getCommunityName());
 				community.setArea(area);
 				community.setSubscriber(subscriber);
 				communityRepository.save(community);
-			
+
 			}
-			
+
 		}
 
 		BuildingResponse buildingResp;
@@ -829,7 +818,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			building.setNoOfFloors(request.getNoOfFloors());
 			building.setNoOfUnits(request.getNoOfunits());
 			building.setArea(area);
-			building.setCommunity((community!=null)?community:null);
+			building.setCommunity((community != null) ? community : null);
 			building.setSubscriber(subscriber);
 			building.setCreatedAt(new Timestamp(System.currentTimeMillis()));
 			building.setLatitude(request.getLatitude());
@@ -866,34 +855,29 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	public ApiResponse<Object> addUnit(UnitRequest request) {
 
-
-		
 		Optional<UnitType> unitTypeOptional = unitTypeRepository.findById(request.getUnitTypeId());
 		if (!unitTypeOptional.isPresent()) {
 			throw new BusinessException("UnitType not found with id: " + request.getUnitTypeId(), null);
 		}
 
-
-		
 		Optional<UnitSubType> unitSubTypeOptional = unitSubTypeRepository.findById(request.getUnitSubTypeId());
 		if (!unitSubTypeOptional.isPresent()) {
 			throw new BusinessException("UnitSubType not found with id: " + request.getUnitSubTypeId(), null);
 		}
 
-		UnitType unitType=unitSubTypeOptional.get().getUnitType();
-		if(unitType.getUnitTypeId()!=request.getUnitTypeId().intValue()) {
+		UnitType unitType = unitSubTypeOptional.get().getUnitType();
+		if (unitType.getUnitTypeId() != request.getUnitTypeId().intValue()) {
 			throw new BusinessException("UnitTypeId not match with unitSubTypeId", null);
 		}
-		
+
 		Optional<Building> buildingOptional = buildingRepository.findById(request.getBuildingId());
 		if (!buildingOptional.isPresent()) {
 			throw new BusinessException("Building not found with id: " + request.getBuildingId(), null);
 		}
 		Building building = buildingOptional.get();
-		
-		
-		Optional<UnitStatus> unitStatusTypeOp=unitStatusRepository.findById(1);
-		
+
+		Optional<UnitStatus> unitStatusTypeOp = unitStatusRepository.findById(1);
+
 		if (!unitStatusTypeOp.isPresent()) {
 			throw new BusinessException("UnitStatus not found", null);
 		}
@@ -1192,15 +1176,13 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 			throw new BusinessException("Unit not found with ID: " + request.getUnitId(), null);
 		}
-		
-		UnitStatus unitStatus=unit.getUnitStatus();
-		if(unitStatus!=null && unitStatus.getUnitStatusId()==UnitStatusEnum.OCCUPIED.getValue() || unitStatus.getUnitStatusId()== UnitStatusEnum.RESERVED.getValue()) { //Occupied or Reserved
+
+		UnitStatus unitStatus = unit.getUnitStatus();
+		if (unitStatus != null && unitStatus.getUnitStatusId() == UnitStatusEnum.OCCUPIED.getValue()
+				|| unitStatus.getUnitStatusId() == UnitStatusEnum.RESERVED.getValue()) { // Occupied or Reserved
 			logger.info("Already this Unit registered/reserved for another tenant,unit id->{}", unit.getUnitId());
 			throw new BusinessException("Already this Unit registered / reserved for another tenant", null);
 		}
-		
-
-
 
 		if (request.getParkingId() != null) {
 			Parking parking = parkingRepository.findByParkingIdAndSubscriberId(request.getParkingId(),
@@ -1217,22 +1199,19 @@ public class SubscriberServiceImpl implements SubscriberService {
 		if (!paymentModeOp.isPresent()) {
 			throw new BusinessException("paymentMode not found with id: " + request.getPaymentModeId(), null);
 		}
-		
-		PaymentMode paymentMode=paymentModeOp.get();
 
-		
+		PaymentMode paymentMode = paymentModeOp.get();
+
 		Optional<RentCycle> rentCycleOp = rentCycleRepository.findById(request.getRentCycleId());
 		if (!rentCycleOp.isPresent()) {
 			throw new BusinessException("rentCycle not found with id: " + request.getRentCycleId(), null);
 		}
-		
-		RentCycle rentCycle=rentCycleOp.get();
 
+		RentCycle rentCycle = rentCycleOp.get();
 
-		
 		Optional<UnitStatus> unitStatusop = unitStatusRepository.findById(UnitStatusEnum.OCCUPIED.getValue());
 		if (!unitStatusop.isPresent()) {
-			throw new BusinessException("Invalid UnitStatus",null);
+			throw new BusinessException("Invalid UnitStatus", null);
 		}
 
 		unit.setUnitStatus(unitStatusop.get());
@@ -1300,11 +1279,90 @@ public class SubscriberServiceImpl implements SubscriberService {
 	}
 
 	@Override
-	public ApiResponse<Object> getAllBuildings(Integer subscriberId,int pageNo, int pageSize, String sortBy, String sortDir) throws Exception {
+	public ApiResponse<Object> getAllBuildings(Integer subscriberId, int pageNo, int pageSize, String sortBy,
+			String sortDir) throws Exception {
 		PageRequest pageable = PageRequest.of(pageNo, pageSize);
 		return null;
 	}
 
+	public ApiResponse<Object> reserveUnit(Integer subscriberId, ReserveUnitRequest reserveUnitRequest) {
 
+		try {
+			Unit unit = unitRepository.findByUnitId(reserveUnitRequest.getUnitId())
+					.orElseThrow(() -> new RuntimeException("Unit not found"));
+
+			if (!unit.getUnitStatus().getUnitStatusName().equals(UnitStatusEnum.VACANT.toString())) {
+				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
+						"Unit is not available for reservation. Status: " + unit.getUnitStatus().getUnitStatusName(),
+						null, null);
+			}
+
+			ProductConfig productConfig = productConfigRepository.findBySubscriberId(subscriberId);
+			if (productConfig == null) {
+				throw new RuntimeException("Product configuration not found for subscriberId: " + subscriberId);
+			}
+
+			Map<String, Object> configJson = productConfig.getConfigjson();
+			if (configJson == null) {
+				throw new RuntimeException("configJson is null for subscriberId: " + subscriberId);
+			}
+
+			@SuppressWarnings("unchecked")
+			Map<String, Object> unitReserve = (Map<String, Object>) configJson.get("unitReserve");
+			if (unitReserve == null) {
+				throw new RuntimeException("unitReserve not found in product config");
+			}
+
+			Integer unitReserveDays = (unitReserve.get("unitReserveDays") != null)
+					? (Integer) unitReserve.get("unitReserveDays")
+					: null;
+
+			if (unitReserveDays == null) {
+				throw new RuntimeException("unitReserveDays not found in product config");
+			}
+
+			Calendar calendar = Calendar.getInstance();
+			calendar.setTime(new Date());
+			calendar.add(Calendar.DAY_OF_YEAR, unitReserveDays);
+			Date reserveEndDate = calendar.getTime();
+
+			User newUser = new User();
+			newUser.setEmail(reserveUnitRequest.getEmail());
+			newUser.setMobileNo(Long.valueOf(reserveUnitRequest.getMobileNo()));
+			newUser.setPassword("123456");
+			newUser.setActive(false);
+			newUser.setEmiratesId(CommonUtil.getLongValofObject(reserveUnitRequest.getEmiratesId()));
+			newUser.setDob(CommonUtil.getDatefromString(reserveUnitRequest.getDob(), DATE_ddMMyyyy));
+			newUser.setGender(reserveUnitRequest.getGender());
+			newUser.setAddress(reserveUnitRequest.getAddress());
+			newUser.setEidaCopy(reserveUnitRequest.getEidaCopy());
+
+			Countries nationality = countriesRepository.findByName(reserveUnitRequest.getNationality());
+
+			if (nationality == null) {
+				throw new IllegalArgumentException("Invalid nationality: " + reserveUnitRequest.getNationality());
+			}
+
+			newUser.setNationality(nationality);
+			userRepository.save(newUser);
+
+			unit.setUnitStatus(unitStatusRepository.findByUnitStatusName(UnitStatusEnum.RESERVED.toString()));
+			unitRepository.save(unit);
+
+			UnitReserveDetails reserveDetails = new UnitReserveDetails();
+			reserveDetails.setUnit(unit);
+			reserveDetails.setUser(newUser);
+			reserveDetails.setReserveStartDate(new Date());
+			reserveDetails.setReserveEndDate(reserveEndDate);
+			reserveDetails.setPaymentRequired(reserveUnitRequest.getPaymentRequired());
+			unitReserveDetailsRepository.save(reserveDetails);
+
+			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Unit successfully reserved", null, null);
+
+		} catch (Exception e) {
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to reserve unit: " + e.getMessage(), null,
+					null);
+		}
+	}
 
 }
