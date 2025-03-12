@@ -19,16 +19,23 @@ import javax.persistence.TemporalType;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 @Entity
 @Table(name = "unit_reserve_details")
+@Setter
+@Getter
+@NoArgsConstructor
 public class UnitReserveDetails implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "unit_reserve_details")
-	private Long unitReserveDetailsId;
+	@Column(name = "unit_reserve_id")
+	private Integer unitReserveId;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "unit_id", referencedColumnName = "unit_id")
@@ -63,96 +70,7 @@ public class UnitReserveDetails implements Serializable {
 	@Column(name = "updated_by")
 	private Integer updatedBy;
 
-	public Long getUnitReserveDetailsId() {
-		return unitReserveDetailsId;
-	}
-
-	public void setUnitReserveDetailsId(Long unitReserveDetailsId) {
-		this.unitReserveDetailsId = unitReserveDetailsId;
-	}
-
-	public Unit getUnit() {
-		return unit;
-	}
-
-	public void setUnit(Unit unit) {
-		this.unit = unit;
-	}
-
-	public User getUser() {
-		return user;
-	}
-
-	public void setUser(User user) {
-		this.user = user;
-	}
-
-	public Date getReserveStartDate() {
-		return reserveStartDate;
-	}
-
-	public void setReserveStartDate(Date reserveStartDate) {
-		this.reserveStartDate = reserveStartDate;
-	}
-
-	public Date getReserveEndDate() {
-		return reserveEndDate;
-	}
-
-	public void setReserveEndDate(Date reserveEndDate) {
-		this.reserveEndDate = reserveEndDate;
-	}
-
-	public Integer getPaymentRequired() {
-		return paymentRequired;
-	}
-
-	public void setPaymentRequired(Integer paymentRequired) {
-		this.paymentRequired = paymentRequired;
-	}
-
-	public Timestamp getCreatedTime() {
-		return createdTime;
-	}
-
-	public void setCreatedTime(Timestamp createdTime) {
-		this.createdTime = createdTime;
-	}
-
-	public Timestamp getUpdatedTime() {
-		return updatedTime;
-	}
-
-	public void setUpdatedTime(Timestamp updatedTime) {
-		this.updatedTime = updatedTime;
-	}
-
-	public Integer getCreatedBy() {
-		return createdBy;
-	}
-
-	public void setCreatedBy(Integer createdBy) {
-		this.createdBy = createdBy;
-	}
-
-	public Integer getUpdatedBy() {
-		return updatedBy;
-	}
-
-	public void setUpdatedBy(Integer updatedBy) {
-		this.updatedBy = updatedBy;
-	}
-
-	public static long getSerialversionuid() {
-		return serialVersionUID;
-	}
-
-	@Override
-	public String toString() {
-		return "UnitReserveDetails [unitReserveDetailsId=" + unitReserveDetailsId + ", unit=" + unit + ", user=" + user
-				+ ", reserveStartDate=" + reserveStartDate + ", reserveEndDate=" + reserveEndDate + ", paymentRequired="
-				+ paymentRequired + ", createdTime=" + createdTime + ", updatedTime=" + updatedTime + ", createdBy="
-				+ createdBy + ", updatedBy=" + updatedBy + "]";
-	}
+	
+	
 
 }

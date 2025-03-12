@@ -1,106 +1,53 @@
 package com.sbmtech.mms.payload.request;
 
-import java.util.Arrays;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 
+import com.sbmtech.mms.validator.ValidCountryId;
+import com.sbmtech.mms.validator.ValidDateDDMMYYYY;
+import com.sbmtech.mms.validator.ValidPhoneNo;
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Setter
+@Getter
 public class ReserveUnitRequest {
 
 	private Integer unitId;
-	private Long mobileNo;
-	private Integer paymentRequired;
+	
+	@NotEmpty(message = "firstName cannot be null")
+	private String firstName;
+	
+	@ValidPhoneNo
+	private String mobileNo;
+	
+	
+	@Email
 	private String email;
 	private String emiratesId;
+	
+	@NotBlank (message = "dob cannot be null")
+	@NotEmpty(message = "dob cannot be null")
+	@ValidDateDDMMYYYY
 	private String dob;
+	
+	
+	@Min(value=1, message="1 for Male")
+	@Max(value=2, message="2 for Female")
 	private Integer gender;
+	
+	@NotBlank (message = "address cannot be null")
+	@NotEmpty(message = "address cannot be null")
 	private String address;
+	
 	private byte[] eidaCopy;
-	private String nationality;
+	
+	@ValidCountryId
+	private Integer nationalityId;
 
-	public Integer getUnitId() {
-		return unitId;
-	}
-
-	public void setUnitId(Integer unitId) {
-		this.unitId = unitId;
-	}
-
-	public Long getMobileNo() {
-		return mobileNo;
-	}
-
-	public void setMobileNo(Long mobileNo) {
-		this.mobileNo = mobileNo;
-	}
-
-	public Integer getPaymentRequired() {
-		return paymentRequired;
-	}
-
-	public void setPaymentRequired(Integer paymentRequired) {
-		this.paymentRequired = paymentRequired;
-	}
-
-	public String getEmail() {
-		return email;
-	}
-
-	public void setEmail(String email) {
-		this.email = email;
-	}
-
-	public String getEmiratesId() {
-		return emiratesId;
-	}
-
-	public void setEmiratesId(String emiratesId) {
-		this.emiratesId = emiratesId;
-	}
-
-	public String getDob() {
-		return dob;
-	}
-
-	public void setDob(String dob) {
-		this.dob = dob;
-	}
-
-	public Integer getGender() {
-		return gender;
-	}
-
-	public void setGender(Integer gender) {
-		this.gender = gender;
-	}
-
-	public String getAddress() {
-		return address;
-	}
-
-	public void setAddress(String address) {
-		this.address = address;
-	}
-
-	public byte[] getEidaCopy() {
-		return eidaCopy;
-	}
-
-	public void setEidaCopy(byte[] eidaCopy) {
-		this.eidaCopy = eidaCopy;
-	}
-
-	public String getNationality() {
-		return nationality;
-	}
-
-	public void setNationality(String nationality) {
-		this.nationality = nationality;
-	}
-
-	@Override
-	public String toString() {
-		return "ReserveUnitRequest [unitId=" + unitId + ", mobileNo=" + mobileNo + ", paymentRequired="
-				+ paymentRequired + ", email=" + email + ", emiratesId=" + emiratesId + ", dob=" + dob + ", gender="
-				+ gender + ", address=" + address + ", eidaCopy=" + Arrays.toString(eidaCopy) + ", nationality="
-				+ nationality + "]";
-	}
-
+	
 }

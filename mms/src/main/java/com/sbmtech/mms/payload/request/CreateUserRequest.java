@@ -40,8 +40,8 @@ public class CreateUserRequest {
 	@Max(value=2, message="2 for Female")
 	private Integer gender;
 	
-	@NotBlank (message = "password cannot be null")
-	@NotEmpty(message = "password cannot be null")
+	@NotBlank (message = "address cannot be null")
+	@NotEmpty(message = "address cannot be null")
 	private String address;
 	
 	

@@ -83,8 +83,8 @@ public class User implements Serializable {
 	@Column(name = "company_id")
 	private Integer companyId;
 
-	@Column(name = "country_id")
-	private Integer countryId;
+	//@Column(name = "country_id")
+	//private Integer countryId;
 
 	public Long getUserId() {
 		return userId;
@@ -238,17 +238,15 @@ public class User implements Serializable {
 		this.companyId = companyId;
 	}
 
-	public Integer getCountryId() {
-		return countryId;
-	}
+//	public Integer getCountryId() {
+//		return countryId;
+//	}
+//
+//	public void setCountryId(Integer countryId) {
+//		this.countryId = countryId;
+//	}
 
-	public void setCountryId(Integer countryId) {
-		this.countryId = countryId;
-	}
-
-	public static long getSerialversionuid() {
-		return serialVersionUID;
-	}
+	
 
 	public Date getUpdatedDate() {
 		return updatedDate;

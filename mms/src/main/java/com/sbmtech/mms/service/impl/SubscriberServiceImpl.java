@@ -1285,11 +1285,26 @@ public class SubscriberServiceImpl implements SubscriberService {
 		return null;
 	}
 
-	public ApiResponse<Object> reserveUnit(Integer subscriberId, ReserveUnitRequest reserveUnitRequest) {
+	public ApiResponse<Object> reserveUnit(Integer subscriberId, ReserveUnitRequest request) {
 
 		try {
-			Unit unit = unitRepository.findByUnitId(reserveUnitRequest.getUnitId())
-					.orElseThrow(() -> new RuntimeException("Unit not found"));
+			
+			ProductConfig productConfig = productConfigRepository.findBySubscriberId(subscriberId);
+			if (productConfig == null || (productConfig!=null && productConfig.getConfigjson()==null)) {
+				throw new BusinessException("Product configuration not found for subscriberId: " + subscriberId,null);
+			}
+			Map<String, Object> configJson = productConfig.getConfigjson();
+			
+		
+			Boolean unitReserveOption = (Boolean) configJson.get("unitReserveOption");
+			
+			if (unitReserveOption == null || (!unitReserveOption)) {
+				throw new BusinessException("unitReserveOption not enabled for this subscriber",null);
+			}
+			
+			
+			Unit unit = unitRepository.findByUnitId(request.getUnitId())
+					.orElseThrow(() -> new BusinessException("Unit not found",null));
 
 			if (!unit.getUnitStatus().getUnitStatusName().equals(UnitStatusEnum.VACANT.toString())) {
 				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
@@ -1297,28 +1312,20 @@ public class SubscriberServiceImpl implements SubscriberService {
 						null, null);
 			}
 
-			ProductConfig productConfig = productConfigRepository.findBySubscriberId(subscriberId);
-			if (productConfig == null) {
-				throw new RuntimeException("Product configuration not found for subscriberId: " + subscriberId);
-			}
-
-			Map<String, Object> configJson = productConfig.getConfigjson();
-			if (configJson == null) {
-				throw new RuntimeException("configJson is null for subscriberId: " + subscriberId);
-			}
-
 			@SuppressWarnings("unchecked")
 			Map<String, Object> unitReserve = (Map<String, Object>) configJson.get("unitReserve");
 			if (unitReserve == null) {
-				throw new RuntimeException("unitReserve not found in product config");
+				throw new BusinessException("unitReserve not found in product config",null);
 			}
+			
+			Boolean unitReservePaymentOption = (Boolean) unitReserve.get("unitReservePaymentOption");
 
 			Integer unitReserveDays = (unitReserve.get("unitReserveDays") != null)
 					? (Integer) unitReserve.get("unitReserveDays")
 					: null;
 
 			if (unitReserveDays == null) {
-				throw new RuntimeException("unitReserveDays not found in product config");
+				throw new BusinessException("unitReserveDays not found in product config",null);
 			}
 
 			Calendar calendar = Calendar.getInstance();
@@ -1327,21 +1334,18 @@ public class SubscriberServiceImpl implements SubscriberService {
 			Date reserveEndDate = calendar.getTime();
 
 			User newUser = new User();
-			newUser.setEmail(reserveUnitRequest.getEmail());
-			newUser.setMobileNo(Long.valueOf(reserveUnitRequest.getMobileNo()));
+			newUser.setEmail(request.getEmail());
+			newUser.setMobileNo(Long.valueOf(request.getMobileNo()));
 			newUser.setPassword("123456");
 			newUser.setActive(false);
-			newUser.setEmiratesId(CommonUtil.getLongValofObject(reserveUnitRequest.getEmiratesId()));
-			newUser.setDob(CommonUtil.getDatefromString(reserveUnitRequest.getDob(), DATE_ddMMyyyy));
-			newUser.setGender(reserveUnitRequest.getGender());
-			newUser.setAddress(reserveUnitRequest.getAddress());
-			newUser.setEidaCopy(reserveUnitRequest.getEidaCopy());
+			newUser.setEmiratesId(CommonUtil.getLongValofObject(request.getEmiratesId()));
+			newUser.setDob(CommonUtil.getDatefromString(request.getDob(), DATE_ddMMyyyy));
+			newUser.setGender(request.getGender());
+			newUser.setAddress(request.getAddress());
+			newUser.setEidaCopy(request.getEidaCopy());
 
-			Countries nationality = countriesRepository.findByName(reserveUnitRequest.getNationality());
+			Countries nationality = countriesRepository.findById(request.getNationalityId()).orElse(null);
 
-			if (nationality == null) {
-				throw new IllegalArgumentException("Invalid nationality: " + reserveUnitRequest.getNationality());
-			}
 
 			newUser.setNationality(nationality);
 			userRepository.save(newUser);
@@ -1354,7 +1358,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			reserveDetails.setUser(newUser);
 			reserveDetails.setReserveStartDate(new Date());
 			reserveDetails.setReserveEndDate(reserveEndDate);
-			reserveDetails.setPaymentRequired(reserveUnitRequest.getPaymentRequired());
+			reserveDetails.setPaymentRequired((unitReservePaymentOption)?1:0);
 			unitReserveDetailsRepository.save(reserveDetails);
 
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Unit successfully reserved", null, null);
