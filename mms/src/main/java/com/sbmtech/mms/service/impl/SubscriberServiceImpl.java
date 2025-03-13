@@ -30,7 +30,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -39,6 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.google.gson.Gson;
 import com.sbmtech.mms.constant.CommonConstants;
 import com.sbmtech.mms.constant.SubscriptionStatus;
+import com.sbmtech.mms.dto.BuildingDetailDTO;
 import com.sbmtech.mms.dto.KeyValuePairDTO;
 import com.sbmtech.mms.dto.NotifEmailDTO;
 import com.sbmtech.mms.dto.NotificationEmailResponseDTO;
@@ -90,6 +93,7 @@ import com.sbmtech.mms.payload.request.CreateUserRequest;
 import com.sbmtech.mms.payload.request.DepartmentRequest;
 import com.sbmtech.mms.payload.request.FloorRequest;
 import com.sbmtech.mms.payload.request.KeyMasterRequest;
+import com.sbmtech.mms.payload.request.PaginationRequest;
 import com.sbmtech.mms.payload.request.ParkingRequest;
 import com.sbmtech.mms.payload.request.ParkingZoneRequest;
 import com.sbmtech.mms.payload.request.ResendOtpRequest;
@@ -107,6 +111,7 @@ import com.sbmtech.mms.payload.response.CommunityResponse;
 import com.sbmtech.mms.payload.response.DeptMasResponse;
 import com.sbmtech.mms.payload.response.FloorResponse;
 import com.sbmtech.mms.payload.response.KeyResponse;
+import com.sbmtech.mms.payload.response.PaginationResponse;
 import com.sbmtech.mms.payload.response.AreaResponse;
 import com.sbmtech.mms.payload.response.ParkingResponse;
 import com.sbmtech.mms.payload.response.SubscriptionPlans;
@@ -150,6 +155,7 @@ import com.sbmtech.mms.security.services.UserDetailsImpl;
 import com.sbmtech.mms.service.NotificationService;
 import com.sbmtech.mms.service.SubscriberService;
 import com.sbmtech.mms.util.CommonUtil;
+import com.sbmtech.mms.util.PaginationUtils;
 
 @Service
 @Transactional
@@ -1278,12 +1284,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
 	}
 
-	@Override
-	public ApiResponse<Object> getAllBuildings(Integer subscriberId, int pageNo, int pageSize, String sortBy,
-			String sortDir) throws Exception {
-		PageRequest pageable = PageRequest.of(pageNo, pageSize);
-		return null;
-	}
+	
 
 	public ApiResponse<Object> reserveUnit(Integer subscriberId, ReserveUnitRequest request) {
 
@@ -1367,6 +1368,64 @@ public class SubscriberServiceImpl implements SubscriberService {
 			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to reserve unit: " + e.getMessage(), null,
 					null);
 		}
+	}
+	
+	public ApiResponse<Object> getAllBuildings(Integer subscriberId, PaginationRequest paginationRequest) {
+
+		Sort sort = paginationRequest.getSortDirection().equalsIgnoreCase("desc")
+				? Sort.by(paginationRequest.getSortBy()).descending()
+				: Sort.by(paginationRequest.getSortBy()).ascending();
+		PageRequest pageable = PageRequest.of(paginationRequest.getPage(), paginationRequest.getSize(), sort);
+		List<Building> listOfBuildings = buildingRepository.findAllBySubscriberId(subscriberId);
+
+		List<BuildingDetailDTO> listBD = new ArrayList<>();
+
+		for (Building b : listOfBuildings) {
+			BuildingDetailDTO bt = new BuildingDetailDTO();
+			BeanUtils.copyProperties(b, bt);
+			if (b.getCommunity() != null) {
+				Community ct = b.getCommunity();
+				bt.setCommunityId(ct.getCommunityId());
+				ct.setCommunityName(ct.getCommunityName());
+				if (ct.getArea() != null) {
+					Area ae = b.getArea();
+					bt.setAreaId(ae.getAreaId());
+					bt.setAreaName(ae.getAreaName());
+					Countries country = ae.getCountry();
+					bt.setCountryId(country.getCountryId());
+					bt.setCountryName(country.getName());
+					State st = ae.getState();
+					bt.setStateId(st.getStateId());
+					bt.setStateName(st.getName());
+					City city = ae.getCity();
+					bt.setCityId(city.getCityId());
+					bt.setCityName(city.getName());
+
+				}
+			} else if (b.getArea() != null) {
+				Area ae = b.getArea();
+				bt.setAreaId(ae.getAreaId());
+				bt.setAreaName(ae.getAreaName());
+				Countries country = ae.getCountry();
+				bt.setCountryId(country.getCountryId());
+				bt.setCountryName(country.getName());
+				State st = ae.getState();
+				bt.setStateId(st.getStateId());
+				bt.setStateName(st.getName());
+				City city = ae.getCity();
+				bt.setCityId(city.getCityId());
+				bt.setCityName(city.getName());
+
+			}
+			listBD.add(bt);
+		}
+
+		Page<BuildingDetailDTO> pageBD = PaginationUtils.convertListToPage(listBD, pageable);
+
+		PaginationResponse pgResp = new PaginationResponse<>(pageBD.getContent(), pageBD.getNumber(),
+				pageBD.getTotalPages(), pageBD.getTotalElements(), pageBD.isFirst(), pageBD.isLast());
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, pgResp, null, null);
+
 	}
 
 }

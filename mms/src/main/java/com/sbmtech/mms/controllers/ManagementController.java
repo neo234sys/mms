@@ -33,6 +33,7 @@ import com.sbmtech.mms.payload.request.CreateUserRequest;
 import com.sbmtech.mms.payload.request.DepartmentRequest;
 import com.sbmtech.mms.payload.request.FloorRequest;
 import com.sbmtech.mms.payload.request.KeyMasterRequest;
+import com.sbmtech.mms.payload.request.PaginationRequest;
 import com.sbmtech.mms.payload.request.ParkingRequest;
 import com.sbmtech.mms.payload.request.ParkingZoneRequest;
 import com.sbmtech.mms.payload.request.ReserveUnitRequest;
@@ -283,17 +284,12 @@ public class ManagementController {
 		return productConfigService.saveOrUpdateProductConfig(subscriberId, config);
 	}
 
-	@GetMapping("/getAllBuildings")
-	public ResponseEntity<?> getAllBuildings(@CurrentSecurityContext(expression = "authentication") Authentication auth,
-			@RequestParam(defaultValue = CommonConstants.DEFAULT_PAGE_NUMBER, required = false) int pageNo,
-			@RequestParam(defaultValue = CommonConstants.DEFAULT_PAGE_SIZE, required = false) int pageSize,
-			@RequestParam(defaultValue = CommonConstants.DEFAULT_SORT_BY, required = false) String sortBy,
-			@RequestParam(defaultValue = CommonConstants.DEFAULT_SORT_DIRECTION, required = false) String sortDir)
-			throws Exception {
-
-		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
-
-		return ResponseEntity.ok(subscriberService.getAllBuildings(subscriberId, pageNo, pageSize, sortBy, sortDir));
+	@PostMapping("/getAllBuildings")
+	public ResponseEntity<?> getAllBuildings(@CurrentSecurityContext(expression = "authentication")  Authentication auth,
+	    		@RequestBody PaginationRequest paginationRequest) throws Exception{
+	        
+	    	Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
+	        return ResponseEntity.ok( subscriberService.getAllBuildings(subscriberId,paginationRequest));
 	}
 
 	@PostMapping("/reserveUnit")

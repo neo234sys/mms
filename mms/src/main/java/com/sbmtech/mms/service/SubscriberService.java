@@ -18,6 +18,7 @@ import com.sbmtech.mms.payload.request.CreateUserRequest;
 import com.sbmtech.mms.payload.request.DepartmentRequest;
 import com.sbmtech.mms.payload.request.FloorRequest;
 import com.sbmtech.mms.payload.request.KeyMasterRequest;
+import com.sbmtech.mms.payload.request.PaginationRequest;
 import com.sbmtech.mms.payload.request.ParkingRequest;
 import com.sbmtech.mms.payload.request.ParkingZoneRequest;
 import com.sbmtech.mms.payload.request.ResendOtpRequest;
@@ -81,8 +82,7 @@ public interface SubscriberService {
 
 	public ApiResponse<Object> addDepartment(@Valid DepartmentRequest request);
 
-	public ApiResponse<Object> getAllBuildings(Integer subscriberId, int pageNo, int pageSize, String sortBy,
-			String sortDir) throws Exception;
+	public ApiResponse<Object>  getAllBuildings(Integer subscriberId,PaginationRequest paginationRequest) throws Exception;
 
 	public ApiResponse<Object> reserveUnit(Integer subscriberId, ReserveUnitRequest reserveUnitRequest);
 
