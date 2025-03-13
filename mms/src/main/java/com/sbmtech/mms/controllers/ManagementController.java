@@ -294,7 +294,7 @@ public class ManagementController {
 
 	@PostMapping("/reserveUnit")
 	public ResponseEntity<?> reserveUnit(@CurrentSecurityContext(expression = "authentication") Authentication auth,
-			@RequestBody ReserveUnitRequest reserveUnitRequest) throws Exception {
+			@Valid @RequestBody ReserveUnitRequest reserveUnitRequest) throws Exception {
 		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
 		return ResponseEntity.ok(subscriberService.reserveUnit(subscriberId, reserveUnitRequest));
 	}
