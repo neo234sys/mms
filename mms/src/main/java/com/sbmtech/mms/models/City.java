@@ -33,6 +33,10 @@ public class City implements Serializable {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "country_id")
 	private Countries country;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "subscriber_id")
+	private Subscriber subscriber;
 
 	public Integer getCityId() {
 		return cityId;
@@ -66,8 +70,13 @@ public class City implements Serializable {
 		this.country = country;
 	}
 
-	public static long getSerialversionuid() {
-		return serialVersionUID;
+	public Subscriber getSubscriber() {
+		return subscriber;
 	}
 
+	public void setSubscriber(Subscriber subscriber) {
+		this.subscriber = subscriber;
+	}
+
+	
 }

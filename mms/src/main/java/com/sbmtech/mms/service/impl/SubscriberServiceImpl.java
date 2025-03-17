@@ -752,7 +752,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		Countries country = null;
 		State state = null;
-		City city = null;
+		//City city = null;
 		Subscriber subscriber = null;
 
 		Optional<Subscriber> subscriberOpt = subscriberRepository.findById(request.getSubscriberId());
@@ -772,7 +772,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 				throw new BusinessException("Invalid stateId /stateId not matching with CountryId", null);
 			}
 		}
-
+/*
 		Optional<City> cityOpt = cityRepository.findById(request.getCityId());
 		if (!cityOpt.isPresent()) {
 			throw new BusinessException("City not found with id: " + request.getCityId(), null);
@@ -786,8 +786,18 @@ public class SubscriberServiceImpl implements SubscriberService {
 				throw new BusinessException("countryId / stateId / cityId is not matching each other", null);
 			}
 		}
+		*/
 
 		subscriber = subscriberOpt.get();
+		
+		
+		City city = new City();
+		city.setName(request.getCityName());
+		city.setCountry(country);
+		city.setState(state);
+		city.setSubscriber(subscriber);
+		
+		cityRepository.save(city);
 
 		Area area = new Area();
 		area.setAreaName(request.getAreaName());
