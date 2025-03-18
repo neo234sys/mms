@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,7 +25,6 @@ import com.sbmtech.mms.repository.UnitStatusRepository;
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/cron")
-@PreAuthorize("hasRole(@securityService.MgtAdmin)")
 public class CronJobController {
 
 	@Autowired
@@ -44,7 +42,7 @@ public class CronJobController {
 	@Autowired
 	private UnitRepository unitRepository;
 
-	@Scheduled(cron = "0 */5 * * * ?") // every 5 hrs
+//	@Scheduled(cron = "0 */5 * * * ?") // every 5 hrs
 	public void expireSubscriptionsEvery5Seconds() {
 		LocalDateTime now = LocalDateTime.now();
 

@@ -1,6 +1,5 @@
 package com.sbmtech.mms.controllers;
 
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +26,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sbmtech.mms.constant.CommonConstants;
-import com.sbmtech.mms.constant.SubscriptionStatus;
 import com.sbmtech.mms.models.Subscriber;
 import com.sbmtech.mms.models.Subscriptions;
 import com.sbmtech.mms.models.User;
@@ -68,7 +66,7 @@ public class SubscriberController {
 
 	@Autowired
 	private SubscriberService subscriberService;
-	
+
 	@Autowired
 	private SubscriptionRepository subscriptionRepository;
 
@@ -102,7 +100,7 @@ public class SubscriberController {
 
 					if (subscriber.getOtpVerified() == null || subscriber.getOtpVerified() != 1) {
 						isOTPVerified = false;
-						ResendOtpRequest request=new  ResendOtpRequest();
+						ResendOtpRequest request = new ResendOtpRequest();
 						request.setSubscriberId(subscriber.getSubscriberId());
 						subscriberService.resendOtp(request);
 						return CommonUtil.buildErrorResponse("OTP verification required before login.", isOTPVerified,
@@ -119,10 +117,10 @@ public class SubscriberController {
 					Subscriptions existingSubscription = subscriptionRepository
 							.findTopBySubscriber_SubscriberIdOrderBySubscriptionIdDesc(subscriber.getSubscriberId());
 					if (existingSubscription != null) {
-						if( CommonUtil.getCurrentLocalDate().isAfter(existingSubscription.getStartDate().minusDays(1)) &&
-							CommonUtil.getCurrentLocalDate().isBefore(existingSubscription.getEndDate())) {
-						
-							validSubscription=true;
+						if (CommonUtil.getCurrentLocalDate().isAfter(existingSubscription.getStartDate().minusDays(1))
+								&& CommonUtil.getCurrentLocalDate().isBefore(existingSubscription.getEndDate())) {
+
+							validSubscription = true;
 						}
 					}
 

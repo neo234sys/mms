@@ -1,13 +1,10 @@
 package com.sbmtech.mms.models;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -43,14 +40,9 @@ public class TenantUnit implements Serializable {
 	@JoinColumn(name = "parking_id", referencedColumnName = "parking_id")
 	private Parking parking;
 
-
-
-	
-	
 	@Column(name = "tenure_period_in_month")
 	private Integer tenurePeriodMonth;
 
-	
 //	@Column(name = "rent_cycle")
 //	private String rentCycle;
 
@@ -60,15 +52,13 @@ public class TenantUnit implements Serializable {
 	@Column(name = "active")
 	private Boolean active;
 
-
 //	@Column(name = "rent_payment_mode")
 //	private String rentPaymentMode;
-	
+
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "payment_mode_id", referencedColumnName = "payment_mode_id")
 	private PaymentMode paymentMode;
-	
-	
+
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "rent_cycle_id", referencedColumnName = "rent_cycle_id")
 	private RentCycle rentCycle;
@@ -119,8 +109,6 @@ public class TenantUnit implements Serializable {
 		this.parking = parking;
 	}
 
-
-
 	public RentCycle getRentCycle() {
 		return rentCycle;
 	}
@@ -144,8 +132,6 @@ public class TenantUnit implements Serializable {
 	public void setActive(Boolean active) {
 		this.active = active;
 	}
-
-	
 
 	public PaymentMode getPaymentMode() {
 		return paymentMode;
@@ -205,7 +191,5 @@ public class TenantUnit implements Serializable {
 				+ ", tenurePeriodMonth=" + tenurePeriodMonth + ", rentCycle=" + rentCycle + ", expired=" + expired
 				+ ", active=" + active + "]";
 	}
-	
-	
 
 }

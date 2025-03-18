@@ -6,26 +6,21 @@ import javax.validation.constraints.NotEmpty;
 import com.sbmtech.mms.validator.ValidChannelId;
 import com.sbmtech.mms.validator.ValidCurrentAndFutureDate;
 import com.sbmtech.mms.validator.ValidDateDDMMYYYY;
-import com.sbmtech.mms.validator.ValidFutureDate;
 import com.sbmtech.mms.validator.ValidPlanId;
-import com.sbmtech.mms.validator.ValidSubscriberlId;
 
 public class SubscriptionRequest {
 
 	@ValidPlanId
 	private Integer planId;
-	
-	//@ValidSubscriberlId
+
 	private Integer subscriberId;
-	
-	@NotBlank (message = "startDate cannot be null")
+
+	@NotBlank(message = "startDate cannot be null")
 	@NotEmpty(message = "startDate cannot be null")
 	@ValidDateDDMMYYYY
-	//@ValidFutureDate
 	@ValidCurrentAndFutureDate
 	private String startDate;
-	
-	
+
 	@ValidChannelId
 	private Integer channelId;
 
@@ -52,30 +47,6 @@ public class SubscriptionRequest {
 	public void setStartDate(String startDate) {
 		this.startDate = startDate;
 	}
-//
-//	public LocalDateTime getEndDate() {
-//		return endDate;
-//	}
-//
-//	public void setEndDate(LocalDateTime endDate) {
-//		this.endDate = endDate;
-//	}
-
-//	public String getStatus() {
-//		return status;
-//	}
-//
-//	public void setStatus(String status) {
-//		this.status = status;
-//	}
-
-//	public Boolean getIsFree() {
-//		return isFree;
-//	}
-//
-//	public void setIsFree(Boolean isFree) {
-//		this.isFree = isFree;
-//	}
 
 	public Integer getChannelId() {
 		return channelId;
