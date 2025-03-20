@@ -82,8 +82,15 @@ public interface SubscriberService {
 
 	public ApiResponse<Object> addDepartment(@Valid DepartmentRequest request);
 
-	public ApiResponse<Object>  getAllBuildings(Integer subscriberId,PaginationRequest paginationRequest) throws Exception;
+	public ApiResponse<Object> getAllBuildings(Integer subscriberId, PaginationRequest paginationRequest)
+			throws Exception;
 
 	public ApiResponse<Object> reserveUnit(Integer subscriberId, ReserveUnitRequest reserveUnitRequest);
+
+	public ApiResponse<Object> getAllUnitsByBuildingId(Integer subscriberId, Integer buildingId,
+			PaginationRequest paginationRequest);
+
+	public ApiResponse<Object> getAllTenantsByBuildingId(Integer subscriberId, Integer buildingId,
+			PaginationRequest paginationRequest);
 
 }

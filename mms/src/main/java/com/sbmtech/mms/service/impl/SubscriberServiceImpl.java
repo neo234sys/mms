@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.json.simple.JSONObject;
 import javax.validation.Valid;
 
 import org.apache.commons.lang3.ObjectUtils;
@@ -38,7 +37,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.google.gson.Gson;
 import com.sbmtech.mms.constant.CommonConstants;
 import com.sbmtech.mms.constant.SubscriptionStatus;
 import com.sbmtech.mms.dto.BuildingDetailDTO;
@@ -63,8 +61,6 @@ import com.sbmtech.mms.models.PaymentMethod;
 import com.sbmtech.mms.models.PaymentMode;
 import com.sbmtech.mms.models.ProductConfig;
 import com.sbmtech.mms.models.RentCycle;
-import com.sbmtech.mms.models.RentCycleEnum;
-import com.sbmtech.mms.models.PaymentModeEnum;
 import com.sbmtech.mms.models.Role;
 import com.sbmtech.mms.models.RoleEnum;
 import com.sbmtech.mms.models.State;
@@ -115,8 +111,10 @@ import com.sbmtech.mms.payload.response.PaginationResponse;
 import com.sbmtech.mms.payload.response.AreaResponse;
 import com.sbmtech.mms.payload.response.ParkingResponse;
 import com.sbmtech.mms.payload.response.SubscriptionPlans;
+import com.sbmtech.mms.payload.response.TenantDetailResponse;
 import com.sbmtech.mms.payload.response.TenantUnitResponse;
 import com.sbmtech.mms.payload.response.UniKeyResponse;
+import com.sbmtech.mms.payload.response.UnitDetailResponse;
 import com.sbmtech.mms.payload.response.UnitResponse;
 import com.sbmtech.mms.repository.AreaRepository;
 import com.sbmtech.mms.repository.BuildingRepository;
@@ -204,9 +202,6 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	@Autowired
 	private CityRepository cityRepository;
-
-//	@Autowired
-//	private SubscriberLocationRepository subscriberLocationRepository;
 
 	@Autowired
 	private AreaRepository areaRepository;
@@ -752,7 +747,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		Countries country = null;
 		State state = null;
-		//City city = null;
+		// City city = null;
 		Subscriber subscriber = null;
 
 		Optional<Subscriber> subscriberOpt = subscriberRepository.findById(request.getSubscriberId());
@@ -772,31 +767,27 @@ public class SubscriberServiceImpl implements SubscriberService {
 				throw new BusinessException("Invalid stateId /stateId not matching with CountryId", null);
 			}
 		}
-/*
-		Optional<City> cityOpt = cityRepository.findById(request.getCityId());
-		if (!cityOpt.isPresent()) {
-			throw new BusinessException("City not found with id: " + request.getCityId(), null);
-		} else {
-			city = cityOpt.get();
-			state = city.getState();
-			country = city.getCountry();
-			if (country.getCountryId().intValue() != request.getCountryId().intValue()
-					|| state.getStateId().intValue() != request.getStateId().intValue()
-					|| city.getCityId().intValue() != request.getCityId().intValue()) {
-				throw new BusinessException("countryId / stateId / cityId is not matching each other", null);
-			}
-		}
-		*/
+		/*
+		 * Optional<City> cityOpt = cityRepository.findById(request.getCityId()); if
+		 * (!cityOpt.isPresent()) { throw new
+		 * BusinessException("City not found with id: " + request.getCityId(), null); }
+		 * else { city = cityOpt.get(); state = city.getState(); country =
+		 * city.getCountry(); if (country.getCountryId().intValue() !=
+		 * request.getCountryId().intValue() || state.getStateId().intValue() !=
+		 * request.getStateId().intValue() || city.getCityId().intValue() !=
+		 * request.getCityId().intValue()) { throw new
+		 * BusinessException("countryId / stateId / cityId is not matching each other",
+		 * null); } }
+		 */
 
 		subscriber = subscriberOpt.get();
-		
-		
+
 		City city = new City();
 		city.setName(request.getCityName());
 		city.setCountry(country);
 		city.setState(state);
 		city.setSubscriber(subscriber);
-		
+
 		cityRepository.save(city);
 
 		Area area = new Area();
@@ -1183,13 +1174,11 @@ public class SubscriberServiceImpl implements SubscriberService {
 				request.getSubscriberId());
 
 		if (ObjectUtils.isEmpty(tenant)) {
-
 			throw new BusinessException("Tenant not found with ID: " + request.getTenantId(), null);
 		}
 
 		Unit unit = unitRepository.findByUnitIdAndSubscriberId(request.getUnitId(), request.getSubscriberId());
 		if (unit == null) {
-
 			throw new BusinessException("Unit not found with ID: " + request.getUnitId(), null);
 		}
 
@@ -1294,28 +1283,24 @@ public class SubscriberServiceImpl implements SubscriberService {
 		return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
 	}
 
-	
-
 	public ApiResponse<Object> reserveUnit(Integer subscriberId, ReserveUnitRequest request) {
 
 		try {
-			
+
 			ProductConfig productConfig = productConfigRepository.findBySubscriberId(subscriberId);
-			if (productConfig == null || (productConfig!=null && productConfig.getConfigjson()==null)) {
-				throw new BusinessException("Product configuration not found for subscriberId: " + subscriberId,null);
+			if (productConfig == null || (productConfig != null && productConfig.getConfigjson() == null)) {
+				throw new BusinessException("Product configuration not found for subscriberId: " + subscriberId, null);
 			}
 			Map<String, Object> configJson = productConfig.getConfigjson();
-			
-		
+
 			Boolean unitReserveOption = (Boolean) configJson.get("unitReserveOption");
-			
+
 			if (unitReserveOption == null || (!unitReserveOption)) {
-				throw new BusinessException("unitReserveOption not enabled for this subscriber",null);
+				throw new BusinessException("unitReserveOption not enabled for this subscriber", null);
 			}
-			
-			
+
 			Unit unit = unitRepository.findByUnitId(request.getUnitId())
-					.orElseThrow(() -> new BusinessException("Unit not found",null));
+					.orElseThrow(() -> new BusinessException("Unit not found", null));
 
 			if (!unit.getUnitStatus().getUnitStatusName().equals(UnitStatusEnum.VACANT.toString())) {
 				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
@@ -1326,9 +1311,9 @@ public class SubscriberServiceImpl implements SubscriberService {
 			@SuppressWarnings("unchecked")
 			Map<String, Object> unitReserve = (Map<String, Object>) configJson.get("unitReserve");
 			if (unitReserve == null) {
-				throw new BusinessException("unitReserve not found in product config",null);
+				throw new BusinessException("unitReserve not found in product config", null);
 			}
-			
+
 			Boolean unitReservePaymentOption = (Boolean) unitReserve.get("unitReservePaymentOption");
 
 			Integer unitReserveDays = (unitReserve.get("unitReserveDays") != null)
@@ -1336,7 +1321,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 					: null;
 
 			if (unitReserveDays == null) {
-				throw new BusinessException("unitReserveDays not found in product config",null);
+				throw new BusinessException("unitReserveDays not found in product config", null);
 			}
 
 			Calendar calendar = Calendar.getInstance();
@@ -1357,7 +1342,6 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 			Countries nationality = countriesRepository.findById(request.getNationalityId()).orElse(null);
 
-
 			newUser.setNationality(nationality);
 			userRepository.save(newUser);
 
@@ -1369,7 +1353,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			reserveDetails.setUser(newUser);
 			reserveDetails.setReserveStartDate(new Date());
 			reserveDetails.setReserveEndDate(reserveEndDate);
-			reserveDetails.setPaymentRequired((unitReservePaymentOption)?1:0);
+			reserveDetails.setPaymentRequired((unitReservePaymentOption) ? 1 : 0);
 			unitReserveDetailsRepository.save(reserveDetails);
 
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Unit successfully reserved", null, null);
@@ -1379,7 +1363,8 @@ public class SubscriberServiceImpl implements SubscriberService {
 					null);
 		}
 	}
-	
+
+	@SuppressWarnings("rawtypes")
 	public ApiResponse<Object> getAllBuildings(Integer subscriberId, PaginationRequest paginationRequest) {
 
 		Sort sort = paginationRequest.getSortDirection().equalsIgnoreCase("desc")
@@ -1436,6 +1421,70 @@ public class SubscriberServiceImpl implements SubscriberService {
 				pageBD.getTotalPages(), pageBD.getTotalElements(), pageBD.isFirst(), pageBD.isLast());
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, pgResp, null, null);
 
+	}
+
+	@SuppressWarnings("rawtypes")
+	public ApiResponse<Object> getAllUnitsByBuildingId(Integer subscriberId, Integer buildingId,
+			PaginationRequest paginationRequest) {
+		Sort sort = paginationRequest.getSortDirection().equalsIgnoreCase("desc")
+				? Sort.by(paginationRequest.getSortBy()).descending()
+				: Sort.by(paginationRequest.getSortBy()).ascending();
+		PageRequest pageable = PageRequest.of(paginationRequest.getPage(), paginationRequest.getSize(), sort);
+		Page<Unit> unitPage = unitRepository.findUnitsByBuildingIdWithPagination(buildingId, pageable);
+
+		List<UnitDetailResponse> unitDTOs = unitPage.getContent().stream().map(unit -> {
+			UnitDetailResponse dto = new UnitDetailResponse();
+			BeanUtils.copyProperties(unit, dto);
+			if (unit.getBuilding() != null)
+				dto.setBuildingId(unit.getBuilding().getBuildingId());
+			if (unit.getFloor() != null)
+				dto.setFloorId(unit.getFloor().getFloorId());
+			if (unit.getUnitType() != null)
+				dto.setUnitTypeId(unit.getUnitType().getUnitTypeId());
+			if (unit.getUnitSubType() != null)
+				dto.setUnitSubTypeId(unit.getUnitSubType().getUnitSubtypeId());
+			if (unit.getUnitStatus() != null)
+				dto.setUnitStatusId(unit.getUnitStatus().getUnitStatusId());
+			return dto;
+		}).collect(Collectors.toList());
+
+		PaginationResponse response = new PaginationResponse<>(unitDTOs, unitPage.getNumber(), unitPage.getTotalPages(),
+				unitPage.getTotalElements(), unitPage.isFirst(), unitPage.isLast());
+
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, response, null, null);
+	}
+
+	@SuppressWarnings("rawtypes")
+	public ApiResponse<Object> getAllTenantsByBuildingId(Integer subscriberId, Integer buildingId,
+			PaginationRequest paginationRequest) {
+		Sort sort = paginationRequest.getSortDirection().equalsIgnoreCase("desc")
+				? Sort.by(paginationRequest.getSortBy()).descending()
+				: Sort.by(paginationRequest.getSortBy()).ascending();
+		PageRequest pageable = PageRequest.of(paginationRequest.getPage(), paginationRequest.getSize(), sort);
+		Page<TenantUnit> tenantUnitPage = tenantUnitRepository.findTenantsByBuildingIdWithPagination(buildingId,
+				pageable);
+
+		List<TenantDetailResponse> tenantDTOs = tenantUnitPage.getContent().stream().map(tenantUnit -> {
+			TenantDetailResponse dto = new TenantDetailResponse();
+			Tenant tenant = tenantUnit.getTenant();
+			BeanUtils.copyProperties(tenant, dto);
+			if (tenantUnit.getUnit() != null) {
+				dto.setUnitId(tenantUnit.getUnit().getUnitId());
+				if (tenantUnit.getUnit().getBuilding() != null) {
+					dto.setBuildingId(tenantUnit.getUnit().getBuilding().getBuildingId());
+				}
+			}
+			if (tenantUnit.getParking() != null) {
+				dto.setParkingId(tenantUnit.getParking().getParkingId());
+			}
+			return dto;
+		}).collect(Collectors.toList());
+
+		PaginationResponse response = new PaginationResponse<>(tenantDTOs, tenantUnitPage.getNumber(),
+				tenantUnitPage.getTotalPages(), tenantUnitPage.getTotalElements(), tenantUnitPage.isFirst(),
+				tenantUnitPage.isLast());
+
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, response, null, null);
 	}
 
 }

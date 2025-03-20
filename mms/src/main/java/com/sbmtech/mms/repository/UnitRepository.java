@@ -2,11 +2,14 @@ package com.sbmtech.mms.repository;
 
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.sbmtech.mms.models.Unit;
+import org.springframework.data.domain.Pageable;
 
 @Repository
 public interface UnitRepository extends JpaRepository<Unit, Integer> {
@@ -16,5 +19,8 @@ public interface UnitRepository extends JpaRepository<Unit, Integer> {
 	public Unit findByUnitIdAndSubscriberId(Integer unitId, Integer subscriberId);
 
 	Optional<Unit> findByUnitId(Integer unitId);
+
+	@Query("SELECT u FROM Unit u JOIN u.building b WHERE b.buildingId = :buildingId ORDER BY u.id ASC")
+	Page<Unit> findUnitsByBuildingIdWithPagination(@Param("buildingId") Integer buildingId, Pageable pageable);
 
 }
