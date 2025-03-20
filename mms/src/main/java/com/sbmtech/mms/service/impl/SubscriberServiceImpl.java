@@ -88,6 +88,8 @@ import com.sbmtech.mms.payload.request.BuildingRequest;
 import com.sbmtech.mms.payload.request.BuildingUpdateRequest;
 import com.sbmtech.mms.payload.request.CommunityRequest;
 import com.sbmtech.mms.payload.request.CreateUserRequest;
+import com.sbmtech.mms.payload.request.DeleteBuildingRequest;
+import com.sbmtech.mms.payload.request.DeleteUnitRequest;
 import com.sbmtech.mms.payload.request.DepartmentRequest;
 import com.sbmtech.mms.payload.request.FloorRequest;
 import com.sbmtech.mms.payload.request.KeyMasterRequest;
@@ -1513,7 +1515,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			if (unit.getUnitStatus() != null)
 				dto.setUnitStatusId(unit.getUnitStatus().getUnitStatusId());
 
-			if (unit.getUnitStatus() != null && unit.getUnitStatus().getUnitStatusId() == 2) {
+			if (unit.getUnitStatus() != null && unit.getUnitStatus().getUnitStatusId() == 2) { //Occupied
 				Optional<TenantUnit> tenantUnitOptional = tenantUnitRepository.findByUnitAndActiveTrue(unit);
 				if (tenantUnitOptional.isPresent()) {
 					TenantUnit tenantUnit = tenantUnitOptional.get();
@@ -1582,14 +1584,25 @@ public class SubscriberServiceImpl implements SubscriberService {
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, response, null, null);
 	}
 
-	public ApiResponse<?> deleteBuilding(Integer subscriberId, Integer buildingId) {
+	public ApiResponse<?> deleteBuilding(DeleteBuildingRequest request) {
 		try {
-			if (unitRepository.existsByBuildingBuildingId(buildingId)) {
+			//Do validatation-> buildingid assosiated with this subscriber
+			
+			List <Unit> units=unitRepository.getAllUnitsByBuildingId(request.getBuildingId());
+			List<Integer> unitids=null;
+			if(units!=null && !units.isEmpty()) {
+				 unitids = units
+		            .stream()
+		            .map(Unit::getUnitId)
+		            .collect(Collectors.toList());
+			}
+			
+			if (unitRepository.existsByBuildingBuildingId(request.getBuildingId())) {
 				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
-						"Cannot delete building because it has associated units.", null, null);
+						"Cannot delete building because it has associated units.Unit ids="+unitids, null, null);
 			}
 
-			buildingRepository.deleteById(buildingId);
+			buildingRepository.deleteById(request.getBuildingId());
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Building successfully deleted", null, null);
 		} catch (Exception e) {
 			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to delete building: " + e.getMessage(), null,
@@ -1597,14 +1610,19 @@ public class SubscriberServiceImpl implements SubscriberService {
 		}
 	}
 
-	public ApiResponse<?> deleteUnit(Integer subscriberId, Integer unitId) {
+	public ApiResponse<?> deleteUnit(DeleteUnitRequest request) {
 		try {
-			if (tenantRepository.existsByUnitUnitId(unitId)) {
+			
+			//Do validatation-> buildingid & unit id assosiated with this subscriber
+			
+			
+			Optional <TenantUnit> tuop=tenantUnitRepository.findTenantsByUnitId(request.getBuildingId(),request.getUnitId(),request.getSubscriberId());
+			if (tuop.isPresent()) {
 				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
-						"Cannot delete unit because it has associated tenants.", null, null);
+					"Cannot delete unit because it has associated tenant id="+tuop.get().getTenant().getTenantId(), null, null);
 			}
 
-			unitRepository.deleteById(unitId);
+			unitRepository.deleteById(request.getUnitId());
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Unit successfully deleted", null, null);
 		} catch (Exception e) {
 			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to delete unit: " + e.getMessage(), null,
@@ -1614,6 +1632,8 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	public ApiResponse<?> deleteTenant(Integer subscriberId, Integer tenantId) {
 		try {
+			//Do TO Validation on any payment pending
+			
 			tenantRepository.deleteById(tenantId);
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Tenant successfully deleted", null, null);
 		} catch (Exception e) {

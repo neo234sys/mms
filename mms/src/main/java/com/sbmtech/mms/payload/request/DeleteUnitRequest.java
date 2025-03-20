@@ -1,8 +1,9 @@
 package com.sbmtech.mms.payload.request;
 
-public class UnitIdRequest {
-	private Integer subscriberId;
+public class DeleteUnitRequest {
+
 	private Integer buildingId;
+	private Integer subscriberId;
 	private Integer unitId;
 
 	public Integer getUnitId() {
@@ -13,14 +14,6 @@ public class UnitIdRequest {
 		this.unitId = unitId;
 	}
 
-	public Integer getBuildingId() {
-		return buildingId;
-	}
-
-	public void setBuildingId(Integer buildingId) {
-		this.buildingId = buildingId;
-	}
-
 	public Integer getSubscriberId() {
 		return subscriberId;
 	}
@@ -29,9 +22,17 @@ public class UnitIdRequest {
 		this.subscriberId = subscriberId;
 	}
 
+	public Integer getBuildingId() {
+		return buildingId;
+	}
+
+	public void setBuildingId(Integer buildingId) {
+		this.buildingId = buildingId;
+	}
+
 	@Override
 	public String toString() {
-		return "UnitIdRequest [unitId=" + unitId + "]";
+		return "BuildingIdRequest [buildingId=" + buildingId + "]";
 	}
 
 }

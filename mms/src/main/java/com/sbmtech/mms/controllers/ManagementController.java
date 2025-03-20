@@ -20,7 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.sbmtech.mms.models.ProductConfig;
 import com.sbmtech.mms.payload.request.AdditionalDetailsRequest;
 import com.sbmtech.mms.payload.request.AreaRequest;
-import com.sbmtech.mms.payload.request.BuildingIdRequest;
+import com.sbmtech.mms.payload.request.DeleteBuildingRequest;
+import com.sbmtech.mms.payload.request.DeleteUnitRequest;
 import com.sbmtech.mms.payload.request.BuildingRequest;
 import com.sbmtech.mms.payload.request.BuildingUnitPaginationRequest;
 import com.sbmtech.mms.payload.request.BuildingUpdateRequest;
@@ -283,16 +284,18 @@ public class ManagementController {
 
 	@PostMapping("/deleteBuilding")
 	public ResponseEntity<?> deleteBuilding(@CurrentSecurityContext(expression = "authentication") Authentication auth,
-			@Valid @RequestBody BuildingIdRequest request) throws Exception {
+			@Valid @RequestBody DeleteBuildingRequest request) throws Exception {
 		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
-		return ResponseEntity.ok(subscriberService.deleteBuilding(subscriberId, request.getBuildingId()));
+		request.setSubscriberId(subscriberId);
+		return ResponseEntity.ok(subscriberService.deleteBuilding(request));
 	}
 
 	@PostMapping("/deleteUnit")
 	public ResponseEntity<?> deleteUnit(@CurrentSecurityContext(expression = "authentication") Authentication auth,
-			@Valid @RequestBody UnitIdRequest request) throws Exception {
+			@Valid @RequestBody DeleteUnitRequest request) throws Exception {
 		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
-		return ResponseEntity.ok(subscriberService.deleteUnit(subscriberId, request.getUnitId()));
+		request.setSubscriberId(subscriberId);
+		return ResponseEntity.ok(subscriberService.deleteUnit(request));
 	}
 
 	@PostMapping("/deleteTenant")

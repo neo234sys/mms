@@ -16,6 +16,8 @@ import com.sbmtech.mms.payload.request.BuildingRequest;
 import com.sbmtech.mms.payload.request.BuildingUpdateRequest;
 import com.sbmtech.mms.payload.request.CommunityRequest;
 import com.sbmtech.mms.payload.request.CreateUserRequest;
+import com.sbmtech.mms.payload.request.DeleteBuildingRequest;
+import com.sbmtech.mms.payload.request.DeleteUnitRequest;
 import com.sbmtech.mms.payload.request.DepartmentRequest;
 import com.sbmtech.mms.payload.request.FloorRequest;
 import com.sbmtech.mms.payload.request.KeyMasterRequest;
@@ -96,9 +98,9 @@ public interface SubscriberService {
 	public ApiResponse<Object> getAllTenantsByBuildingId(Integer subscriberId, Integer buildingId,
 			PaginationRequest paginationRequest);
 
-	public ApiResponse<?> deleteBuilding(Integer subscriberId, Integer buildingId);
+	public ApiResponse<?> deleteBuilding(DeleteBuildingRequest request);
 
-	public ApiResponse<?> deleteUnit(Integer subscriberId, Integer unitId);
+	public ApiResponse<?> deleteUnit(DeleteUnitRequest request);
 
 	public ApiResponse<?> deleteTenant(Integer subscriberId, Integer tenantId);
 

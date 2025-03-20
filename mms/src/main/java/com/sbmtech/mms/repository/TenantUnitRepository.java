@@ -26,5 +26,10 @@ public interface TenantUnitRepository extends JpaRepository<TenantUnit, Integer>
 	
 	@Query("SELECT tu FROM TenantUnit tu WHERE tu.unit = :unit AND tu.active = true")
     Optional<TenantUnit> findByUnitAndActiveTrue(@Param("unit") Unit unit);
+	
+	@Query("SELECT tu FROM TenantUnit tu JOIN tu.unit u WHERE u.building.buildingId = :buildingId and u.unitId= :unitId "
+			+ " and  u.building.subscriber.subscriberId= :subscriberId ")
+	Optional<TenantUnit> findTenantsByUnitId(@Param("buildingId") Integer buildingId,@Param("unitId") Integer unitId,
+			@Param("subscriberId") Integer subscriberId);
 
 }

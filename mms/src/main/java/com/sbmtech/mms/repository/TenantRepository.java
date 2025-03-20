@@ -12,7 +12,7 @@ public interface TenantRepository extends JpaRepository<Tenant, Integer> {
 			+ " where T.tenantId=?1 and U.subscriber.subscriberId =?2")
 	public Tenant findByTenantIdAndSubscriberId(Integer unitId, Integer subscriberId);
 
-	@Query("SELECT COUNT(t) > 0 FROM Tenant t WHERE t.unit.unitId = :unitId")
-	boolean existsByUnitUnitId(@Param("unitId") Integer unitId);
+//	@Query("SELECT COUNT(t) > 0 FROM Tenant t WHERE t.unit.unitId = :unitId")
+//	boolean existsByUnitUnitId(@Param("unitId") Integer unitId);
 
 }
