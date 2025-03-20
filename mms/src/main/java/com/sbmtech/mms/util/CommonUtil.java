@@ -12,10 +12,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -29,6 +31,7 @@ import javax.xml.bind.Element;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.Tika;
 import org.apache.tomcat.util.json.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -38,6 +41,7 @@ import org.springframework.stereotype.Component;
 import org.w3c.dom.NodeList;
 
 import com.sbmtech.mms.constant.CommonConstants;
+import com.sbmtech.mms.exception.BusinessException;
 import com.sbmtech.mms.models.Role;
 import com.sbmtech.mms.models.RoleEnum;
 import com.sbmtech.mms.models.User;
@@ -529,5 +533,30 @@ public class CommonUtil {
 		errorResponse.put("subscriberId", integer);
 		return ResponseEntity.status(HttpStatus.OK).body(errorResponse);
 	}
+	
+	
+	public static void validateAttachment(byte[] attachment) throws Exception{
+			
+		String contentType = new Tika().detect(attachment);
+
+		if(!Arrays.asList(CommonConstants.ATTACHMENT_IMAGE_TYPES).contains(contentType.toLowerCase())) {
+			throw new BusinessException("Invalid File Type, Only jpg, png, pdf Allowed",null);
+		}
+		
+		long size = attachment.length;
+		size = size/1024;
+		if(size> CommonConstants.MAX_IMAGE_SIZE*1024) {
+			throw new BusinessException("Exceed File size",null);
+		}
+		
+	}
+	
+	public static String getContentTypeOfAttachment(byte[] byteVal){
+		String contType=null;
+		
+		contType=new Tika().detect(byteVal);
+		
+		return contType;
+	} 
 
 }

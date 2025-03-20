@@ -12,10 +12,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -106,6 +108,7 @@ import com.sbmtech.mms.payload.response.BuildingResponse;
 import com.sbmtech.mms.payload.response.CommunityResponse;
 import com.sbmtech.mms.payload.response.DeptMasResponse;
 import com.sbmtech.mms.payload.response.FloorResponse;
+import com.sbmtech.mms.payload.response.GenericResponse;
 import com.sbmtech.mms.payload.response.KeyResponse;
 import com.sbmtech.mms.payload.response.PaginationResponse;
 import com.sbmtech.mms.payload.response.AreaResponse;
@@ -151,6 +154,7 @@ import com.sbmtech.mms.repository.UserRepository;
 import com.sbmtech.mms.repository.UserTypeMasterRepository;
 import com.sbmtech.mms.security.services.UserDetailsImpl;
 import com.sbmtech.mms.service.NotificationService;
+import com.sbmtech.mms.service.S3Service;
 import com.sbmtech.mms.service.SubscriberService;
 import com.sbmtech.mms.util.CommonUtil;
 import com.sbmtech.mms.util.PaginationUtils;
@@ -268,6 +272,9 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	@Autowired
 	private ProductConfigRepository productConfigRepository;
+	
+	@Autowired
+	private  S3Service s3Service;
 
 	@Override
 	public Integer getSubscriberIdfromAuth(Authentication auth) throws Exception {
@@ -860,7 +867,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, floorResp, null, null);
 	}
 
-	public ApiResponse<Object> addUnit(UnitRequest request) {
+	public ApiResponse<Object> addUnit(UnitRequest request)throws Exception {
 
 		Optional<UnitType> unitTypeOptional = unitTypeRepository.findById(request.getUnitTypeId());
 		if (!unitTypeOptional.isPresent()) {
@@ -894,6 +901,23 @@ public class SubscriberServiceImpl implements SubscriberService {
 			throw new BusinessException("Floor not found with id: " + request.getFloorId(), null);
 		}
 		Floor floor = floorOptional.get();
+		
+		if(!ObjectUtils.isEmpty( request.getUnitMainPic1())) {
+			CommonUtil.validateAttachment(request.getUnitMainPic1());	
+		}
+		if(!ObjectUtils.isEmpty( request.getUnitPic2())) {
+			CommonUtil.validateAttachment(request.getUnitPic2());	
+		}
+		if(!ObjectUtils.isEmpty( request.getUnitPic3())) {
+			CommonUtil.validateAttachment(request.getUnitPic3());	
+		}
+		if(!ObjectUtils.isEmpty( request.getUnitPic4())) {
+			CommonUtil.validateAttachment(request.getUnitPic4());	
+		}
+		if(!ObjectUtils.isEmpty( request.getUnitPic5())) {
+			CommonUtil.validateAttachment(request.getUnitPic5());	
+		}
+		
 
 		Unit unit = new Unit();
 		unit.setBuilding(building);
@@ -905,11 +929,6 @@ public class SubscriberServiceImpl implements SubscriberService {
 		unit.setHasBalcony(request.getHasBalcony());
 		unit.setUnitStatus(unitStatusTypeOp.get());
 
-		unit.setUnitMainPic1(request.getUnitMainPic1());
-		unit.setUnitPic2(request.getUnitPic2());
-		unit.setUnitPic3(request.getUnitPic3());
-		unit.setUnitPic4(request.getUnitPic4());
-		unit.setUnitPic5(request.getUnitPic5());
 		unit.setRentMonth(request.getRentMonth());
 		unit.setRentYear(request.getRentYear());
 		unit.setEbConnNo(request.getEbConnNo());
@@ -917,13 +936,51 @@ public class SubscriberServiceImpl implements SubscriberService {
 		unit.setSecurityDeposit(request.getSecurityDeposit());
 
 		unitRepository.save(unit);
+		
+		Map<String,String> mapBase64Files=new HashMap<>();
+		if(ObjectUtils.isNotEmpty( request.getUnitMainPic1())) {
+			mapBase64Files.put(CommonConstants.UNIT_MAIN_PIC, Base64.getEncoder().encodeToString(request.getUnitMainPic1()));
+		}
+		if(ObjectUtils.isNotEmpty(request.getUnitPic2())) {
+			mapBase64Files.put(CommonConstants.UNIT_PIC2, Base64.getEncoder().encodeToString(request.getUnitPic2()));
+		}
+		if(ObjectUtils.isNotEmpty(request.getUnitPic3())) {
+			mapBase64Files.put(CommonConstants.UNIT_PIC3, Base64.getEncoder().encodeToString(request.getUnitPic3()));
+		}
+		if(ObjectUtils.isNotEmpty(request.getUnitPic4())) {
+			mapBase64Files.put(CommonConstants.UNIT_PIC4, Base64.getEncoder().encodeToString(request.getUnitPic4()));
+		}
+		if(ObjectUtils.isNotEmpty(request.getUnitPic5())) {
+			mapBase64Files.put(CommonConstants.UNIT_PIC5, Base64.getEncoder().encodeToString(request.getUnitPic5()));
+		}
+		
+		
+		
+
+		Map<String,String> mapFileNames =s3Service.uploadBase64Images(unit.getUnitId(), mapBase64Files);
+		if(mapFileNames!=null) {
+			String unitMainPicName=(mapFileNames.get(CommonConstants.UNIT_MAIN_PIC)!=null)?mapFileNames.get(CommonConstants.UNIT_MAIN_PIC):"";
+			unit.setUnitMainPic1Name(unitMainPicName);
+			
+			String unitPic2Name=(mapFileNames.get(CommonConstants.UNIT_PIC2)!=null)?mapFileNames.get(CommonConstants.UNIT_PIC2):"";
+			unit.setUnitPic2Name(unitPic2Name);
+			
+			String unitPic3Name=(mapFileNames.get(CommonConstants.UNIT_PIC3)!=null)?mapFileNames.get(CommonConstants.UNIT_PIC3):"";
+			unit.setUnitPic3Name(unitPic3Name);
+			
+			String unitPic4Name=(mapFileNames.get(CommonConstants.UNIT_PIC4)!=null)?mapFileNames.get(CommonConstants.UNIT_PIC4):"";
+			unit.setUnitPic4Name(unitPic4Name);
+			
+			String unitPic5Name=(mapFileNames.get(CommonConstants.UNIT_PIC5)!=null)?mapFileNames.get(CommonConstants.UNIT_PIC5):"";
+			unit.setUnitPic5Name(unitPic5Name);
+		}
 
 		UnitResponse unitResp = new UnitResponse();
 		BeanUtils.copyProperties(unit, unitResp);
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, unitResp, null, null);
 	}
 
-	public ApiResponse<String> createUserAndMergeTenant(CreateUserRequest request) throws Exception {
+	public ApiResponse<Object> createUserAndMergeTenant(CreateUserRequest request) throws Exception {
 		User existingUser = null;
 		User user = null;
 		boolean existingTenant = false;
@@ -1036,8 +1093,9 @@ public class SubscriberServiceImpl implements SubscriberService {
 		}
 
 		if (resp != null && resp.isEmailSent()) {
-			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Tenant created successfully.", user.getUserId(),
-					null);
+			GenericResponse gr=new GenericResponse();
+			gr.setId(tenant.getTenantId());
+			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, gr, null, null);
 		} else {
 			throw new BusinessException("Tenant Not created", null);
 		}
@@ -1445,6 +1503,27 @@ public class SubscriberServiceImpl implements SubscriberService {
 				dto.setUnitSubTypeId(unit.getUnitSubType().getUnitSubtypeId());
 			if (unit.getUnitStatus() != null)
 				dto.setUnitStatusId(unit.getUnitStatus().getUnitStatusId());
+			
+			if(StringUtils.isNotBlank( unit.getUnitMainPic1Name())) {
+				dto.setUnitMainPic1Link(s3Service.generatePresignedUrl(unit.getUnitId(),unit.getUnitMainPic1Name()))	;
+			}
+			if(StringUtils.isNotBlank(unit.getUnitPic2Name())) {
+				dto.setUnitPic2Link(s3Service.generatePresignedUrl(unit.getUnitId(),unit.getUnitPic2Name()));
+			}
+			if(StringUtils.isNotBlank(unit.getUnitPic3Name())) {
+				dto.setUnitPic3Link(s3Service.generatePresignedUrl(unit.getUnitId(),unit.getUnitPic3Name()));
+			}
+			if(StringUtils.isNotBlank(unit.getUnitPic4Name())) {
+				dto.setUnitPic4Link(s3Service.generatePresignedUrl(unit.getUnitId(),unit.getUnitPic4Name()));
+			}
+			if(StringUtils.isNotBlank(unit.getUnitPic5Name())) {
+				dto.setUnitPic5Link(s3Service.generatePresignedUrl(unit.getUnitId(),unit.getUnitPic5Name()));
+			}
+			
+			
+			
+			
+			
 			return dto;
 		}).collect(Collectors.toList());
 

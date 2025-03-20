@@ -7,6 +7,8 @@ import javax.validation.constraints.NotNull;
 
 public class UnitRequest {
 
+	private Integer subscriberId;
+	
 	private Integer buildingId;
 	private Integer floorId;
 	
@@ -202,6 +204,14 @@ public class UnitRequest {
 
 	public void setEbConnNo(String ebConnNo) {
 		this.ebConnNo = ebConnNo;
+	}
+
+	public Integer getSubscriberId() {
+		return subscriberId;
+	}
+
+	public void setSubscriberId(Integer subscriberId) {
+		this.subscriberId = subscriberId;
 	}
 
 }

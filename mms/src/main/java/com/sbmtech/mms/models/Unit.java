@@ -109,6 +109,24 @@ public class Unit implements Serializable {
 	@Lob
 	@Column(name = "unit_pic5")
 	private byte[] unitPic5;
+	
+	
+	@Column(name = "unit_main_pic1_name")
+	private String unitMainPic1Name;
+	
+	@Column(name = "unit_pic2_name")
+	private String unitPic2Name;
+	
+	@Column(name = "unit_pic3_name")
+	private String unitPic3Name;
+	
+	@Column(name = "unit_pic4_name")
+	private String unitPic4Name;
+	
+	@Column(name = "unit_pic5_name")
+	private String unitPic5Name;
+	
+	
 
 	@Column(name = "created_time", updatable = false, nullable = false)
 	@CreationTimestamp
@@ -149,6 +167,10 @@ public class Unit implements Serializable {
 	public void setUnitName(String unitName) {
 		this.unitName = unitName;
 	}
+	
+	
+	
+	
 
 //	public String getUnitType() {
 //		return unitType;
@@ -305,6 +327,46 @@ public class Unit implements Serializable {
 
 	public void setEbConnNo(String ebConnNo) {
 		this.ebConnNo = ebConnNo;
+	}
+
+	public String getUnitMainPic1Name() {
+		return unitMainPic1Name;
+	}
+
+	public void setUnitMainPic1Name(String unitMainPic1Name) {
+		this.unitMainPic1Name = unitMainPic1Name;
+	}
+
+	public String getUnitPic2Name() {
+		return unitPic2Name;
+	}
+
+	public void setUnitPic2Name(String unitPic2Name) {
+		this.unitPic2Name = unitPic2Name;
+	}
+
+	public String getUnitPic3Name() {
+		return unitPic3Name;
+	}
+
+	public void setUnitPic3Name(String unitPic3Name) {
+		this.unitPic3Name = unitPic3Name;
+	}
+
+	public String getUnitPic4Name() {
+		return unitPic4Name;
+	}
+
+	public void setUnitPic4Name(String unitPic4Name) {
+		this.unitPic4Name = unitPic4Name;
+	}
+
+	public String getUnitPic5Name() {
+		return unitPic5Name;
+	}
+
+	public void setUnitPic5Name(String unitPic5Name) {
+		this.unitPic5Name = unitPic5Name;
 	}
 
 	@Override

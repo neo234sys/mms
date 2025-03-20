@@ -24,7 +24,7 @@ public class CommonConstants {
     public static final String RESULT = "result";
     public static final String RESPONSE_CODE="responseCode";
     public static final String RESPONSE_DESC="responseDesc";
-    
+    public static final int MAX_IMAGE_SIZE = 512;
     public static final String DEFAULT_PAGE_NUMBER = "0";
     public  static final String DEFAULT_PAGE_SIZE = "2";
     public static final String DEFAULT_SORT_BY = "userId";
@@ -60,6 +60,11 @@ public class CommonConstants {
 	public static final int USERTYPE_SUBSCRIBER = 2;
 	public static final int USERTYPE_EMPPLOYEE = 3;
 	public static final int USERTYPE_TENENT = 4;
+	public static final String UNIT_MAIN_PIC="main";
+	public static final String UNIT_PIC2="unitpic2";
+	public static final String UNIT_PIC3="unitpic3";
+	public static final String UNIT_PIC4="unitpic4";
+	public static final String UNIT_PIC5="unitpic5";
 	
 		
 }

@@ -134,6 +134,8 @@ public class ManagementController {
 	@PostMapping("/addUnit")
 	public ResponseEntity<?> addUnit(@Valid @RequestBody UnitRequest request,
 			@CurrentSecurityContext(expression = "authentication") Authentication auth) throws Exception {
+		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
+		request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.addUnit(request));
 	}
 
@@ -258,7 +260,7 @@ public class ManagementController {
 	@PostMapping("/getAllUnitsByBuilding")
 	public ResponseEntity<?> getAllUnitsByBuildingId(
 			@CurrentSecurityContext(expression = "authentication") Authentication auth,
-			@RequestBody BuildingUnitPaginationRequest request) throws Exception {
+			@Valid @RequestBody BuildingUnitPaginationRequest request) throws Exception {
 		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
 		return ResponseEntity.ok(subscriberService.getAllUnitsByBuildingId(subscriberId, request.getBuildingId(),
 				request.getPaginationRequest()));

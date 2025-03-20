@@ -16,6 +16,17 @@ public class UnitDetailResponse {
 	private Double securityDeposit;
 	private String waterConnNo;
 	private String ebConnNo;
+//	private String unitMainPic1Name;
+//	private String unitPic2Name;
+//	private String unitPic3Name;
+//	private String unitPic4Name;
+//	private String unitPic5Name;
+	
+	private String unitMainPic1Link;
+	private String unitPic2Link;
+	private String unitPic3Link;
+	private String unitPic4Link;
+	private String unitPic5Link;
 
 	public Integer getUnitId() {
 		return unitId;
@@ -127,6 +138,86 @@ public class UnitDetailResponse {
 
 	public void setEbConnNo(String ebConnNo) {
 		this.ebConnNo = ebConnNo;
+	}
+
+//	public String getUnitMainPic1Name() {
+//		return unitMainPic1Name;
+//	}
+//
+//	public void setUnitMainPic1Name(String unitMainPic1Name) {
+//		this.unitMainPic1Name = unitMainPic1Name;
+//	}
+//
+//	public String getUnitPic2Name() {
+//		return unitPic2Name;
+//	}
+//
+//	public void setUnitPic2Name(String unitPic2Name) {
+//		this.unitPic2Name = unitPic2Name;
+//	}
+//
+//	public String getUnitPic3Name() {
+//		return unitPic3Name;
+//	}
+//
+//	public void setUnitPic3Name(String unitPic3Name) {
+//		this.unitPic3Name = unitPic3Name;
+//	}
+//
+//	public String getUnitPic4Name() {
+//		return unitPic4Name;
+//	}
+//
+//	public void setUnitPic4Name(String unitPic4Name) {
+//		this.unitPic4Name = unitPic4Name;
+//	}
+//
+//	public String getUnitPic5Name() {
+//		return unitPic5Name;
+//	}
+//
+//	public void setUnitPic5Name(String unitPic5Name) {
+//		this.unitPic5Name = unitPic5Name;
+//	}
+
+	public String getUnitMainPic1Link() {
+		return unitMainPic1Link;
+	}
+
+	public void setUnitMainPic1Link(String unitMainPic1Link) {
+		this.unitMainPic1Link = unitMainPic1Link;
+	}
+
+	public String getUnitPic2Link() {
+		return unitPic2Link;
+	}
+
+	public void setUnitPic2Link(String unitPic2Link) {
+		this.unitPic2Link = unitPic2Link;
+	}
+
+	public String getUnitPic3Link() {
+		return unitPic3Link;
+	}
+
+	public void setUnitPic3Link(String unitPic3Link) {
+		this.unitPic3Link = unitPic3Link;
+	}
+
+	public String getUnitPic4Link() {
+		return unitPic4Link;
+	}
+
+	public void setUnitPic4Link(String unitPic4Link) {
+		this.unitPic4Link = unitPic4Link;
+	}
+
+	public String getUnitPic5Link() {
+		return unitPic5Link;
+	}
+
+	public void setUnitPic5Link(String unitPic5Link) {
+		this.unitPic5Link = unitPic5Link;
 	}
 
 	@Override
