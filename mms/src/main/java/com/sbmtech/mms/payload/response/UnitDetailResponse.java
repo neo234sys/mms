@@ -21,12 +21,13 @@ public class UnitDetailResponse {
 //	private String unitPic3Name;
 //	private String unitPic4Name;
 //	private String unitPic5Name;
-	
+
 	private String unitMainPic1Link;
 	private String unitPic2Link;
 	private String unitPic3Link;
 	private String unitPic4Link;
 	private String unitPic5Link;
+	private TenantDetailResponse tenantDetails;
 
 	public Integer getUnitId() {
 		return unitId;
@@ -140,46 +141,6 @@ public class UnitDetailResponse {
 		this.ebConnNo = ebConnNo;
 	}
 
-//	public String getUnitMainPic1Name() {
-//		return unitMainPic1Name;
-//	}
-//
-//	public void setUnitMainPic1Name(String unitMainPic1Name) {
-//		this.unitMainPic1Name = unitMainPic1Name;
-//	}
-//
-//	public String getUnitPic2Name() {
-//		return unitPic2Name;
-//	}
-//
-//	public void setUnitPic2Name(String unitPic2Name) {
-//		this.unitPic2Name = unitPic2Name;
-//	}
-//
-//	public String getUnitPic3Name() {
-//		return unitPic3Name;
-//	}
-//
-//	public void setUnitPic3Name(String unitPic3Name) {
-//		this.unitPic3Name = unitPic3Name;
-//	}
-//
-//	public String getUnitPic4Name() {
-//		return unitPic4Name;
-//	}
-//
-//	public void setUnitPic4Name(String unitPic4Name) {
-//		this.unitPic4Name = unitPic4Name;
-//	}
-//
-//	public String getUnitPic5Name() {
-//		return unitPic5Name;
-//	}
-//
-//	public void setUnitPic5Name(String unitPic5Name) {
-//		this.unitPic5Name = unitPic5Name;
-//	}
-
 	public String getUnitMainPic1Link() {
 		return unitMainPic1Link;
 	}
@@ -220,13 +181,23 @@ public class UnitDetailResponse {
 		this.unitPic5Link = unitPic5Link;
 	}
 
+	public TenantDetailResponse getTenantDetails() {
+		return tenantDetails;
+	}
+
+	public void setTenantDetails(TenantDetailResponse tenantDetails) {
+		this.tenantDetails = tenantDetails;
+	}
+
 	@Override
 	public String toString() {
 		return "UnitDetailResponse [unitId=" + unitId + ", buildingId=" + buildingId + ", floorId=" + floorId
 				+ ", unitName=" + unitName + ", unitTypeId=" + unitTypeId + ", unitSubTypeId=" + unitSubTypeId
 				+ ", size=" + size + ", hasBalcony=" + hasBalcony + ", unitStatusId=" + unitStatusId + ", rentMonth="
 				+ rentMonth + ", rentYear=" + rentYear + ", securityDeposit=" + securityDeposit + ", waterConnNo="
-				+ waterConnNo + ", ebConnNo=" + ebConnNo + "]";
+				+ waterConnNo + ", ebConnNo=" + ebConnNo + ", unitMainPic1Link=" + unitMainPic1Link + ", unitPic2Link="
+				+ unitPic2Link + ", unitPic3Link=" + unitPic3Link + ", unitPic4Link=" + unitPic4Link + ", unitPic5Link="
+				+ unitPic5Link + ", tenantDetails=" + tenantDetails + "]";
 	}
 
 }

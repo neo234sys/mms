@@ -17,7 +17,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -86,6 +85,7 @@ import com.sbmtech.mms.models.UserTypeMaster;
 import com.sbmtech.mms.payload.request.AdditionalDetailsRequest;
 import com.sbmtech.mms.payload.request.ApiResponse;
 import com.sbmtech.mms.payload.request.BuildingRequest;
+import com.sbmtech.mms.payload.request.BuildingUpdateRequest;
 import com.sbmtech.mms.payload.request.CommunityRequest;
 import com.sbmtech.mms.payload.request.CreateUserRequest;
 import com.sbmtech.mms.payload.request.DepartmentRequest;
@@ -101,8 +101,10 @@ import com.sbmtech.mms.payload.request.SubscriberRequest;
 import com.sbmtech.mms.payload.request.SubscriptionPaymentRequest;
 import com.sbmtech.mms.payload.request.SubscriptionRequest;
 import com.sbmtech.mms.payload.request.TenantUnitRequest;
+import com.sbmtech.mms.payload.request.TenantUpdateRequest;
 import com.sbmtech.mms.payload.request.UnitKeysRequest;
 import com.sbmtech.mms.payload.request.UnitRequest;
+import com.sbmtech.mms.payload.request.UnitUpdateRequest;
 import com.sbmtech.mms.payload.request.VerifyOtpRequest;
 import com.sbmtech.mms.payload.response.BuildingResponse;
 import com.sbmtech.mms.payload.response.CommunityResponse;
@@ -272,9 +274,9 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	@Autowired
 	private ProductConfigRepository productConfigRepository;
-	
+
 	@Autowired
-	private  S3Service s3Service;
+	private S3Service s3Service;
 
 	@Override
 	public Integer getSubscriberIdfromAuth(Authentication auth) throws Exception {
@@ -867,7 +869,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, floorResp, null, null);
 	}
 
-	public ApiResponse<Object> addUnit(UnitRequest request)throws Exception {
+	public ApiResponse<Object> addUnit(UnitRequest request) throws Exception {
 
 		Optional<UnitType> unitTypeOptional = unitTypeRepository.findById(request.getUnitTypeId());
 		if (!unitTypeOptional.isPresent()) {
@@ -901,23 +903,22 @@ public class SubscriberServiceImpl implements SubscriberService {
 			throw new BusinessException("Floor not found with id: " + request.getFloorId(), null);
 		}
 		Floor floor = floorOptional.get();
-		
-		if(!ObjectUtils.isEmpty( request.getUnitMainPic1())) {
-			CommonUtil.validateAttachment(request.getUnitMainPic1());	
+
+		if (!ObjectUtils.isEmpty(request.getUnitMainPic1())) {
+			CommonUtil.validateAttachment(request.getUnitMainPic1());
 		}
-		if(!ObjectUtils.isEmpty( request.getUnitPic2())) {
-			CommonUtil.validateAttachment(request.getUnitPic2());	
+		if (!ObjectUtils.isEmpty(request.getUnitPic2())) {
+			CommonUtil.validateAttachment(request.getUnitPic2());
 		}
-		if(!ObjectUtils.isEmpty( request.getUnitPic3())) {
-			CommonUtil.validateAttachment(request.getUnitPic3());	
+		if (!ObjectUtils.isEmpty(request.getUnitPic3())) {
+			CommonUtil.validateAttachment(request.getUnitPic3());
 		}
-		if(!ObjectUtils.isEmpty( request.getUnitPic4())) {
-			CommonUtil.validateAttachment(request.getUnitPic4());	
+		if (!ObjectUtils.isEmpty(request.getUnitPic4())) {
+			CommonUtil.validateAttachment(request.getUnitPic4());
 		}
-		if(!ObjectUtils.isEmpty( request.getUnitPic5())) {
-			CommonUtil.validateAttachment(request.getUnitPic5());	
+		if (!ObjectUtils.isEmpty(request.getUnitPic5())) {
+			CommonUtil.validateAttachment(request.getUnitPic5());
 		}
-		
 
 		Unit unit = new Unit();
 		unit.setBuilding(building);
@@ -936,42 +937,50 @@ public class SubscriberServiceImpl implements SubscriberService {
 		unit.setSecurityDeposit(request.getSecurityDeposit());
 
 		unitRepository.save(unit);
-		
-		Map<String,String> mapBase64Files=new HashMap<>();
-		if(ObjectUtils.isNotEmpty( request.getUnitMainPic1())) {
-			mapBase64Files.put(CommonConstants.UNIT_MAIN_PIC, Base64.getEncoder().encodeToString(request.getUnitMainPic1()));
+
+		Map<String, String> mapBase64Files = new HashMap<>();
+		if (ObjectUtils.isNotEmpty(request.getUnitMainPic1())) {
+			mapBase64Files.put(CommonConstants.UNIT_MAIN_PIC,
+					Base64.getEncoder().encodeToString(request.getUnitMainPic1()));
 		}
-		if(ObjectUtils.isNotEmpty(request.getUnitPic2())) {
+		if (ObjectUtils.isNotEmpty(request.getUnitPic2())) {
 			mapBase64Files.put(CommonConstants.UNIT_PIC2, Base64.getEncoder().encodeToString(request.getUnitPic2()));
 		}
-		if(ObjectUtils.isNotEmpty(request.getUnitPic3())) {
+		if (ObjectUtils.isNotEmpty(request.getUnitPic3())) {
 			mapBase64Files.put(CommonConstants.UNIT_PIC3, Base64.getEncoder().encodeToString(request.getUnitPic3()));
 		}
-		if(ObjectUtils.isNotEmpty(request.getUnitPic4())) {
+		if (ObjectUtils.isNotEmpty(request.getUnitPic4())) {
 			mapBase64Files.put(CommonConstants.UNIT_PIC4, Base64.getEncoder().encodeToString(request.getUnitPic4()));
 		}
-		if(ObjectUtils.isNotEmpty(request.getUnitPic5())) {
+		if (ObjectUtils.isNotEmpty(request.getUnitPic5())) {
 			mapBase64Files.put(CommonConstants.UNIT_PIC5, Base64.getEncoder().encodeToString(request.getUnitPic5()));
 		}
-		
-		
-		
 
-		Map<String,String> mapFileNames =s3Service.uploadBase64Images(unit.getUnitId(), mapBase64Files);
-		if(mapFileNames!=null) {
-			String unitMainPicName=(mapFileNames.get(CommonConstants.UNIT_MAIN_PIC)!=null)?mapFileNames.get(CommonConstants.UNIT_MAIN_PIC):"";
+		Map<String, String> mapFileNames = s3Service.uploadBase64Images(unit.getUnitId(), mapBase64Files);
+		if (mapFileNames != null) {
+			String unitMainPicName = (mapFileNames.get(CommonConstants.UNIT_MAIN_PIC) != null)
+					? mapFileNames.get(CommonConstants.UNIT_MAIN_PIC)
+					: "";
 			unit.setUnitMainPic1Name(unitMainPicName);
-			
-			String unitPic2Name=(mapFileNames.get(CommonConstants.UNIT_PIC2)!=null)?mapFileNames.get(CommonConstants.UNIT_PIC2):"";
+
+			String unitPic2Name = (mapFileNames.get(CommonConstants.UNIT_PIC2) != null)
+					? mapFileNames.get(CommonConstants.UNIT_PIC2)
+					: "";
 			unit.setUnitPic2Name(unitPic2Name);
-			
-			String unitPic3Name=(mapFileNames.get(CommonConstants.UNIT_PIC3)!=null)?mapFileNames.get(CommonConstants.UNIT_PIC3):"";
+
+			String unitPic3Name = (mapFileNames.get(CommonConstants.UNIT_PIC3) != null)
+					? mapFileNames.get(CommonConstants.UNIT_PIC3)
+					: "";
 			unit.setUnitPic3Name(unitPic3Name);
-			
-			String unitPic4Name=(mapFileNames.get(CommonConstants.UNIT_PIC4)!=null)?mapFileNames.get(CommonConstants.UNIT_PIC4):"";
+
+			String unitPic4Name = (mapFileNames.get(CommonConstants.UNIT_PIC4) != null)
+					? mapFileNames.get(CommonConstants.UNIT_PIC4)
+					: "";
 			unit.setUnitPic4Name(unitPic4Name);
-			
-			String unitPic5Name=(mapFileNames.get(CommonConstants.UNIT_PIC5)!=null)?mapFileNames.get(CommonConstants.UNIT_PIC5):"";
+
+			String unitPic5Name = (mapFileNames.get(CommonConstants.UNIT_PIC5) != null)
+					? mapFileNames.get(CommonConstants.UNIT_PIC5)
+					: "";
 			unit.setUnitPic5Name(unitPic5Name);
 		}
 
@@ -1093,7 +1102,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		}
 
 		if (resp != null && resp.isEmailSent()) {
-			GenericResponse gr=new GenericResponse();
+			GenericResponse gr = new GenericResponse();
 			gr.setId(tenant.getTenantId());
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, gr, null, null);
 		} else {
@@ -1503,27 +1512,34 @@ public class SubscriberServiceImpl implements SubscriberService {
 				dto.setUnitSubTypeId(unit.getUnitSubType().getUnitSubtypeId());
 			if (unit.getUnitStatus() != null)
 				dto.setUnitStatusId(unit.getUnitStatus().getUnitStatusId());
-			
-			if(StringUtils.isNotBlank( unit.getUnitMainPic1Name())) {
-				dto.setUnitMainPic1Link(s3Service.generatePresignedUrl(unit.getUnitId(),unit.getUnitMainPic1Name()))	;
+
+			if (unit.getUnitStatus() != null && unit.getUnitStatus().getUnitStatusId() == 2) {
+				Optional<TenantUnit> tenantUnitOptional = tenantUnitRepository.findByUnitAndActiveTrue(unit);
+				if (tenantUnitOptional.isPresent()) {
+					TenantUnit tenantUnit = tenantUnitOptional.get();
+					Tenant tenant = tenantUnit.getTenant();
+					TenantDetailResponse tenantDetail = new TenantDetailResponse();
+					BeanUtils.copyProperties(tenant, tenantDetail);
+					dto.setTenantDetails(tenantDetail);
+				}
 			}
-			if(StringUtils.isNotBlank(unit.getUnitPic2Name())) {
-				dto.setUnitPic2Link(s3Service.generatePresignedUrl(unit.getUnitId(),unit.getUnitPic2Name()));
+
+			if (StringUtils.isNotBlank(unit.getUnitMainPic1Name())) {
+				dto.setUnitMainPic1Link(s3Service.generatePresignedUrl(unit.getUnitId(), unit.getUnitMainPic1Name()));
 			}
-			if(StringUtils.isNotBlank(unit.getUnitPic3Name())) {
-				dto.setUnitPic3Link(s3Service.generatePresignedUrl(unit.getUnitId(),unit.getUnitPic3Name()));
+			if (StringUtils.isNotBlank(unit.getUnitPic2Name())) {
+				dto.setUnitPic2Link(s3Service.generatePresignedUrl(unit.getUnitId(), unit.getUnitPic2Name()));
 			}
-			if(StringUtils.isNotBlank(unit.getUnitPic4Name())) {
-				dto.setUnitPic4Link(s3Service.generatePresignedUrl(unit.getUnitId(),unit.getUnitPic4Name()));
+			if (StringUtils.isNotBlank(unit.getUnitPic3Name())) {
+				dto.setUnitPic3Link(s3Service.generatePresignedUrl(unit.getUnitId(), unit.getUnitPic3Name()));
 			}
-			if(StringUtils.isNotBlank(unit.getUnitPic5Name())) {
-				dto.setUnitPic5Link(s3Service.generatePresignedUrl(unit.getUnitId(),unit.getUnitPic5Name()));
+			if (StringUtils.isNotBlank(unit.getUnitPic4Name())) {
+				dto.setUnitPic4Link(s3Service.generatePresignedUrl(unit.getUnitId(), unit.getUnitPic4Name()));
 			}
-			
-			
-			
-			
-			
+			if (StringUtils.isNotBlank(unit.getUnitPic5Name())) {
+				dto.setUnitPic5Link(s3Service.generatePresignedUrl(unit.getUnitId(), unit.getUnitPic5Name()));
+			}
+
 			return dto;
 		}).collect(Collectors.toList());
 
@@ -1564,6 +1580,118 @@ public class SubscriberServiceImpl implements SubscriberService {
 				tenantUnitPage.isLast());
 
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, response, null, null);
+	}
+
+	public ApiResponse<?> deleteBuilding(Integer subscriberId, Integer buildingId) {
+		try {
+			if (unitRepository.existsByBuildingBuildingId(buildingId)) {
+				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
+						"Cannot delete building because it has associated units.", null, null);
+			}
+
+			buildingRepository.deleteById(buildingId);
+			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Building successfully deleted", null, null);
+		} catch (Exception e) {
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to delete building: " + e.getMessage(), null,
+					null);
+		}
+	}
+
+	public ApiResponse<?> deleteUnit(Integer subscriberId, Integer unitId) {
+		try {
+			if (tenantRepository.existsByUnitUnitId(unitId)) {
+				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
+						"Cannot delete unit because it has associated tenants.", null, null);
+			}
+
+			unitRepository.deleteById(unitId);
+			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Unit successfully deleted", null, null);
+		} catch (Exception e) {
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to delete unit: " + e.getMessage(), null,
+					null);
+		}
+	}
+
+	public ApiResponse<?> deleteTenant(Integer subscriberId, Integer tenantId) {
+		try {
+			tenantRepository.deleteById(tenantId);
+			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Tenant successfully deleted", null, null);
+		} catch (Exception e) {
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to delete tenant: " + e.getMessage(), null,
+					null);
+		}
+	}
+
+	public ApiResponse<?> updateBuilding(Integer subscriberId, BuildingUpdateRequest request) {
+		try {
+			Building existingBuilding = buildingRepository.findById(request.getBuildingId())
+					.orElseThrow(() -> new Exception("Building not found"));
+
+			existingBuilding.setBuildingName(request.getBuildingName());
+			existingBuilding.setAddress(request.getAddress());
+			existingBuilding.setHasGym(request.getHasGym());
+			existingBuilding.setHasSwimpool(request.getHasSwimpool());
+			existingBuilding.setHasKidsPlayground(request.getHasKidsPlayground());
+			existingBuilding.setHasPlaycourt(request.getHasPlaycourt());
+			existingBuilding.setNoOfFloors(request.getNoOfFloors());
+			existingBuilding.setNoOfUnits(request.getNoOfUnits());
+			existingBuilding.setLatitude(request.getLatitude());
+			existingBuilding.setLongitude(request.getLongitude());
+
+			buildingRepository.save(existingBuilding);
+			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Building successfully updated", null, null);
+		} catch (Exception e) {
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to update building: " + e.getMessage(), null,
+					null);
+		}
+	}
+
+	public ApiResponse<?> updateUnit(Integer subscriberId, UnitUpdateRequest request) {
+		try {
+			Unit existingUnit = unitRepository.findById(request.getUnitId())
+					.orElseThrow(() -> new Exception("Unit not found"));
+
+			existingUnit.setUnitName(request.getUnitName());
+			existingUnit.setUnitType(request.getUnitType());
+			existingUnit.setUnitSubType(request.getUnitSubType());
+			existingUnit.setSize(request.getSize());
+			existingUnit.setHasBalcony(request.getHasBalcony());
+			existingUnit.setRentMonth(request.getRentMonth());
+			existingUnit.setRentYear(request.getRentYear());
+			existingUnit.setSecurityDeposit(request.getSecurityDeposit());
+			existingUnit.setWaterConnNo(request.getWaterConnNo());
+			existingUnit.setEbConnNo(request.getEbConnNo());
+
+			unitRepository.save(existingUnit);
+			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Unit successfully updated", null, null);
+		} catch (Exception e) {
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to update unit: " + e.getMessage(), null,
+					null);
+		}
+	}
+
+	public ApiResponse<?> updateTenant(Integer subscriberId, TenantUpdateRequest request) {
+		try {
+			Tenant existingTenant = tenantRepository.findById(request.getTenantId())
+					.orElseThrow(() -> new Exception("Tenant not found"));
+
+			existingTenant.setFirstName(request.getFirstName());
+			existingTenant.setLastName(request.getLastName());
+			existingTenant.setEmail(request.getEmail());
+			existingTenant.setPhoneNumber(request.getPhoneNumber());
+			existingTenant.setDateOfBirth(request.getDateOfBirth());
+			existingTenant.setEmiratesId(request.getEmiratesId());
+			existingTenant.setEidaExpiryDate(request.getEidaExpiryDate());
+			existingTenant.setPassportNo(request.getPassportNo());
+			existingTenant.setPassportExpiryDate(request.getPassportExpiryDate());
+			existingTenant.setNationalityId(request.getNationalityId());
+
+			tenantRepository.save(existingTenant);
+			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Tenant successfully updated", null, null);
+		} catch (Exception e) {
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to update tenant: " + e.getMessage(), null,
+					null);
+		}
 	}
 
 }

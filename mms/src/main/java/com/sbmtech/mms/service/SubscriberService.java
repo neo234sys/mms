@@ -13,6 +13,7 @@ import com.sbmtech.mms.payload.request.AdditionalDetailsRequest;
 import com.sbmtech.mms.payload.request.ApiResponse;
 import com.sbmtech.mms.payload.request.AreaRequest;
 import com.sbmtech.mms.payload.request.BuildingRequest;
+import com.sbmtech.mms.payload.request.BuildingUpdateRequest;
 import com.sbmtech.mms.payload.request.CommunityRequest;
 import com.sbmtech.mms.payload.request.CreateUserRequest;
 import com.sbmtech.mms.payload.request.DepartmentRequest;
@@ -27,8 +28,10 @@ import com.sbmtech.mms.payload.request.SubscriberRequest;
 import com.sbmtech.mms.payload.request.SubscriptionPaymentRequest;
 import com.sbmtech.mms.payload.request.SubscriptionRequest;
 import com.sbmtech.mms.payload.request.TenantUnitRequest;
+import com.sbmtech.mms.payload.request.TenantUpdateRequest;
 import com.sbmtech.mms.payload.request.UnitKeysRequest;
 import com.sbmtech.mms.payload.request.UnitRequest;
+import com.sbmtech.mms.payload.request.UnitUpdateRequest;
 import com.sbmtech.mms.payload.request.VerifyOtpRequest;
 import com.sbmtech.mms.payload.response.SubscriptionPlans;
 
@@ -66,7 +69,7 @@ public interface SubscriberService {
 
 	public ApiResponse<Object> addFloor(FloorRequest request);
 
-	public ApiResponse<Object> addUnit(UnitRequest request)throws Exception;
+	public ApiResponse<Object> addUnit(UnitRequest request) throws Exception;
 
 	public ApiResponse<Object> createUserAndMergeTenant(CreateUserRequest request) throws Exception;
 
@@ -92,5 +95,17 @@ public interface SubscriberService {
 
 	public ApiResponse<Object> getAllTenantsByBuildingId(Integer subscriberId, Integer buildingId,
 			PaginationRequest paginationRequest);
+
+	public ApiResponse<?> deleteBuilding(Integer subscriberId, Integer buildingId);
+
+	public ApiResponse<?> deleteUnit(Integer subscriberId, Integer unitId);
+
+	public ApiResponse<?> deleteTenant(Integer subscriberId, Integer tenantId);
+
+	public ApiResponse<?> updateBuilding(Integer subscriberId, BuildingUpdateRequest request);
+
+	public ApiResponse<?> updateUnit(Integer subscriberId, UnitUpdateRequest request);
+
+	public ApiResponse<?> updateTenant(Integer subscriberId, TenantUpdateRequest request);
 
 }
