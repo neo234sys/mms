@@ -35,9 +35,11 @@ public class Building implements Serializable {
 	@Column(name = "address")
 	private String address;
 
-	@Lob
-	@Column(name = "building_logo")
-	private byte[] buildingLogo;
+//	@Lob
+//	@Column(name = "building_logo")
+//	private byte[] buildingLogo;
+	
+	private String buildingLogoFileName;
 
 	@Column(name = "has_gym")
 	private Boolean hasGym;
@@ -105,13 +107,13 @@ public class Building implements Serializable {
 		this.address = address;
 	}
 
-	public byte[] getBuildingLogo() {
-		return buildingLogo;
-	}
-
-	public void setBuildingLogo(byte[] buildingLogo) {
-		this.buildingLogo = buildingLogo;
-	}
+//	public byte[] getBuildingLogo() {
+//		return buildingLogo;
+//	}
+//
+//	public void setBuildingLogo(byte[] buildingLogo) {
+//		this.buildingLogo = buildingLogo;
+//	}
 
 	public Boolean getHasGym() {
 		return hasGym;
@@ -207,6 +209,14 @@ public class Building implements Serializable {
 
 	public void setLongitude(String longitude) {
 		this.longitude = longitude;
+	}
+
+	public String getBuildingLogoFileName() {
+		return buildingLogoFileName;
+	}
+
+	public void setBuildingLogoFileName(String buildingLogoFileName) {
+		this.buildingLogoFileName = buildingLogoFileName;
 	}
 
 	

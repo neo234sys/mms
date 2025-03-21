@@ -60,8 +60,35 @@ public class CronJobController {
 		}
 	}
 
+	/**
+	 * Checks and Unreserve the Reserved Units
+	 * */
 	@Scheduled(cron = "0 0 1 * * *") // This runs every day at 1:00 AM
 	public void releaseReservedUnits() {
+		try {
+			List<UnitReserveDetails> reservedUnits = unitReserveDetailsRepository
+					.findReservedUnitsWithPastReserveEndDate();
+
+			for (UnitReserveDetails reserveDetails : reservedUnits) {
+				if (reserveDetails.getReserveEndDate().before(new Date())) {
+					Unit unit = reserveDetails.getUnit();
+					unit.setUnitStatus(unitStatusRepository.findByUnitStatusName(UnitStatusEnum.VACANT.toString()));
+					unitRepository.save(unit);
+				}
+			}
+
+			System.out.println("Checked and released reserved units.");
+		} catch (Exception e) {
+			System.err.println("Error while releasing reserved units: " + e.getMessage());
+		}
+	}
+	
+	
+	/**
+	 * Checks the unused images and remove from S3
+	 * */
+	@Scheduled(cron = "0 0 1 * * *") // This runs every day at 1:00 AM
+	public void deleteUnusedImages() {
 		try {
 			List<UnitReserveDetails> reservedUnits = unitReserveDetailsRepository
 					.findReservedUnitsWithPastReserveEndDate();

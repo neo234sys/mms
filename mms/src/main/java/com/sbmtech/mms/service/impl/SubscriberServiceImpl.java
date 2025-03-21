@@ -28,6 +28,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bouncycastle.asn1.ocsp.Request;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -44,6 +45,9 @@ import com.sbmtech.mms.dto.BuildingDetailDTO;
 import com.sbmtech.mms.dto.KeyValuePairDTO;
 import com.sbmtech.mms.dto.NotifEmailDTO;
 import com.sbmtech.mms.dto.NotificationEmailResponseDTO;
+import com.sbmtech.mms.dto.S3DownloadDto;
+import com.sbmtech.mms.dto.S3UploadDto;
+import com.sbmtech.mms.dto.S3UploadObjectDto;
 import com.sbmtech.mms.exception.BusinessException;
 import com.sbmtech.mms.models.Area;
 import com.sbmtech.mms.models.Building;
@@ -64,6 +68,7 @@ import com.sbmtech.mms.models.ProductConfig;
 import com.sbmtech.mms.models.RentCycle;
 import com.sbmtech.mms.models.Role;
 import com.sbmtech.mms.models.RoleEnum;
+import com.sbmtech.mms.models.S3UploadObjTypeEnum;
 import com.sbmtech.mms.models.State;
 import com.sbmtech.mms.models.Subscriber;
 import com.sbmtech.mms.models.SubscriptionPayment;
@@ -755,7 +760,10 @@ public class SubscriberServiceImpl implements SubscriberService {
 	}
 
 	public ApiResponse<Object> addBuilding(BuildingRequest request) {
-
+		
+		List<S3UploadObjectDto> s3UploadObjectDtoList=new ArrayList<>();
+		S3UploadObjectDto s3BuildingLogoDto=null;
+		
 		Countries country = null;
 		State state = null;
 		// City city = null;
@@ -778,18 +786,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 				throw new BusinessException("Invalid stateId /stateId not matching with CountryId", null);
 			}
 		}
-		/*
-		 * Optional<City> cityOpt = cityRepository.findById(request.getCityId()); if
-		 * (!cityOpt.isPresent()) { throw new
-		 * BusinessException("City not found with id: " + request.getCityId(), null); }
-		 * else { city = cityOpt.get(); state = city.getState(); country =
-		 * city.getCountry(); if (country.getCountryId().intValue() !=
-		 * request.getCountryId().intValue() || state.getStateId().intValue() !=
-		 * request.getStateId().intValue() || city.getCityId().intValue() !=
-		 * request.getCityId().intValue()) { throw new
-		 * BusinessException("countryId / stateId / cityId is not matching each other",
-		 * null); } }
-		 */
+		
 
 		subscriber = subscriberOpt.get();
 
@@ -828,7 +825,16 @@ public class SubscriberServiceImpl implements SubscriberService {
 			Building building = new Building();
 			building.setBuildingName(request.getBuildingName());
 			building.setAddress(request.getAddress());
-			building.setBuildingLogo(request.getBuildingLogo());
+			
+			//building.setBuildingLogo(request.getBuildingLogo());
+			
+			if (!ObjectUtils.isEmpty(request.getBuildingLogo())) {
+				String contentType=CommonUtil.validateAttachment(request.getBuildingLogo());
+				String fileExt=contentType.substring(contentType.indexOf("/")+1);
+				s3BuildingLogoDto=new S3UploadObjectDto(CommonConstants.BUILD_MAIN_PIC,contentType,fileExt,Base64.getEncoder().encodeToString(request.getBuildingLogo()),null);
+				s3UploadObjectDtoList.add(s3BuildingLogoDto);
+			}
+			
 			building.setHasGym(request.getHasGym());
 			building.setHasSwimpool(request.getHasSwimpool());
 			building.setHasKidsPlayground(request.getHasKidsPlayground());
@@ -842,6 +848,22 @@ public class SubscriberServiceImpl implements SubscriberService {
 			building.setLatitude(request.getLatitude());
 			building.setLongitude(request.getLongitude());
 			buildingRepository.save(building);
+			
+			
+			S3UploadDto s3UploadDto=new S3UploadDto();
+			s3UploadDto.setSubscriberId(request.getSubscriberId());
+			s3UploadDto.setBuildingId(building.getBuildingId());
+			s3UploadDto.setObjectType(S3UploadObjTypeEnum.BUILDING.toString());
+			s3UploadDto.setS3UploadObjectDtoList(s3UploadObjectDtoList);
+			List <S3UploadObjectDto> s3UploadObjectDtoListRet = s3Service.upload(s3UploadDto);
+			for(S3UploadObjectDto s3UploadObjectDto:s3UploadObjectDtoListRet) {
+				if(s3UploadObjectDto!=null && StringUtils.isNotBlank(s3UploadObjectDto.getS3FileName())) {
+					if(s3UploadObjectDto.getObjectName().equals(CommonConstants.BUILD_MAIN_PIC)){
+						building.setBuildingLogoFileName(s3UploadObjectDto.getS3FileName() );
+					}
+					
+				}
+			}
 
 			buildingResp = new BuildingResponse();
 			BeanUtils.copyProperties(building, buildingResp);
@@ -872,7 +894,12 @@ public class SubscriberServiceImpl implements SubscriberService {
 	}
 
 	public ApiResponse<Object> addUnit(UnitRequest request) throws Exception {
-
+		S3UploadObjectDto s3MainPicDto=null;
+		S3UploadObjectDto s3Pic2Dto=null;
+		S3UploadObjectDto s3Pic3Dto=null;
+		S3UploadObjectDto s3Pic4Dto=null;
+		S3UploadObjectDto s3Pic5Dto=null;
+		List<S3UploadObjectDto> s3UploadObjectDtoList=new ArrayList<>();
 		Optional<UnitType> unitTypeOptional = unitTypeRepository.findById(request.getUnitTypeId());
 		if (!unitTypeOptional.isPresent()) {
 			throw new BusinessException("UnitType not found with id: " + request.getUnitTypeId(), null);
@@ -907,19 +934,34 @@ public class SubscriberServiceImpl implements SubscriberService {
 		Floor floor = floorOptional.get();
 
 		if (!ObjectUtils.isEmpty(request.getUnitMainPic1())) {
-			CommonUtil.validateAttachment(request.getUnitMainPic1());
+			String contentType=CommonUtil.validateAttachment(request.getUnitMainPic1());
+			String fileExt=contentType.substring(contentType.indexOf("/")+1);
+			s3MainPicDto=new S3UploadObjectDto(CommonConstants.UNIT_MAIN_PIC,contentType,fileExt,Base64.getEncoder().encodeToString(request.getUnitMainPic1()),null);
+			s3UploadObjectDtoList.add(s3MainPicDto);
 		}
 		if (!ObjectUtils.isEmpty(request.getUnitPic2())) {
-			CommonUtil.validateAttachment(request.getUnitPic2());
+			String contentType=CommonUtil.validateAttachment(request.getUnitPic2());
+			String fileExt=contentType.substring(contentType.indexOf("/")+1);
+			s3Pic2Dto=new S3UploadObjectDto(CommonConstants.UNIT_PIC2,contentType,fileExt,Base64.getEncoder().encodeToString(request.getUnitPic2()),null);
+			s3UploadObjectDtoList.add(s3Pic2Dto);
 		}
 		if (!ObjectUtils.isEmpty(request.getUnitPic3())) {
-			CommonUtil.validateAttachment(request.getUnitPic3());
+			String contentType=CommonUtil.validateAttachment(request.getUnitPic3());
+			String fileExt=contentType.substring(contentType.indexOf("/")+1);
+			s3Pic3Dto=new S3UploadObjectDto(CommonConstants.UNIT_PIC3,contentType,fileExt,Base64.getEncoder().encodeToString(request.getUnitPic3()),null);
+			s3UploadObjectDtoList.add(s3Pic3Dto);
 		}
 		if (!ObjectUtils.isEmpty(request.getUnitPic4())) {
-			CommonUtil.validateAttachment(request.getUnitPic4());
+			String contentType=CommonUtil.validateAttachment(request.getUnitPic4());
+			String fileExt=contentType.substring(contentType.indexOf("/")+1);
+			s3Pic4Dto=new S3UploadObjectDto(CommonConstants.UNIT_PIC4,contentType,fileExt,Base64.getEncoder().encodeToString(request.getUnitPic4()),null);
+			s3UploadObjectDtoList.add(s3Pic4Dto);
 		}
 		if (!ObjectUtils.isEmpty(request.getUnitPic5())) {
-			CommonUtil.validateAttachment(request.getUnitPic5());
+			String contentType=CommonUtil.validateAttachment(request.getUnitPic5());
+			String fileExt=contentType.substring(contentType.indexOf("/")+1);
+			s3Pic5Dto=new S3UploadObjectDto(CommonConstants.UNIT_PIC5,contentType,fileExt,Base64.getEncoder().encodeToString(request.getUnitPic5()),null);
+			s3UploadObjectDtoList.add(s3Pic5Dto);
 		}
 
 		Unit unit = new Unit();
@@ -940,50 +982,85 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		unitRepository.save(unit);
 
-		Map<String, String> mapBase64Files = new HashMap<>();
-		if (ObjectUtils.isNotEmpty(request.getUnitMainPic1())) {
-			mapBase64Files.put(CommonConstants.UNIT_MAIN_PIC,
-					Base64.getEncoder().encodeToString(request.getUnitMainPic1()));
-		}
-		if (ObjectUtils.isNotEmpty(request.getUnitPic2())) {
-			mapBase64Files.put(CommonConstants.UNIT_PIC2, Base64.getEncoder().encodeToString(request.getUnitPic2()));
-		}
-		if (ObjectUtils.isNotEmpty(request.getUnitPic3())) {
-			mapBase64Files.put(CommonConstants.UNIT_PIC3, Base64.getEncoder().encodeToString(request.getUnitPic3()));
-		}
-		if (ObjectUtils.isNotEmpty(request.getUnitPic4())) {
-			mapBase64Files.put(CommonConstants.UNIT_PIC4, Base64.getEncoder().encodeToString(request.getUnitPic4()));
-		}
-		if (ObjectUtils.isNotEmpty(request.getUnitPic5())) {
-			mapBase64Files.put(CommonConstants.UNIT_PIC5, Base64.getEncoder().encodeToString(request.getUnitPic5()));
-		}
+	//	Map<String, String> mapBase64Files = new HashMap<>();
+		
+	
+		
+		
+		
+//		if (ObjectUtils.isNotEmpty(request.getUnitMainPic1())) {
+//			mapBase64Files.put(CommonConstants.UNIT_MAIN_PIC,
+//					Base64.getEncoder().encodeToString(request.getUnitMainPic1()));
+//		
+//		}
+//		if (ObjectUtils.isNotEmpty(request.getUnitPic2())) {
+//			mapBase64Files.put(CommonConstants.UNIT_PIC2, Base64.getEncoder().encodeToString(request.getUnitPic2()));
+//		}
+//		if (ObjectUtils.isNotEmpty(request.getUnitPic3())) {
+//			mapBase64Files.put(CommonConstants.UNIT_PIC3, Base64.getEncoder().encodeToString(request.getUnitPic3()));
+//		}
+//		if (ObjectUtils.isNotEmpty(request.getUnitPic4())) {
+//			mapBase64Files.put(CommonConstants.UNIT_PIC4, Base64.getEncoder().encodeToString(request.getUnitPic4()));
+//		}
+//		if (ObjectUtils.isNotEmpty(request.getUnitPic5())) {
+//			mapBase64Files.put(CommonConstants.UNIT_PIC5, Base64.getEncoder().encodeToString(request.getUnitPic5()));
+//		}
+		
 
-		Map<String, String> mapFileNames = s3Service.uploadBase64Images(unit.getUnitId(), mapBase64Files);
-		if (mapFileNames != null) {
-			String unitMainPicName = (mapFileNames.get(CommonConstants.UNIT_MAIN_PIC) != null)
-					? mapFileNames.get(CommonConstants.UNIT_MAIN_PIC)
-					: "";
-			unit.setUnitMainPic1Name(unitMainPicName);
-
-			String unitPic2Name = (mapFileNames.get(CommonConstants.UNIT_PIC2) != null)
-					? mapFileNames.get(CommonConstants.UNIT_PIC2)
-					: "";
-			unit.setUnitPic2Name(unitPic2Name);
-
-			String unitPic3Name = (mapFileNames.get(CommonConstants.UNIT_PIC3) != null)
-					? mapFileNames.get(CommonConstants.UNIT_PIC3)
-					: "";
-			unit.setUnitPic3Name(unitPic3Name);
-
-			String unitPic4Name = (mapFileNames.get(CommonConstants.UNIT_PIC4) != null)
-					? mapFileNames.get(CommonConstants.UNIT_PIC4)
-					: "";
-			unit.setUnitPic4Name(unitPic4Name);
-
-			String unitPic5Name = (mapFileNames.get(CommonConstants.UNIT_PIC5) != null)
-					? mapFileNames.get(CommonConstants.UNIT_PIC5)
-					: "";
-			unit.setUnitPic5Name(unitPic5Name);
+		
+		S3UploadDto s3UploadDto=new S3UploadDto();
+		s3UploadDto.setSubscriberId(request.getSubscriberId());
+		s3UploadDto.setBuildingId(request.getBuildingId());
+		s3UploadDto.setUnitId(unit.getUnitId());
+		s3UploadDto.setObjectType(S3UploadObjTypeEnum.UNIT.toString());
+		s3UploadDto.setS3UploadObjectDtoList(s3UploadObjectDtoList);
+		
+		
+//		Map<String,String> mapFileNames =s3Service.uploadBase64UnitImages(request.getSubscriberId(),unit.getUnitId(), mapBase64Files);
+//		if(mapFileNames!=null) {
+//			String unitMainPicName=(mapFileNames.get(CommonConstants.UNIT_MAIN_PIC)!=null)?mapFileNames.get(CommonConstants.UNIT_MAIN_PIC):"";
+//			unit.setUnitMainPic1Name(unitMainPicName);
+//
+//			String unitPic2Name = (mapFileNames.get(CommonConstants.UNIT_PIC2) != null)
+//					? mapFileNames.get(CommonConstants.UNIT_PIC2)
+//					: "";
+//			unit.setUnitPic2Name(unitPic2Name);
+//
+//			String unitPic3Name = (mapFileNames.get(CommonConstants.UNIT_PIC3) != null)
+//					? mapFileNames.get(CommonConstants.UNIT_PIC3)
+//					: "";
+//			unit.setUnitPic3Name(unitPic3Name);
+//
+//			String unitPic4Name = (mapFileNames.get(CommonConstants.UNIT_PIC4) != null)
+//					? mapFileNames.get(CommonConstants.UNIT_PIC4)
+//					: "";
+//			unit.setUnitPic4Name(unitPic4Name);
+//
+//			String unitPic5Name = (mapFileNames.get(CommonConstants.UNIT_PIC5) != null)
+//					? mapFileNames.get(CommonConstants.UNIT_PIC5)
+//					: "";
+//			unit.setUnitPic5Name(unitPic5Name);
+//		}
+		
+		List <S3UploadObjectDto> s3UploadObjectDtoListRet = s3Service.upload(s3UploadDto);
+		for(S3UploadObjectDto s3UploadObjectDto:s3UploadObjectDtoListRet) {
+			if(s3UploadObjectDto!=null && StringUtils.isNotBlank(s3UploadObjectDto.getS3FileName())) {
+				if(s3UploadObjectDto.getObjectName().equals(CommonConstants.UNIT_MAIN_PIC)){
+					unit.setUnitMainPic1Name(s3UploadObjectDto.getS3FileName() );
+				}
+				if(s3UploadObjectDto.getObjectName().equals(CommonConstants.UNIT_PIC2)){
+					unit.setUnitPic2Name(s3UploadObjectDto.getS3FileName());
+				}
+				if(s3UploadObjectDto.getObjectName().equals(CommonConstants.UNIT_PIC3)){
+					unit.setUnitPic3Name(s3UploadObjectDto.getS3FileName());
+				}
+				if(s3UploadObjectDto.getObjectName().equals(CommonConstants.UNIT_PIC4)){
+					unit.setUnitPic4Name(s3UploadObjectDto.getS3FileName());
+				}
+				if(s3UploadObjectDto.getObjectName().equals(CommonConstants.UNIT_PIC5)){
+					unit.setUnitPic5Name(s3UploadObjectDto.getS3FileName());
+				}
+			}
 		}
 
 		UnitResponse unitResp = new UnitResponse();
@@ -1447,6 +1524,10 @@ public class SubscriberServiceImpl implements SubscriberService {
 		for (Building b : listOfBuildings) {
 			BuildingDetailDTO bt = new BuildingDetailDTO();
 			BeanUtils.copyProperties(b, bt);
+			if (StringUtils.isNotBlank(b.getBuildingLogoFileName())) {
+				//dto.setUnitMainPic1Link(s3Service.generatePresignedUrl(unit.getUnitId(), unit.getUnitMainPic1Name()));
+				bt.setBuildingLogoLink(s3Service.generatePresignedUrl(subscriberId,b.getBuildingId() ,null,b.getBuildingLogoFileName() ));
+			}
 			if (b.getCommunity() != null) {
 				Community ct = b.getCommunity();
 				bt.setCommunityId(ct.getCommunityId());
@@ -1525,21 +1606,31 @@ public class SubscriberServiceImpl implements SubscriberService {
 					dto.setTenantDetails(tenantDetail);
 				}
 			}
-
+			
 			if (StringUtils.isNotBlank(unit.getUnitMainPic1Name())) {
-				dto.setUnitMainPic1Link(s3Service.generatePresignedUrl(unit.getUnitId(), unit.getUnitMainPic1Name()));
+				S3DownloadDto s3DownloadDto =new S3DownloadDto(subscriberId,buildingId,unit.getUnitId(),unit.getUnitMainPic1Name());
+				s3Service.generatePresignedUrl(s3DownloadDto);
+				
 			}
 			if (StringUtils.isNotBlank(unit.getUnitPic2Name())) {
-				dto.setUnitPic2Link(s3Service.generatePresignedUrl(unit.getUnitId(), unit.getUnitPic2Name()));
+				S3DownloadDto s3DownloadDto =new S3DownloadDto(subscriberId,buildingId,unit.getUnitId(),unit.getUnitPic2Name());
+				s3Service.generatePresignedUrl(s3DownloadDto);
+				
 			}
 			if (StringUtils.isNotBlank(unit.getUnitPic3Name())) {
-				dto.setUnitPic3Link(s3Service.generatePresignedUrl(unit.getUnitId(), unit.getUnitPic3Name()));
+				S3DownloadDto s3DownloadDto =new S3DownloadDto(subscriberId,buildingId,unit.getUnitId(),unit.getUnitPic3Name());
+				s3Service.generatePresignedUrl(s3DownloadDto);
+				
 			}
 			if (StringUtils.isNotBlank(unit.getUnitPic4Name())) {
-				dto.setUnitPic4Link(s3Service.generatePresignedUrl(unit.getUnitId(), unit.getUnitPic4Name()));
+				S3DownloadDto s3DownloadDto =new S3DownloadDto(subscriberId,buildingId,unit.getUnitId(),unit.getUnitPic4Name());
+				s3Service.generatePresignedUrl(s3DownloadDto);
+				
 			}
 			if (StringUtils.isNotBlank(unit.getUnitPic5Name())) {
-				dto.setUnitPic5Link(s3Service.generatePresignedUrl(unit.getUnitId(), unit.getUnitPic5Name()));
+				S3DownloadDto s3DownloadDto =new S3DownloadDto(subscriberId,buildingId,unit.getUnitId(),unit.getUnitPic5Name());
+				s3Service.generatePresignedUrl(s3DownloadDto);
+			
 			}
 
 			return dto;

@@ -535,7 +535,7 @@ public class CommonUtil {
 	}
 	
 	
-	public static void validateAttachment(byte[] attachment) throws Exception{
+	public static String validateAttachment(byte[] attachment) throws Exception{
 			
 		String contentType = new Tika().detect(attachment);
 
@@ -546,9 +546,10 @@ public class CommonUtil {
 		long size = attachment.length;
 		size = size/1024;
 		if(size> CommonConstants.MAX_IMAGE_SIZE*1024) {
-			throw new BusinessException("Exceed File size",null);
+			throw new BusinessException("Max 5 MB Allowed",null);
 		}
 		
+		return contentType;
 	}
 	
 	public static String getContentTypeOfAttachment(byte[] byteVal){

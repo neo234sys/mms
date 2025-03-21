@@ -1,16 +1,5 @@
 package com.sbmtech.mms.dto;
 
-import javax.persistence.Column;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-
-import com.sbmtech.mms.models.Area;
-import com.sbmtech.mms.models.City;
-import com.sbmtech.mms.models.Community;
-import com.sbmtech.mms.models.Countries;
-import com.sbmtech.mms.models.State;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,7 +12,7 @@ public class BuildingDetailDTO {
 	private Integer buildingId;
 	private String buildingName;
 	private String address;
-	private byte[] buildingLogo;
+	//private byte[] buildingLogo;
 	private Boolean hasGym;
 	private Boolean hasSwimpool;
 	private Boolean hasKidsPlayground;
@@ -47,5 +36,6 @@ public class BuildingDetailDTO {
 	private String stateName;
 	private Integer cityId;
 	private String cityName;
+	private String buildingLogoLink;
 	
 }

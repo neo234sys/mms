@@ -5,6 +5,8 @@ import java.sql.Timestamp;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -40,50 +42,45 @@ public class Unit implements Serializable {
 	@Column(name = "unit_name")
 	private String unitName;
 
-	// @Enumerated(EnumType.STRING)
-//	@Column(name = "unit_type")
-//	private String unitType;
-
+	
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "unit_type_id", referencedColumnName = "unit_type_id")
 	private UnitType unitType;
 
-	// @Enumerated(EnumType.STRING)
-//	@Column(name = "unit_sub_type")
-//	private String unitSubType;
-
+	
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "unit_subtype_id", referencedColumnName = "unit_subtype_id")
 	private UnitSubType unitSubType;
-
+	
+	
 	@Column(name = "size")
 	private String size;
 
 	@Column(name = "has_balcony")
 	private Boolean hasBalcony;
 
-//	@Column(name = "status")
-//	private UnitStatus status;   //VACANT,OCCUPIED,UNDER_MAINTAINANCE, RESERVED
-
+	
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "unit_status_id", referencedColumnName = "unit_status_id")
 	private UnitStatus unitStatus;
 
+	
+
 	@Column(name = "rent_month")
 	private Double rentMonth;
-
+	
 	@Column(name = "rent_year")
 	private Double rentYear;
-
+	
 	@Column(name = "security_deposit")
 	private Double securityDeposit;
-
+	
 	@Column(name = "water_conn_no")
 	private String waterConnNo;
-
+	
 	@Column(name = "eb_conn_no")
 	private String ebConnNo;
-
+	
 	@Lob
 	@Column(name = "unit_main_pic1")
 	private byte[] unitMainPic1;

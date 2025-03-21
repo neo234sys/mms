@@ -16,6 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.sbmtech.mms.dto.S3DownloadDto;
+import com.sbmtech.mms.dto.S3UploadDto;
+import com.sbmtech.mms.dto.S3UploadObjectDto;
 import com.sbmtech.mms.service.S3Service;
 
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -129,13 +132,12 @@ public class S3ServiceImpl implements S3Service {
         return fileUrls;
     }*/
 	
-	public Map<String,String> uploadBase64Images(Integer unitId,Map<String,String> mapBase64Files) {
-		//LinkedList<String> fileUrls = new LinkedList<>();
+	public Map<String,String> uploadBase64UnitImages(Integer subscriberId,Integer unitId,Map<String,String> mapBase64Files) {
+
 		Map<String,String> mapFileNames=new HashMap<>();
 
 		int i=1;
 		for (Map.Entry<String, String> entry : mapBase64Files.entrySet()) {
-		    //System.out.println(entry.getKey() + "/" + entry.getValue());
 			try {
 				if(StringUtils.isNotBlank(entry.getValue())) {
 					String base64Image=entry.getValue();
@@ -143,8 +145,7 @@ public class S3ServiceImpl implements S3Service {
 	                    base64Image = base64Image.split(",")[1];
 					}
 	                byte[] imageBytes = Base64.getDecoder().decode(base64Image);
-	             //   String contentType = new Tika().detect(attachment);
-		            String fileName =  UUID.randomUUID()+"_"+unitId + ".jpg";
+		            String fileName =  "S_"+UUID.randomUUID()+"_"+unitId + ".jpg";
 		            PutObjectRequest putRequest = PutObjectRequest.builder()
 		            		.bucket(bucketName)
 		                    .key(fileName)
@@ -166,7 +167,7 @@ public class S3ServiceImpl implements S3Service {
 //	                .collect(Collectors.toMap(fileName -> fileName, this::generatePresignedUrl));
 //	 }
 	 
-	 public String generatePresignedUrl(Integer unitId,String fileName) {
+	 public String generatePresignedUrl(Integer subscriberId,Integer buildingId,Integer unitId,String fileName) {
 		 String fileUrl="";
 		 try {
 	        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
@@ -186,6 +187,64 @@ public class S3ServiceImpl implements S3Service {
 		 }
 	        return fileUrl;
 	 }
+
+	@Override
+	public List <S3UploadObjectDto> upload(S3UploadDto s3UploadDto) {
+
+
+		List <S3UploadObjectDto> s3UploadObjectDtolist = s3UploadDto.getS3UploadObjectDtoList();
+		for(S3UploadObjectDto s3UploadObjectDto:s3UploadObjectDtolist) {
+			
+			try {
+				if(s3UploadObjectDto!=null && StringUtils.isNotBlank(s3UploadObjectDto.getObjectBase64())) {
+					String base64Image=s3UploadObjectDto.getObjectBase64();
+					if (base64Image.contains(",")) {
+	                    base64Image = base64Image.split(",")[1];
+					}
+	                byte[] imageBytes = Base64.getDecoder().decode(base64Image);
+		            String fileName =  "S_"+s3UploadDto.getSubscriberId()+"#"+UUID.randomUUID()+"#B_"+s3UploadDto.getBuildingId()+"#U_"+s3UploadDto.getUnitId() + "."+s3UploadObjectDto.getFileExt();
+		            PutObjectRequest putRequest = PutObjectRequest.builder()
+		            		.bucket(bucketName)
+		                    .key(fileName)
+		                    .contentType(s3UploadObjectDto.getContentType())
+		                    .build();
+		            s3Client.putObject(putRequest, RequestBody.fromBytes(imageBytes));
+		            s3UploadObjectDto.setS3FileName(fileName);
+		            logger.info("S3 upload object Success for "+ s3UploadDto.getObjectType()+", unitId="+ s3UploadDto.getUnitId()+
+							", buildingId="+ s3UploadDto.getBuildingId()+", subscriberId="+ s3UploadDto.getSubscriberId());
+				}
+			}catch(Exception ex) {
+				logger.error("S3 Failed to upload object for "+ s3UploadDto.getObjectType()+", unitId="+ s3UploadDto.getUnitId()+
+						", buildingId="+ s3UploadDto.getBuildingId()+", subscriberId="+ s3UploadDto.getSubscriberId());
+			}
+		}
+		return s3UploadObjectDtolist;
+	}
+
+	@Override
+	public String generatePresignedUrl(S3DownloadDto s3DownloadDto) {
+		 String fileUrl="";
+		 String fileName="";
+		 try {
+			 fileName=s3DownloadDto.getS3FileName();
+	        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+	                .bucket(bucketName)
+	                .key(fileName)
+	                .build();
+
+	        GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+	                .signatureDuration(Duration.ofHours(1)) // URL valid for 1 hour
+	                .getObjectRequest(getObjectRequest)
+	                .build();
+
+	        PresignedGetObjectRequest presignedRequest = s3Presigner.presignGetObject(presignRequest);
+	        fileUrl= presignedRequest.url().toString();
+		 }catch(Exception ex) {
+			 logger.error("Failed to upload image subscriberId={}, buidlingId{}, unitId={} filename={}",
+					 s3DownloadDto.getSubscriberId(),s3DownloadDto.getBuildingId(),s3DownloadDto.getUnitId(),fileName);
+		 }
+	        return fileUrl;
+	}
 	 
 	 
 	
