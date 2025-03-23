@@ -1,13 +1,17 @@
 package com.sbmtech.mms.service.impl;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.sbmtech.mms.constant.SubscriptionStatus;
+import com.sbmtech.mms.controllers.CronJobController;
 import com.sbmtech.mms.models.Subscriber;
 import com.sbmtech.mms.models.Subscriptions;
 import com.sbmtech.mms.models.Unit;
@@ -22,6 +26,8 @@ import com.sbmtech.mms.service.CronJobService;
 
 @Service
 public class CronJobServiceImpl implements CronJobService {
+	
+	private static final Logger logger = LogManager.getLogger(CronJobServiceImpl.class);
 	
 	@Autowired
 	private SubscriptionRepository subscriptionRepository;
@@ -40,7 +46,7 @@ public class CronJobServiceImpl implements CronJobService {
 
 	@Override
 	public void expireSubscriptions() throws Exception {
-		LocalDateTime now = LocalDateTime.now();
+		LocalDate now = LocalDate.now();
 
 		List<Subscriptions> subscriptionsToExpire = subscriptionRepository.findByStatusInAndEndDateBefore(
 				List.of(SubscriptionStatus.ACTIVE.toString(), SubscriptionStatus.TRIAL.toString()), now);

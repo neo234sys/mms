@@ -5,6 +5,8 @@ import com.sbmtech.mms.service.CronJobService;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -29,7 +31,8 @@ import com.sbmtech.mms.repository.UnitStatusRepository;
 @RequestMapping("/api/cron")
 public class CronJobController {
 
-
+	private static final Logger logger = LogManager.getLogger(CronJobController.class);
+	
 	@Autowired
 	private CronJobService cronJobService;
 	
@@ -37,7 +40,7 @@ public class CronJobController {
 	@Scheduled(cron = "0 */5 * * * ?") // every 5 hrs
 	public void expireSubscriptionsJob()throws Exception {
 
-		
+		logger.info("expireSubscriptionsJob invoked at="+new Date());
 		cronJobService.expireSubscriptions();
 	}
 	

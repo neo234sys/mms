@@ -1,5 +1,6 @@
 package com.sbmtech.mms.repository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -17,6 +18,6 @@ public interface SubscriptionRepository extends JpaRepository<Subscriptions, Int
 	
 	Subscriptions findTopBySubscriber_SubscriberIdOrderBySubscriptionIdDesc(Integer subscriberId);
 
-	List<Subscriptions> findByStatusInAndEndDateBefore(List<String> statuses, LocalDateTime endDate);
+	List<Subscriptions> findByStatusInAndEndDateBefore(List<String> statuses, LocalDate endDate);
 
 }
