@@ -35,9 +35,13 @@ public class Unit implements Serializable {
 	@JoinColumn(name = "building_id", referencedColumnName = "building_id")
 	private Building building;
 
+//	@ManyToOne(fetch = FetchType.LAZY)
+//	@JoinColumn(name = "floor_id", referencedColumnName = "floor_id")
+//	private Floor floor;
+	
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "floor_id", referencedColumnName = "floor_id")
-	private Floor floor;
+	@JoinColumn(name = "floor_name", referencedColumnName = "floor_name")
+	private FloorMaster floor;
 
 	@Column(name = "unit_name")
 	private String unitName;
@@ -81,25 +85,25 @@ public class Unit implements Serializable {
 	@Column(name = "eb_conn_no")
 	private String ebConnNo;
 	
-	@Lob
-	@Column(name = "unit_main_pic1")
-	private byte[] unitMainPic1;
-
-	@Lob
-	@Column(name = "unit_pic2")
-	private byte[] unitPic2;
-
-	@Lob
-	@Column(name = "unit_pic3")
-	private byte[] unitPic3;
-
-	@Lob
-	@Column(name = "unit_pic4")
-	private byte[] unitPic4;
-
-	@Lob
-	@Column(name = "unit_pic5")
-	private byte[] unitPic5;
+//	@Lob
+//	@Column(name = "unit_main_pic1")
+//	private byte[] unitMainPic1;
+//
+//	@Lob
+//	@Column(name = "unit_pic2")
+//	private byte[] unitPic2;
+//
+//	@Lob
+//	@Column(name = "unit_pic3")
+//	private byte[] unitPic3;
+//
+//	@Lob
+//	@Column(name = "unit_pic4")
+//	private byte[] unitPic4;
+//
+//	@Lob
+//	@Column(name = "unit_pic5")
+//	private byte[] unitPic5;
 
 	@Column(name = "unit_main_pic1_name")
 	private String unitMainPic1Name;
@@ -140,11 +144,11 @@ public class Unit implements Serializable {
 		this.building = building;
 	}
 
-	public Floor getFloor() {
+	public FloorMaster getFloor() {
 		return floor;
 	}
 
-	public void setFloor(Floor floor) {
+	public void setFloor(FloorMaster floor) {
 		this.floor = floor;
 	}
 
@@ -212,45 +216,45 @@ public class Unit implements Serializable {
 		this.unitStatus = unitStatus;
 	}
 
-	public byte[] getUnitMainPic1() {
-		return unitMainPic1;
-	}
-
-	public void setUnitMainPic1(byte[] unitMainPic1) {
-		this.unitMainPic1 = unitMainPic1;
-	}
-
-	public byte[] getUnitPic2() {
-		return unitPic2;
-	}
-
-	public void setUnitPic2(byte[] unitPic2) {
-		this.unitPic2 = unitPic2;
-	}
-
-	public byte[] getUnitPic3() {
-		return unitPic3;
-	}
-
-	public void setUnitPic3(byte[] unitPic3) {
-		this.unitPic3 = unitPic3;
-	}
-
-	public byte[] getUnitPic4() {
-		return unitPic4;
-	}
-
-	public void setUnitPic4(byte[] unitPic4) {
-		this.unitPic4 = unitPic4;
-	}
-
-	public byte[] getUnitPic5() {
-		return unitPic5;
-	}
-
-	public void setUnitPic5(byte[] unitPic5) {
-		this.unitPic5 = unitPic5;
-	}
+//	public byte[] getUnitMainPic1() {
+//		return unitMainPic1;
+//	}
+//
+//	public void setUnitMainPic1(byte[] unitMainPic1) {
+//		this.unitMainPic1 = unitMainPic1;
+//	}
+//
+//	public byte[] getUnitPic2() {
+//		return unitPic2;
+//	}
+//
+//	public void setUnitPic2(byte[] unitPic2) {
+//		this.unitPic2 = unitPic2;
+//	}
+//
+//	public byte[] getUnitPic3() {
+//		return unitPic3;
+//	}
+//
+//	public void setUnitPic3(byte[] unitPic3) {
+//		this.unitPic3 = unitPic3;
+//	}
+//
+//	public byte[] getUnitPic4() {
+//		return unitPic4;
+//	}
+//
+//	public void setUnitPic4(byte[] unitPic4) {
+//		this.unitPic4 = unitPic4;
+//	}
+//
+//	public byte[] getUnitPic5() {
+//		return unitPic5;
+//	}
+//
+//	public void setUnitPic5(byte[] unitPic5) {
+//		this.unitPic5 = unitPic5;
+//	}
 
 	public Timestamp getCreatedTime() {
 		return createdTime;

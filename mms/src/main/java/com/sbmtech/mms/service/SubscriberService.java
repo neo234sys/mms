@@ -110,4 +110,6 @@ public interface SubscriberService {
 
 	public ApiResponse<?> updateTenant(Integer subscriberId, TenantUpdateRequest request);
 
+	public ApiResponse<?> getAllFloors();
+
 }

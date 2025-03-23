@@ -57,6 +57,7 @@ import com.sbmtech.mms.models.Community;
 import com.sbmtech.mms.models.Countries;
 import com.sbmtech.mms.models.DepartmentMaster;
 import com.sbmtech.mms.models.Floor;
+import com.sbmtech.mms.models.FloorMaster;
 import com.sbmtech.mms.models.KeyMaster;
 import com.sbmtech.mms.models.Otp;
 import com.sbmtech.mms.models.Parking;
@@ -136,6 +137,7 @@ import com.sbmtech.mms.repository.CommunityRepository;
 import com.sbmtech.mms.repository.CountriesRepository;
 import com.sbmtech.mms.repository.DepartmentMasRepository;
 import com.sbmtech.mms.repository.FloorRepository;
+import com.sbmtech.mms.repository.FloorMasterRepository;
 import com.sbmtech.mms.repository.KeyMasterRepository;
 import com.sbmtech.mms.repository.OtpRepository;
 import com.sbmtech.mms.repository.ParkingRepository;
@@ -228,8 +230,11 @@ public class SubscriberServiceImpl implements SubscriberService {
 	@Autowired
 	private BuildingRepository buildingRepository;
 
+//	@Autowired
+//	private FloorRepository floorRepository;
+	
 	@Autowired
-	private FloorRepository floorRepository;
+	private FloorMasterRepository floorMasterRepository;
 
 	@Autowired
 	private UnitRepository unitRepository;
@@ -885,7 +890,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		floor.setFloorName(request.getFloorName());
 		floor.setBuilding(building);
 
-		floorRepository.save(floor);
+		//floorRepository.save(floor);
 
 		FloorResponse floorResp = new FloorResponse();
 		BeanUtils.copyProperties(floor, floorResp);
@@ -927,11 +932,18 @@ public class SubscriberServiceImpl implements SubscriberService {
 			throw new BusinessException("UnitStatus not found", null);
 		}
 
-		Optional<Floor> floorOptional = floorRepository.findById(request.getFloorId());
+//		Optional<Floor> floorOptional = floorRepository.findById(request.getFloorId());
+//		if (!floorOptional.isPresent()) {
+//			throw new BusinessException("Floor not found with id: " + request.getFloorId(), null);
+//		}
+		
+		
+		
+		Optional<FloorMaster> floorOptional = floorMasterRepository.findById(request.getFloorName());
 		if (!floorOptional.isPresent()) {
-			throw new BusinessException("Floor not found with id: " + request.getFloorId(), null);
+			throw new BusinessException("FloorName not found: " + request.getFloorName(), null);
 		}
-		Floor floor = floorOptional.get();
+		FloorMaster floor = floorOptional.get();
 
 		if (!ObjectUtils.isEmpty(request.getUnitMainPic1())) {
 			String contentType=CommonUtil.validateAttachment(request.getUnitMainPic1());
@@ -966,6 +978,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		Unit unit = new Unit();
 		unit.setBuilding(building);
+		//unit.setFloor(floor);
 		unit.setFloor(floor);
 		unit.setUnitName(request.getUnitName());
 		unit.setUnitType(unitType);
@@ -982,30 +995,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		unitRepository.save(unit);
 
-	//	Map<String, String> mapBase64Files = new HashMap<>();
-		
 	
-		
-		
-		
-//		if (ObjectUtils.isNotEmpty(request.getUnitMainPic1())) {
-//			mapBase64Files.put(CommonConstants.UNIT_MAIN_PIC,
-//					Base64.getEncoder().encodeToString(request.getUnitMainPic1()));
-//		
-//		}
-//		if (ObjectUtils.isNotEmpty(request.getUnitPic2())) {
-//			mapBase64Files.put(CommonConstants.UNIT_PIC2, Base64.getEncoder().encodeToString(request.getUnitPic2()));
-//		}
-//		if (ObjectUtils.isNotEmpty(request.getUnitPic3())) {
-//			mapBase64Files.put(CommonConstants.UNIT_PIC3, Base64.getEncoder().encodeToString(request.getUnitPic3()));
-//		}
-//		if (ObjectUtils.isNotEmpty(request.getUnitPic4())) {
-//			mapBase64Files.put(CommonConstants.UNIT_PIC4, Base64.getEncoder().encodeToString(request.getUnitPic4()));
-//		}
-//		if (ObjectUtils.isNotEmpty(request.getUnitPic5())) {
-//			mapBase64Files.put(CommonConstants.UNIT_PIC5, Base64.getEncoder().encodeToString(request.getUnitPic5()));
-//		}
-		
 
 		
 		S3UploadDto s3UploadDto=new S3UploadDto();
@@ -1015,33 +1005,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		s3UploadDto.setObjectType(S3UploadObjTypeEnum.UNIT.toString());
 		s3UploadDto.setS3UploadObjectDtoList(s3UploadObjectDtoList);
 		
-		
-//		Map<String,String> mapFileNames =s3Service.uploadBase64UnitImages(request.getSubscriberId(),unit.getUnitId(), mapBase64Files);
-//		if(mapFileNames!=null) {
-//			String unitMainPicName=(mapFileNames.get(CommonConstants.UNIT_MAIN_PIC)!=null)?mapFileNames.get(CommonConstants.UNIT_MAIN_PIC):"";
-//			unit.setUnitMainPic1Name(unitMainPicName);
-//
-//			String unitPic2Name = (mapFileNames.get(CommonConstants.UNIT_PIC2) != null)
-//					? mapFileNames.get(CommonConstants.UNIT_PIC2)
-//					: "";
-//			unit.setUnitPic2Name(unitPic2Name);
-//
-//			String unitPic3Name = (mapFileNames.get(CommonConstants.UNIT_PIC3) != null)
-//					? mapFileNames.get(CommonConstants.UNIT_PIC3)
-//					: "";
-//			unit.setUnitPic3Name(unitPic3Name);
-//
-//			String unitPic4Name = (mapFileNames.get(CommonConstants.UNIT_PIC4) != null)
-//					? mapFileNames.get(CommonConstants.UNIT_PIC4)
-//					: "";
-//			unit.setUnitPic4Name(unitPic4Name);
-//
-//			String unitPic5Name = (mapFileNames.get(CommonConstants.UNIT_PIC5) != null)
-//					? mapFileNames.get(CommonConstants.UNIT_PIC5)
-//					: "";
-//			unit.setUnitPic5Name(unitPic5Name);
-//		}
-		
+	
 		List <S3UploadObjectDto> s3UploadObjectDtoListRet = s3Service.upload(s3UploadDto);
 		for(S3UploadObjectDto s3UploadObjectDto:s3UploadObjectDtoListRet) {
 			if(s3UploadObjectDto!=null && StringUtils.isNotBlank(s3UploadObjectDto.getS3FileName())) {
@@ -1588,7 +1552,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			if (unit.getBuilding() != null)
 				dto.setBuildingId(unit.getBuilding().getBuildingId());
 			if (unit.getFloor() != null)
-				dto.setFloorId(unit.getFloor().getFloorId());
+				dto.setFloor(unit.getFloor().getFloorName());
 			if (unit.getUnitType() != null)
 				dto.setUnitTypeId(unit.getUnitType().getUnitTypeId());
 			if (unit.getUnitSubType() != null)
@@ -1803,6 +1767,16 @@ public class SubscriberServiceImpl implements SubscriberService {
 			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to update tenant: " + e.getMessage(), null,
 					null);
 		}
+	}
+
+	@Override
+	public ApiResponse<?> getAllFloors() {
+		List <FloorMaster> floors= floorMasterRepository.findAll();
+		if (floors.isEmpty()) {
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
+		}
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, floors, null, null);
+		
 	}
 
 }

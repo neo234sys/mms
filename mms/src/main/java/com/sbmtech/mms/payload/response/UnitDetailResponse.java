@@ -8,7 +8,8 @@ public class UnitDetailResponse {
 
 	private Integer unitId;
 	private Integer buildingId;
-	private Integer floorId;
+//	private Integer floorId;
+	private String floor;
 	private String unitName;
 	private Integer unitTypeId;
 	private Integer unitSubTypeId;
@@ -49,12 +50,12 @@ public class UnitDetailResponse {
 		this.buildingId = buildingId;
 	}
 
-	public Integer getFloorId() {
-		return floorId;
+	public String getFloor() {
+		return floor;
 	}
 
-	public void setFloorId(Integer floorId) {
-		this.floorId = floorId;
+	public void setFloor(String floor) {
+		this.floor = floor;
 	}
 
 	public String getUnitName() {
@@ -195,7 +196,7 @@ public class UnitDetailResponse {
 
 	@Override
 	public String toString() {
-		return "UnitDetailResponse [unitId=" + unitId + ", buildingId=" + buildingId + ", floorId=" + floorId
+		return "UnitDetailResponse [unitId=" + unitId + ", buildingId=" + buildingId + ", floor=" + floor
 				+ ", unitName=" + unitName + ", unitTypeId=" + unitTypeId + ", unitSubTypeId=" + unitSubTypeId
 				+ ", size=" + size + ", hasBalcony=" + hasBalcony + ", unitStatusId=" + unitStatusId + ", rentMonth="
 				+ rentMonth + ", rentYear=" + rentYear + ", securityDeposit=" + securityDeposit + ", waterConnNo="

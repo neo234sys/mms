@@ -10,7 +10,10 @@ public class UnitRequest {
 	private Integer subscriberId;
 	
 	private Integer buildingId;
-	private Integer floorId;
+	//private Integer floorId;
+	
+	@NotEmpty(message = "floorName cannot be null")
+	private String floorName;
 	
 	@NotEmpty(message = "unitName cannot be null")
 	private String unitName;
@@ -58,16 +61,26 @@ public class UnitRequest {
 		this.buildingId = buildingId;
 	}
 
-	public Integer getFloorId() {
-		return floorId;
-	}
-
-	public void setFloorId(Integer floorId) {
-		this.floorId = floorId;
-	}
+//	public Integer getFloorId() {
+//		return floorId;
+//	}
+//
+//	public void setFloorId(Integer floorId) {
+//		this.floorId = floorId;
+//	}
+	
+	
 
 	public String getUnitName() {
 		return unitName;
+	}
+
+	public String getFloorName() {
+		return floorName;
+	}
+
+	public void setFloorName(String floorName) {
+		this.floorName = floorName;
 	}
 
 	public void setUnitName(String unitName) {

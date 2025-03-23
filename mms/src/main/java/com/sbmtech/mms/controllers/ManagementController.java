@@ -43,6 +43,7 @@ import com.sbmtech.mms.payload.request.UnitIdRequest;
 import com.sbmtech.mms.payload.request.UnitKeysRequest;
 import com.sbmtech.mms.payload.request.UnitRequest;
 import com.sbmtech.mms.payload.request.UnitUpdateRequest;
+import com.sbmtech.mms.repository.FloorMasterRepository;
 import com.sbmtech.mms.service.ConstantLookupService;
 import com.sbmtech.mms.service.ProductConfigService;
 import com.sbmtech.mms.service.SubscriberService;
@@ -102,6 +103,11 @@ public class ManagementController {
 			@RequestParam Integer countryId) {
 		return ResponseEntity.ok(subscriberService.getCitiesByStateAndCountryId(stateId, countryId));
 	}
+	
+	@GetMapping("/floors")
+	public ResponseEntity<?> getAllFloors() {
+		return ResponseEntity.ok(subscriberService.getAllFloors());
+	}
 
 	@PostMapping("/makePayment")
 	public ResponseEntity<?> makePayment(@RequestBody SubscriptionPaymentRequest subscriptionPayment) {
@@ -137,6 +143,8 @@ public class ManagementController {
 			@CurrentSecurityContext(expression = "authentication") Authentication auth) throws Exception {
 		return ResponseEntity.ok(subscriberService.addFloor(request));
 	}
+	
+	
 
 	@PostMapping("/addUnit")
 	public ResponseEntity<?> addUnit(@Valid @RequestBody UnitRequest request,
