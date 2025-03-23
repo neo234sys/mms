@@ -51,7 +51,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             "/js/**",
             "/ssui/**",
             "/inquiry/**",
-            "/ssui/public/**"
+            "/ssui/public/**",
+            "/api/cron/**"
            
 			
 	};

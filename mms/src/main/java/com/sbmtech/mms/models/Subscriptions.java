@@ -43,8 +43,8 @@ public class Subscriptions implements Serializable {
 	@Column(name = "status")
 	private String status;
 
-	@Column(name = "is_free")
-	private Boolean isFree;
+//	@Column(name = "is_free")
+//	private Boolean isFree;
 
 	@Column(name = "channel_id")
 	private Integer channelId;
@@ -103,13 +103,13 @@ public class Subscriptions implements Serializable {
 		this.status = status;
 	}
 
-	public Boolean getIsFree() {
-		return isFree;
-	}
-
-	public void setIsFree(Boolean isFree) {
-		this.isFree = isFree;
-	}
+//	public Boolean getIsFree() {
+//		return isFree;
+//	}
+//
+//	public void setIsFree(Boolean isFree) {
+//		this.isFree = isFree;
+//	}
 
 	public Integer getChannelId() {
 		return channelId;
