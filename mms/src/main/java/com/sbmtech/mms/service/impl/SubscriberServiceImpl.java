@@ -1601,14 +1601,41 @@ public class SubscriberServiceImpl implements SubscriberService {
 					});
 				}
 
-				Stream.of(unit.getUnitMainPic1Name(), unit.getUnitPic2Name(), unit.getUnitPic3Name(),
-						unit.getUnitPic4Name(), unit.getUnitPic5Name()).filter(StringUtils::isNotBlank)
-						.forEach(imageName -> {
-							S3DownloadDto s3DownloadDto = new S3DownloadDto(subscriberId, buildingId, unit.getUnitId(),
-									imageName);
-							@SuppressWarnings("unused")
-							String url = s3Service.generatePresignedUrl(s3DownloadDto);
-						});
+//				Stream.of(unit.getUnitMainPic1Name(), unit.getUnitPic2Name(), unit.getUnitPic3Name(),
+//						unit.getUnitPic4Name(), unit.getUnitPic5Name()).filter(StringUtils::isNotBlank)
+//						.forEach(imageName -> {
+//							S3DownloadDto s3DownloadDto = new S3DownloadDto(subscriberId, buildingId, unit.getUnitId(),
+//									imageName);
+//							@SuppressWarnings("unused")
+//							String url = s3Service.generatePresignedUrl(s3DownloadDto);
+//							
+//						});
+				
+				if(StringUtils.isNotBlank(unit.getUnitMainPic1Name())) {
+					S3DownloadDto s3DownloadDto = new S3DownloadDto(subscriberId, buildingId, unit.getUnitId(),
+							unit.getUnitMainPic1Name());
+					dto.setUnitMainPic1Link(s3Service.generatePresignedUrl(s3DownloadDto));
+				}
+				if(StringUtils.isNotBlank(unit.getUnitPic2Name())) {
+					S3DownloadDto s3DownloadDto = new S3DownloadDto(subscriberId, buildingId, unit.getUnitId(),
+							unit.getUnitPic2Name());
+					dto.setUnitPic2Link(s3Service.generatePresignedUrl(s3DownloadDto));
+				}
+				if(StringUtils.isNotBlank(unit.getUnitPic3Name())) {
+					S3DownloadDto s3DownloadDto = new S3DownloadDto(subscriberId, buildingId, unit.getUnitId(),
+							unit.getUnitPic3Name());
+					dto.setUnitPic3Link(s3Service.generatePresignedUrl(s3DownloadDto));
+				}
+				if(StringUtils.isNotBlank(unit.getUnitPic4Name())) {
+					S3DownloadDto s3DownloadDto = new S3DownloadDto(subscriberId, buildingId, unit.getUnitId(),
+							unit.getUnitPic4Name());
+					dto.setUnitPic4Link(s3Service.generatePresignedUrl(s3DownloadDto));
+				}
+				if(StringUtils.isNotBlank(unit.getUnitPic5Name())) {
+					S3DownloadDto s3DownloadDto = new S3DownloadDto(subscriberId, buildingId, unit.getUnitId(),
+							unit.getUnitPic5Name());
+					dto.setUnitPic5Link(s3Service.generatePresignedUrl(s3DownloadDto));
+				}
 
 				return dto;
 			}).collect(Collectors.toList());
