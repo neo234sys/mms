@@ -21,7 +21,7 @@ public interface UnitRepository extends JpaRepository<Unit, Integer> {
 
 	Optional<Unit> findByUnitId(Integer unitId);
 
-	@Query("SELECT u FROM Unit u JOIN u.building b WHERE b.buildingId = :buildingId ORDER BY u.id ASC")
+	@Query("SELECT u FROM Unit u WHERE u.building.buildingId = :buildingId AND u.isDeleted = false")
 	Page<Unit> findUnitsByBuildingIdWithPagination(@Param("buildingId") Integer buildingId, Pageable pageable);
 
 	@Query("SELECT COUNT(u) > 0 FROM Unit u WHERE u.building.buildingId = :buildingId")

@@ -21,7 +21,7 @@ public interface TenantUnitRepository extends JpaRepository<TenantUnit, Integer>
 
 	public TenantUnit findByUnit(Unit unit);
 
-	@Query("SELECT tu FROM TenantUnit tu JOIN tu.unit u WHERE u.building.buildingId = :buildingId")
+	@Query("SELECT tu FROM TenantUnit tu WHERE tu.tenant.isDeleted = false AND tu.unit.building.buildingId = :buildingId")
 	Page<TenantUnit> findTenantsByBuildingIdWithPagination(@Param("buildingId") Integer buildingId, Pageable pageable);
 
 	@Query("SELECT tu FROM TenantUnit tu WHERE tu.unit = :unit AND tu.active = true")

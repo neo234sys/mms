@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import javax.validation.Valid;
 
 import org.apache.commons.lang3.ObjectUtils;
@@ -1489,7 +1491,8 @@ public class SubscriberServiceImpl implements SubscriberService {
 				? Sort.by(paginationRequest.getSortBy()).descending()
 				: Sort.by(paginationRequest.getSortBy()).ascending();
 		PageRequest pageable = PageRequest.of(paginationRequest.getPage(), paginationRequest.getSize(), sort);
-		List<Building> listOfBuildings = buildingRepository.findAllBySubscriberId(subscriberId);
+
+		List<Building> listOfBuildings = buildingRepository.findAllBySubscriberIdAndIsDeletedFalse(subscriberId);
 
 		List<BuildingDetailDTO> listBD = new ArrayList<>();
 
@@ -1497,15 +1500,13 @@ public class SubscriberServiceImpl implements SubscriberService {
 			BuildingDetailDTO bt = new BuildingDetailDTO();
 			BeanUtils.copyProperties(b, bt);
 			if (StringUtils.isNotBlank(b.getBuildingLogoFileName())) {
-				// dto.setUnitMainPic1Link(s3Service.generatePresignedUrl(unit.getUnitId(),
-				// unit.getUnitMainPic1Name()));
 				bt.setBuildingLogoLink(s3Service.generatePresignedUrl(subscriberId, b.getBuildingId(), null,
 						b.getBuildingLogoFileName()));
 			}
 			if (b.getCommunity() != null) {
 				Community ct = b.getCommunity();
 				bt.setCommunityId(ct.getCommunityId());
-				ct.setCommunityName(ct.getCommunityName());
+				bt.setCommunityName(ct.getCommunityName());
 				if (ct.getArea() != null) {
 					Area ae = b.getArea();
 					bt.setAreaId(ae.getAreaId());
@@ -1519,7 +1520,6 @@ public class SubscriberServiceImpl implements SubscriberService {
 					City city = ae.getCity();
 					bt.setCityId(city.getCityId());
 					bt.setCityName(city.getName());
-
 				}
 			} else if (b.getArea() != null) {
 				Area ae = b.getArea();
@@ -1534,7 +1534,6 @@ public class SubscriberServiceImpl implements SubscriberService {
 				City city = ae.getCity();
 				bt.setCityId(city.getCityId());
 				bt.setCityName(city.getName());
-
 			}
 			listBD.add(bt);
 		}
@@ -1544,81 +1543,61 @@ public class SubscriberServiceImpl implements SubscriberService {
 		PaginationResponse pgResp = new PaginationResponse<>(pageBD.getContent(), pageBD.getNumber(),
 				pageBD.getTotalPages(), pageBD.getTotalElements(), pageBD.isFirst(), pageBD.isLast());
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, pgResp, null, null);
-
 	}
 
 	@SuppressWarnings("rawtypes")
 	public ApiResponse<Object> getAllUnitsByBuildingId(Integer subscriberId, Integer buildingId,
 			PaginationRequest paginationRequest) {
-		Sort sort = paginationRequest.getSortDirection().equalsIgnoreCase("desc")
-				? Sort.by(paginationRequest.getSortBy()).descending()
-				: Sort.by(paginationRequest.getSortBy()).ascending();
-		PageRequest pageable = PageRequest.of(paginationRequest.getPage(), paginationRequest.getSize(), sort);
-		Page<Unit> unitPage = unitRepository.findUnitsByBuildingIdWithPagination(buildingId, pageable);
+		try {
+			Sort sort = paginationRequest.getSortDirection().equalsIgnoreCase("desc")
+					? Sort.by(paginationRequest.getSortBy()).descending()
+					: Sort.by(paginationRequest.getSortBy()).ascending();
+			PageRequest pageable = PageRequest.of(paginationRequest.getPage(), paginationRequest.getSize(), sort);
 
-		List<UnitDetailResponse> unitDTOs = unitPage.getContent().stream().map(unit -> {
-			UnitDetailResponse dto = new UnitDetailResponse();
-			BeanUtils.copyProperties(unit, dto);
-			if (unit.getBuilding() != null)
-				dto.setBuildingId(unit.getBuilding().getBuildingId());
-			if (unit.getFloor() != null)
-				dto.setFloor(unit.getFloor().getFloorName());
-			if (unit.getUnitType() != null)
-				dto.setUnitTypeId(unit.getUnitType().getUnitTypeId());
-			if (unit.getUnitSubType() != null)
-				dto.setUnitSubTypeId(unit.getUnitSubType().getUnitSubtypeId());
-			if (unit.getUnitStatus() != null)
-				dto.setUnitStatusId(unit.getUnitStatus().getUnitStatusId());
+			Page<Unit> unitPage = unitRepository.findUnitsByBuildingIdWithPagination(buildingId, pageable);
 
-			if (unit.getUnitStatus() != null && unit.getUnitStatus().getUnitStatusId() == 2) { // Occupied
-				Optional<TenantUnit> tenantUnitOptional = tenantUnitRepository.findByUnitAndActiveTrue(unit);
-				if (tenantUnitOptional.isPresent()) {
-					TenantUnit tenantUnit = tenantUnitOptional.get();
-					Tenant tenant = tenantUnit.getTenant();
-					TenantDetailResponse tenantDetail = new TenantDetailResponse();
-					BeanUtils.copyProperties(tenant, tenantDetail);
-					dto.setTenantDetails(tenantDetail);
+			List<UnitDetailResponse> unitDTOs = unitPage.getContent().stream().map(unit -> {
+				UnitDetailResponse dto = new UnitDetailResponse();
+				BeanUtils.copyProperties(unit, dto);
+
+				if (unit.getBuilding() != null)
+					dto.setBuildingId(unit.getBuilding().getBuildingId());
+				if (unit.getFloor() != null)
+					dto.setFloor(unit.getFloor().getFloorName());
+				if (unit.getUnitType() != null)
+					dto.setUnitTypeId(unit.getUnitType().getUnitTypeId());
+				if (unit.getUnitSubType() != null)
+					dto.setUnitSubTypeId(unit.getUnitSubType().getUnitSubtypeId());
+				if (unit.getUnitStatus() != null)
+					dto.setUnitStatusId(unit.getUnitStatus().getUnitStatusId());
+
+				if (unit.getUnitStatus() != null && unit.getUnitStatus().getUnitStatusId() == 2) {
+					tenantUnitRepository.findByUnitAndActiveTrue(unit).ifPresent(tenantUnit -> {
+						TenantDetailResponse tenantDetail = new TenantDetailResponse();
+						BeanUtils.copyProperties(tenantUnit.getTenant(), tenantDetail);
+						dto.setTenantDetails(tenantDetail);
+					});
 				}
-			}
 
-			if (StringUtils.isNotBlank(unit.getUnitMainPic1Name())) {
-				S3DownloadDto s3DownloadDto = new S3DownloadDto(subscriberId, buildingId, unit.getUnitId(),
-						unit.getUnitMainPic1Name());
-				s3Service.generatePresignedUrl(s3DownloadDto);
+				Stream.of(unit.getUnitMainPic1Name(), unit.getUnitPic2Name(), unit.getUnitPic3Name(),
+						unit.getUnitPic4Name(), unit.getUnitPic5Name()).filter(StringUtils::isNotBlank)
+						.forEach(imageName -> {
+							S3DownloadDto s3DownloadDto = new S3DownloadDto(subscriberId, buildingId, unit.getUnitId(),
+									imageName);
+							@SuppressWarnings("unused")
+							String url = s3Service.generatePresignedUrl(s3DownloadDto);
+						});
 
-			}
-			if (StringUtils.isNotBlank(unit.getUnitPic2Name())) {
-				S3DownloadDto s3DownloadDto = new S3DownloadDto(subscriberId, buildingId, unit.getUnitId(),
-						unit.getUnitPic2Name());
-				s3Service.generatePresignedUrl(s3DownloadDto);
+				return dto;
+			}).collect(Collectors.toList());
 
-			}
-			if (StringUtils.isNotBlank(unit.getUnitPic3Name())) {
-				S3DownloadDto s3DownloadDto = new S3DownloadDto(subscriberId, buildingId, unit.getUnitId(),
-						unit.getUnitPic3Name());
-				s3Service.generatePresignedUrl(s3DownloadDto);
+			PaginationResponse response = new PaginationResponse<>(unitDTOs, unitPage.getNumber(),
+					unitPage.getTotalPages(), unitPage.getTotalElements(), unitPage.isFirst(), unitPage.isLast());
 
-			}
-			if (StringUtils.isNotBlank(unit.getUnitPic4Name())) {
-				S3DownloadDto s3DownloadDto = new S3DownloadDto(subscriberId, buildingId, unit.getUnitId(),
-						unit.getUnitPic4Name());
-				s3Service.generatePresignedUrl(s3DownloadDto);
-
-			}
-			if (StringUtils.isNotBlank(unit.getUnitPic5Name())) {
-				S3DownloadDto s3DownloadDto = new S3DownloadDto(subscriberId, buildingId, unit.getUnitId(),
-						unit.getUnitPic5Name());
-				s3Service.generatePresignedUrl(s3DownloadDto);
-
-			}
-
-			return dto;
-		}).collect(Collectors.toList());
-
-		PaginationResponse response = new PaginationResponse<>(unitDTOs, unitPage.getNumber(), unitPage.getTotalPages(),
-				unitPage.getTotalElements(), unitPage.isFirst(), unitPage.isLast());
-
-		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, response, null, null);
+			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, response, null, null);
+		} catch (Exception e) {
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Error fetching units", null, null);
+		}
 	}
 
 	@SuppressWarnings("rawtypes")
