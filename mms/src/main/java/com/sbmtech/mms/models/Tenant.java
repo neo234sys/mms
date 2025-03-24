@@ -1,5 +1,6 @@
 package com.sbmtech.mms.models;
 
+import java.util.Arrays;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -91,6 +92,9 @@ public class Tenant {
 
 	@Column(name = "updated_by")
 	private Integer updatedBy;
+
+	@Column(name = "is_deleted", nullable = false)
+	private Boolean isDeleted = false;
 
 	public Integer getTenantId() {
 		return tenantId;
@@ -244,10 +248,24 @@ public class Tenant {
 		this.updatedBy = updatedBy;
 	}
 
+	public Boolean getIsDeleted() {
+		return isDeleted;
+	}
+
+	public void setIsDeleted(Boolean isDeleted) {
+		this.isDeleted = isDeleted;
+	}
+
 	@Override
 	public String toString() {
-		return "Tenant [tenantId=" + tenantId + ", firstName=" + firstName + ", email=" + email + ", phoneNumber="
-				+ phoneNumber + ", emiratesId=" + emiratesId + "]";
+		return "Tenant [tenantId=" + tenantId + ", firstName=" + firstName + ", lastName=" + lastName + ", email="
+				+ email + ", phoneNumber=" + phoneNumber + ", dateOfBirth=" + dateOfBirth + ", emiratesId=" + emiratesId
+				+ ", eidaExpiryDate=" + eidaExpiryDate + ", eidaCopy=" + Arrays.toString(eidaCopy) + ", passportNo="
+				+ passportNo + ", passportExpiryDate=" + passportExpiryDate + ", passportCopy="
+				+ Arrays.toString(passportCopy) + ", photo=" + Arrays.toString(photo) + ", nationalityId="
+				+ nationalityId + ", nationality=" + nationality + ", createdTime=" + createdTime + ", updatedTime="
+				+ updatedTime + ", createdBy=" + createdBy + ", updatedBy=" + updatedBy + ", isDeleted=" + isDeleted
+				+ "]";
 	}
 
 }

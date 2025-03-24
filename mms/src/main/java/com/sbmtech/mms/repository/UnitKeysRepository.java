@@ -1,5 +1,7 @@
 package com.sbmtech.mms.repository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,5 +13,7 @@ import com.sbmtech.mms.models.UnitKeys;
 public interface UnitKeysRepository extends JpaRepository<UnitKeys, Integer> {
 
 	boolean existsByUnitAndKeyMaster(Unit unit, KeyMaster keyMaster);
+	
+	List<UnitKeys> findByUnitUnitId(Integer unitId);
 
 }

@@ -1,13 +1,10 @@
 package com.sbmtech.mms.models;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -34,20 +31,17 @@ public class TenureDetails implements Serializable {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "tenant_unit_id", referencedColumnName = "tenant_unit_id")
 	private TenantUnit tenantUnit;
-	
+
 	@Column(name = "tenancy_start_date")
 	private Date tenancyStartDate;
-	
+
 	@Column(name = "tenancy_end_date")
 	private Date tenancyEndDate;
 
-	
 	@Lob
 	@Column(name = "tenancy_copy")
 	private byte[] tenancyCopy;
 
-	
-	
 	@Column(name = "created_time")
 	@CreationTimestamp
 	private Date createdTime;
@@ -77,8 +71,6 @@ public class TenureDetails implements Serializable {
 	public void setTenantUnit(TenantUnit tenantUnit) {
 		this.tenantUnit = tenantUnit;
 	}
-
-	
 
 	public Date getTenancyStartDate() {
 		return tenancyStartDate;
@@ -135,9 +127,5 @@ public class TenureDetails implements Serializable {
 	public void setUpdatedBy(Integer updatedBy) {
 		this.updatedBy = updatedBy;
 	}
-	
-	
-	
-	
 
 }

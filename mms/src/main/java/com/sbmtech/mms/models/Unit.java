@@ -5,14 +5,11 @@ import java.sql.Timestamp;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
@@ -35,10 +32,6 @@ public class Unit implements Serializable {
 	@JoinColumn(name = "building_id", referencedColumnName = "building_id")
 	private Building building;
 
-//	@ManyToOne(fetch = FetchType.LAZY)
-//	@JoinColumn(name = "floor_id", referencedColumnName = "floor_id")
-//	private Floor floor;
-	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "floor_name", referencedColumnName = "floor_name")
 	private FloorMaster floor;
@@ -46,64 +39,38 @@ public class Unit implements Serializable {
 	@Column(name = "unit_name")
 	private String unitName;
 
-	
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "unit_type_id", referencedColumnName = "unit_type_id")
 	private UnitType unitType;
 
-	
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "unit_subtype_id", referencedColumnName = "unit_subtype_id")
 	private UnitSubType unitSubType;
-	
-	
+
 	@Column(name = "size")
 	private String size;
 
 	@Column(name = "has_balcony")
 	private Boolean hasBalcony;
 
-	
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "unit_status_id", referencedColumnName = "unit_status_id")
 	private UnitStatus unitStatus;
 
-	
-
 	@Column(name = "rent_month")
 	private Double rentMonth;
-	
+
 	@Column(name = "rent_year")
 	private Double rentYear;
-	
+
 	@Column(name = "security_deposit")
 	private Double securityDeposit;
-	
+
 	@Column(name = "water_conn_no")
 	private String waterConnNo;
-	
+
 	@Column(name = "eb_conn_no")
 	private String ebConnNo;
-	
-//	@Lob
-//	@Column(name = "unit_main_pic1")
-//	private byte[] unitMainPic1;
-//
-//	@Lob
-//	@Column(name = "unit_pic2")
-//	private byte[] unitPic2;
-//
-//	@Lob
-//	@Column(name = "unit_pic3")
-//	private byte[] unitPic3;
-//
-//	@Lob
-//	@Column(name = "unit_pic4")
-//	private byte[] unitPic4;
-//
-//	@Lob
-//	@Column(name = "unit_pic5")
-//	private byte[] unitPic5;
 
 	@Column(name = "unit_main_pic1_name")
 	private String unitMainPic1Name;
@@ -127,6 +94,9 @@ public class Unit implements Serializable {
 	@Column(name = "updated_time", nullable = false)
 	@UpdateTimestamp
 	private Timestamp updatedTime;
+
+	@Column(name = "is_deleted", nullable = false)
+	private Boolean isDeleted = false;
 
 	public Integer getUnitId() {
 		return unitId;
@@ -160,26 +130,6 @@ public class Unit implements Serializable {
 		this.unitName = unitName;
 	}
 
-//	public String getUnitType() {
-//		return unitType;
-//	}
-//
-//	public void setUnitType(String unitType) {
-//		this.unitType = unitType;
-//	}
-//
-//	public String getUnitSubType() {
-//		return unitSubType;
-//	}
-//
-//	public void setUnitSubType(String unitSubType) {
-//		this.unitSubType = unitSubType;
-//	}
-
-	public String getSize() {
-		return size;
-	}
-
 	public UnitType getUnitType() {
 		return unitType;
 	}
@@ -194,6 +144,10 @@ public class Unit implements Serializable {
 
 	public void setUnitSubType(UnitSubType unitSubType) {
 		this.unitSubType = unitSubType;
+	}
+
+	public String getSize() {
+		return size;
 	}
 
 	public void setSize(String size) {
@@ -214,62 +168,6 @@ public class Unit implements Serializable {
 
 	public void setUnitStatus(UnitStatus unitStatus) {
 		this.unitStatus = unitStatus;
-	}
-
-//	public byte[] getUnitMainPic1() {
-//		return unitMainPic1;
-//	}
-//
-//	public void setUnitMainPic1(byte[] unitMainPic1) {
-//		this.unitMainPic1 = unitMainPic1;
-//	}
-//
-//	public byte[] getUnitPic2() {
-//		return unitPic2;
-//	}
-//
-//	public void setUnitPic2(byte[] unitPic2) {
-//		this.unitPic2 = unitPic2;
-//	}
-//
-//	public byte[] getUnitPic3() {
-//		return unitPic3;
-//	}
-//
-//	public void setUnitPic3(byte[] unitPic3) {
-//		this.unitPic3 = unitPic3;
-//	}
-//
-//	public byte[] getUnitPic4() {
-//		return unitPic4;
-//	}
-//
-//	public void setUnitPic4(byte[] unitPic4) {
-//		this.unitPic4 = unitPic4;
-//	}
-//
-//	public byte[] getUnitPic5() {
-//		return unitPic5;
-//	}
-//
-//	public void setUnitPic5(byte[] unitPic5) {
-//		this.unitPic5 = unitPic5;
-//	}
-
-	public Timestamp getCreatedTime() {
-		return createdTime;
-	}
-
-	public void setCreatedTime(Timestamp createdTime) {
-		this.createdTime = createdTime;
-	}
-
-	public Timestamp getUpdatedTime() {
-		return updatedTime;
-	}
-
-	public void setUpdatedTime(Timestamp updatedTime) {
-		this.updatedTime = updatedTime;
 	}
 
 	public Double getRentMonth() {
@@ -352,10 +250,43 @@ public class Unit implements Serializable {
 		this.unitPic5Name = unitPic5Name;
 	}
 
+	public Timestamp getCreatedTime() {
+		return createdTime;
+	}
+
+	public void setCreatedTime(Timestamp createdTime) {
+		this.createdTime = createdTime;
+	}
+
+	public Timestamp getUpdatedTime() {
+		return updatedTime;
+	}
+
+	public void setUpdatedTime(Timestamp updatedTime) {
+		this.updatedTime = updatedTime;
+	}
+
+	public Boolean getIsDeleted() {
+		return isDeleted;
+	}
+
+	public void setIsDeleted(Boolean isDeleted) {
+		this.isDeleted = isDeleted;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
+
 	@Override
 	public String toString() {
 		return "Unit [unitId=" + unitId + ", building=" + building + ", floor=" + floor + ", unitName=" + unitName
-				+ ", unitType=" + unitType + "]";
+				+ ", unitType=" + unitType + ", unitSubType=" + unitSubType + ", size=" + size + ", hasBalcony="
+				+ hasBalcony + ", unitStatus=" + unitStatus + ", rentMonth=" + rentMonth + ", rentYear=" + rentYear
+				+ ", securityDeposit=" + securityDeposit + ", waterConnNo=" + waterConnNo + ", ebConnNo=" + ebConnNo
+				+ ", unitMainPic1Name=" + unitMainPic1Name + ", unitPic2Name=" + unitPic2Name + ", unitPic3Name="
+				+ unitPic3Name + ", unitPic4Name=" + unitPic4Name + ", unitPic5Name=" + unitPic5Name + ", createdTime="
+				+ createdTime + ", updatedTime=" + updatedTime + ", isDeleted=" + isDeleted + "]";
 	}
 
 }

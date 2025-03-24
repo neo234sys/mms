@@ -39,11 +39,9 @@ import com.sbmtech.mms.payload.request.SubscriptionRequest;
 import com.sbmtech.mms.payload.request.TenantIdRequest;
 import com.sbmtech.mms.payload.request.TenantUnitRequest;
 import com.sbmtech.mms.payload.request.TenantUpdateRequest;
-import com.sbmtech.mms.payload.request.UnitIdRequest;
 import com.sbmtech.mms.payload.request.UnitKeysRequest;
 import com.sbmtech.mms.payload.request.UnitRequest;
 import com.sbmtech.mms.payload.request.UnitUpdateRequest;
-import com.sbmtech.mms.repository.FloorMasterRepository;
 import com.sbmtech.mms.service.ConstantLookupService;
 import com.sbmtech.mms.service.ProductConfigService;
 import com.sbmtech.mms.service.SubscriberService;
@@ -103,7 +101,7 @@ public class ManagementController {
 			@RequestParam Integer countryId) {
 		return ResponseEntity.ok(subscriberService.getCitiesByStateAndCountryId(stateId, countryId));
 	}
-	
+
 	@GetMapping("/floors")
 	public ResponseEntity<?> getAllFloors() {
 		return ResponseEntity.ok(subscriberService.getAllFloors());
@@ -143,8 +141,6 @@ public class ManagementController {
 			@CurrentSecurityContext(expression = "authentication") Authentication auth) throws Exception {
 		return ResponseEntity.ok(subscriberService.addFloor(request));
 	}
-	
-	
 
 	@PostMapping("/addUnit")
 	public ResponseEntity<?> addUnit(@Valid @RequestBody UnitRequest request,
@@ -293,24 +289,19 @@ public class ManagementController {
 	@PostMapping("/deleteBuilding")
 	public ResponseEntity<?> deleteBuilding(@CurrentSecurityContext(expression = "authentication") Authentication auth,
 			@Valid @RequestBody DeleteBuildingRequest request) throws Exception {
-		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
-		request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.deleteBuilding(request));
 	}
 
 	@PostMapping("/deleteUnit")
 	public ResponseEntity<?> deleteUnit(@CurrentSecurityContext(expression = "authentication") Authentication auth,
 			@Valid @RequestBody DeleteUnitRequest request) throws Exception {
-		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
-		request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.deleteUnit(request));
 	}
 
 	@PostMapping("/deleteTenant")
 	public ResponseEntity<?> deleteTenant(@CurrentSecurityContext(expression = "authentication") Authentication auth,
 			@Valid @RequestBody TenantIdRequest request) throws Exception {
-		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
-		return ResponseEntity.ok(subscriberService.deleteTenant(subscriberId, request.getTenantId()));
+		return ResponseEntity.ok(subscriberService.deleteTenant(request));
 	}
 
 	@PostMapping("/updateBuilding")

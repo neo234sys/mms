@@ -26,11 +26,10 @@ public interface UnitRepository extends JpaRepository<Unit, Integer> {
 
 	@Query("SELECT COUNT(u) > 0 FROM Unit u WHERE u.building.buildingId = :buildingId")
 	boolean existsByBuildingBuildingId(@Param("buildingId") Integer buildingId);
-	
 
 	@Query("SELECT u FROM Unit u WHERE u.building.buildingId = :buildingId")
 	List<Unit> getAllUnitsByBuildingId(@Param("buildingId") Integer buildingId);
-	
-	
+
+	List<Unit> findByBuildingBuildingId(Integer buildingId);
 
 }

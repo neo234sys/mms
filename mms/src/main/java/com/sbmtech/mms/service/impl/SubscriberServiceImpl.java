@@ -28,7 +28,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bouncycastle.asn1.ocsp.Request;
+import org.apache.velocity.exception.ResourceNotFoundException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -59,6 +59,7 @@ import com.sbmtech.mms.models.DepartmentMaster;
 import com.sbmtech.mms.models.Floor;
 import com.sbmtech.mms.models.FloorMaster;
 import com.sbmtech.mms.models.KeyMaster;
+import com.sbmtech.mms.models.Order;
 import com.sbmtech.mms.models.Otp;
 import com.sbmtech.mms.models.Parking;
 import com.sbmtech.mms.models.ParkingTypeEnum;
@@ -108,6 +109,7 @@ import com.sbmtech.mms.payload.request.AreaRequest;
 import com.sbmtech.mms.payload.request.SubscriberRequest;
 import com.sbmtech.mms.payload.request.SubscriptionPaymentRequest;
 import com.sbmtech.mms.payload.request.SubscriptionRequest;
+import com.sbmtech.mms.payload.request.TenantIdRequest;
 import com.sbmtech.mms.payload.request.TenantUnitRequest;
 import com.sbmtech.mms.payload.request.TenantUpdateRequest;
 import com.sbmtech.mms.payload.request.UnitKeysRequest;
@@ -139,6 +141,7 @@ import com.sbmtech.mms.repository.DepartmentMasRepository;
 import com.sbmtech.mms.repository.FloorRepository;
 import com.sbmtech.mms.repository.FloorMasterRepository;
 import com.sbmtech.mms.repository.KeyMasterRepository;
+import com.sbmtech.mms.repository.OrderRepository;
 import com.sbmtech.mms.repository.OtpRepository;
 import com.sbmtech.mms.repository.ParkingRepository;
 import com.sbmtech.mms.repository.ParkingZoneRepository;
@@ -230,9 +233,9 @@ public class SubscriberServiceImpl implements SubscriberService {
 	@Autowired
 	private BuildingRepository buildingRepository;
 
-//	@Autowired
-//	private FloorRepository floorRepository;
-	
+	@Autowired
+	private FloorRepository floorRepository;
+
 	@Autowired
 	private FloorMasterRepository floorMasterRepository;
 
@@ -289,6 +292,9 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	@Autowired
 	private S3Service s3Service;
+
+	@Autowired
+	private OrderRepository orderRepository;
 
 	@Override
 	public Integer getSubscriberIdfromAuth(Authentication auth) throws Exception {
@@ -765,10 +771,10 @@ public class SubscriberServiceImpl implements SubscriberService {
 	}
 
 	public ApiResponse<Object> addBuilding(BuildingRequest request) {
-		
-		List<S3UploadObjectDto> s3UploadObjectDtoList=new ArrayList<>();
-		S3UploadObjectDto s3BuildingLogoDto=null;
-		
+
+		List<S3UploadObjectDto> s3UploadObjectDtoList = new ArrayList<>();
+		S3UploadObjectDto s3BuildingLogoDto = null;
+
 		Countries country = null;
 		State state = null;
 		// City city = null;
@@ -791,7 +797,6 @@ public class SubscriberServiceImpl implements SubscriberService {
 				throw new BusinessException("Invalid stateId /stateId not matching with CountryId", null);
 			}
 		}
-		
 
 		subscriber = subscriberOpt.get();
 
@@ -830,16 +835,17 @@ public class SubscriberServiceImpl implements SubscriberService {
 			Building building = new Building();
 			building.setBuildingName(request.getBuildingName());
 			building.setAddress(request.getAddress());
-			
-			//building.setBuildingLogo(request.getBuildingLogo());
-			
+
+			// building.setBuildingLogo(request.getBuildingLogo());
+
 			if (!ObjectUtils.isEmpty(request.getBuildingLogo())) {
-				String contentType=CommonUtil.validateAttachment(request.getBuildingLogo());
-				String fileExt=contentType.substring(contentType.indexOf("/")+1);
-				s3BuildingLogoDto=new S3UploadObjectDto(CommonConstants.BUILD_MAIN_PIC,contentType,fileExt,Base64.getEncoder().encodeToString(request.getBuildingLogo()),null);
+				String contentType = CommonUtil.validateAttachment(request.getBuildingLogo());
+				String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+				s3BuildingLogoDto = new S3UploadObjectDto(CommonConstants.BUILD_MAIN_PIC, contentType, fileExt,
+						Base64.getEncoder().encodeToString(request.getBuildingLogo()), null);
 				s3UploadObjectDtoList.add(s3BuildingLogoDto);
 			}
-			
+
 			building.setHasGym(request.getHasGym());
 			building.setHasSwimpool(request.getHasSwimpool());
 			building.setHasKidsPlayground(request.getHasKidsPlayground());
@@ -853,20 +859,19 @@ public class SubscriberServiceImpl implements SubscriberService {
 			building.setLatitude(request.getLatitude());
 			building.setLongitude(request.getLongitude());
 			buildingRepository.save(building);
-			
-			
-			S3UploadDto s3UploadDto=new S3UploadDto();
+
+			S3UploadDto s3UploadDto = new S3UploadDto();
 			s3UploadDto.setSubscriberId(request.getSubscriberId());
 			s3UploadDto.setBuildingId(building.getBuildingId());
 			s3UploadDto.setObjectType(S3UploadObjTypeEnum.BUILDING.toString());
 			s3UploadDto.setS3UploadObjectDtoList(s3UploadObjectDtoList);
-			List <S3UploadObjectDto> s3UploadObjectDtoListRet = s3Service.upload(s3UploadDto);
-			for(S3UploadObjectDto s3UploadObjectDto:s3UploadObjectDtoListRet) {
-				if(s3UploadObjectDto!=null && StringUtils.isNotBlank(s3UploadObjectDto.getS3FileName())) {
-					if(s3UploadObjectDto.getObjectName().equals(CommonConstants.BUILD_MAIN_PIC)){
-						building.setBuildingLogoFileName(s3UploadObjectDto.getS3FileName() );
+			List<S3UploadObjectDto> s3UploadObjectDtoListRet = s3Service.upload(s3UploadDto);
+			for (S3UploadObjectDto s3UploadObjectDto : s3UploadObjectDtoListRet) {
+				if (s3UploadObjectDto != null && StringUtils.isNotBlank(s3UploadObjectDto.getS3FileName())) {
+					if (s3UploadObjectDto.getObjectName().equals(CommonConstants.BUILD_MAIN_PIC)) {
+						building.setBuildingLogoFileName(s3UploadObjectDto.getS3FileName());
 					}
-					
+
 				}
 			}
 
@@ -890,7 +895,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		floor.setFloorName(request.getFloorName());
 		floor.setBuilding(building);
 
-		//floorRepository.save(floor);
+		// floorRepository.save(floor);
 
 		FloorResponse floorResp = new FloorResponse();
 		BeanUtils.copyProperties(floor, floorResp);
@@ -899,12 +904,12 @@ public class SubscriberServiceImpl implements SubscriberService {
 	}
 
 	public ApiResponse<Object> addUnit(UnitRequest request) throws Exception {
-		S3UploadObjectDto s3MainPicDto=null;
-		S3UploadObjectDto s3Pic2Dto=null;
-		S3UploadObjectDto s3Pic3Dto=null;
-		S3UploadObjectDto s3Pic4Dto=null;
-		S3UploadObjectDto s3Pic5Dto=null;
-		List<S3UploadObjectDto> s3UploadObjectDtoList=new ArrayList<>();
+		S3UploadObjectDto s3MainPicDto = null;
+		S3UploadObjectDto s3Pic2Dto = null;
+		S3UploadObjectDto s3Pic3Dto = null;
+		S3UploadObjectDto s3Pic4Dto = null;
+		S3UploadObjectDto s3Pic5Dto = null;
+		List<S3UploadObjectDto> s3UploadObjectDtoList = new ArrayList<>();
 		Optional<UnitType> unitTypeOptional = unitTypeRepository.findById(request.getUnitTypeId());
 		if (!unitTypeOptional.isPresent()) {
 			throw new BusinessException("UnitType not found with id: " + request.getUnitTypeId(), null);
@@ -936,9 +941,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 //		if (!floorOptional.isPresent()) {
 //			throw new BusinessException("Floor not found with id: " + request.getFloorId(), null);
 //		}
-		
-		
-		
+
 		Optional<FloorMaster> floorOptional = floorMasterRepository.findById(request.getFloorName());
 		if (!floorOptional.isPresent()) {
 			throw new BusinessException("FloorName not found: " + request.getFloorName(), null);
@@ -946,39 +949,44 @@ public class SubscriberServiceImpl implements SubscriberService {
 		FloorMaster floor = floorOptional.get();
 
 		if (!ObjectUtils.isEmpty(request.getUnitMainPic1())) {
-			String contentType=CommonUtil.validateAttachment(request.getUnitMainPic1());
-			String fileExt=contentType.substring(contentType.indexOf("/")+1);
-			s3MainPicDto=new S3UploadObjectDto(CommonConstants.UNIT_MAIN_PIC,contentType,fileExt,Base64.getEncoder().encodeToString(request.getUnitMainPic1()),null);
+			String contentType = CommonUtil.validateAttachment(request.getUnitMainPic1());
+			String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+			s3MainPicDto = new S3UploadObjectDto(CommonConstants.UNIT_MAIN_PIC, contentType, fileExt,
+					Base64.getEncoder().encodeToString(request.getUnitMainPic1()), null);
 			s3UploadObjectDtoList.add(s3MainPicDto);
 		}
 		if (!ObjectUtils.isEmpty(request.getUnitPic2())) {
-			String contentType=CommonUtil.validateAttachment(request.getUnitPic2());
-			String fileExt=contentType.substring(contentType.indexOf("/")+1);
-			s3Pic2Dto=new S3UploadObjectDto(CommonConstants.UNIT_PIC2,contentType,fileExt,Base64.getEncoder().encodeToString(request.getUnitPic2()),null);
+			String contentType = CommonUtil.validateAttachment(request.getUnitPic2());
+			String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+			s3Pic2Dto = new S3UploadObjectDto(CommonConstants.UNIT_PIC2, contentType, fileExt,
+					Base64.getEncoder().encodeToString(request.getUnitPic2()), null);
 			s3UploadObjectDtoList.add(s3Pic2Dto);
 		}
 		if (!ObjectUtils.isEmpty(request.getUnitPic3())) {
-			String contentType=CommonUtil.validateAttachment(request.getUnitPic3());
-			String fileExt=contentType.substring(contentType.indexOf("/")+1);
-			s3Pic3Dto=new S3UploadObjectDto(CommonConstants.UNIT_PIC3,contentType,fileExt,Base64.getEncoder().encodeToString(request.getUnitPic3()),null);
+			String contentType = CommonUtil.validateAttachment(request.getUnitPic3());
+			String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+			s3Pic3Dto = new S3UploadObjectDto(CommonConstants.UNIT_PIC3, contentType, fileExt,
+					Base64.getEncoder().encodeToString(request.getUnitPic3()), null);
 			s3UploadObjectDtoList.add(s3Pic3Dto);
 		}
 		if (!ObjectUtils.isEmpty(request.getUnitPic4())) {
-			String contentType=CommonUtil.validateAttachment(request.getUnitPic4());
-			String fileExt=contentType.substring(contentType.indexOf("/")+1);
-			s3Pic4Dto=new S3UploadObjectDto(CommonConstants.UNIT_PIC4,contentType,fileExt,Base64.getEncoder().encodeToString(request.getUnitPic4()),null);
+			String contentType = CommonUtil.validateAttachment(request.getUnitPic4());
+			String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+			s3Pic4Dto = new S3UploadObjectDto(CommonConstants.UNIT_PIC4, contentType, fileExt,
+					Base64.getEncoder().encodeToString(request.getUnitPic4()), null);
 			s3UploadObjectDtoList.add(s3Pic4Dto);
 		}
 		if (!ObjectUtils.isEmpty(request.getUnitPic5())) {
-			String contentType=CommonUtil.validateAttachment(request.getUnitPic5());
-			String fileExt=contentType.substring(contentType.indexOf("/")+1);
-			s3Pic5Dto=new S3UploadObjectDto(CommonConstants.UNIT_PIC5,contentType,fileExt,Base64.getEncoder().encodeToString(request.getUnitPic5()),null);
+			String contentType = CommonUtil.validateAttachment(request.getUnitPic5());
+			String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+			s3Pic5Dto = new S3UploadObjectDto(CommonConstants.UNIT_PIC5, contentType, fileExt,
+					Base64.getEncoder().encodeToString(request.getUnitPic5()), null);
 			s3UploadObjectDtoList.add(s3Pic5Dto);
 		}
 
 		Unit unit = new Unit();
 		unit.setBuilding(building);
-		//unit.setFloor(floor);
+		// unit.setFloor(floor);
 		unit.setFloor(floor);
 		unit.setUnitName(request.getUnitName());
 		unit.setUnitType(unitType);
@@ -995,33 +1003,29 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		unitRepository.save(unit);
 
-	
-
-		
-		S3UploadDto s3UploadDto=new S3UploadDto();
+		S3UploadDto s3UploadDto = new S3UploadDto();
 		s3UploadDto.setSubscriberId(request.getSubscriberId());
 		s3UploadDto.setBuildingId(request.getBuildingId());
 		s3UploadDto.setUnitId(unit.getUnitId());
 		s3UploadDto.setObjectType(S3UploadObjTypeEnum.UNIT.toString());
 		s3UploadDto.setS3UploadObjectDtoList(s3UploadObjectDtoList);
-		
-	
-		List <S3UploadObjectDto> s3UploadObjectDtoListRet = s3Service.upload(s3UploadDto);
-		for(S3UploadObjectDto s3UploadObjectDto:s3UploadObjectDtoListRet) {
-			if(s3UploadObjectDto!=null && StringUtils.isNotBlank(s3UploadObjectDto.getS3FileName())) {
-				if(s3UploadObjectDto.getObjectName().equals(CommonConstants.UNIT_MAIN_PIC)){
-					unit.setUnitMainPic1Name(s3UploadObjectDto.getS3FileName() );
+
+		List<S3UploadObjectDto> s3UploadObjectDtoListRet = s3Service.upload(s3UploadDto);
+		for (S3UploadObjectDto s3UploadObjectDto : s3UploadObjectDtoListRet) {
+			if (s3UploadObjectDto != null && StringUtils.isNotBlank(s3UploadObjectDto.getS3FileName())) {
+				if (s3UploadObjectDto.getObjectName().equals(CommonConstants.UNIT_MAIN_PIC)) {
+					unit.setUnitMainPic1Name(s3UploadObjectDto.getS3FileName());
 				}
-				if(s3UploadObjectDto.getObjectName().equals(CommonConstants.UNIT_PIC2)){
+				if (s3UploadObjectDto.getObjectName().equals(CommonConstants.UNIT_PIC2)) {
 					unit.setUnitPic2Name(s3UploadObjectDto.getS3FileName());
 				}
-				if(s3UploadObjectDto.getObjectName().equals(CommonConstants.UNIT_PIC3)){
+				if (s3UploadObjectDto.getObjectName().equals(CommonConstants.UNIT_PIC3)) {
 					unit.setUnitPic3Name(s3UploadObjectDto.getS3FileName());
 				}
-				if(s3UploadObjectDto.getObjectName().equals(CommonConstants.UNIT_PIC4)){
+				if (s3UploadObjectDto.getObjectName().equals(CommonConstants.UNIT_PIC4)) {
 					unit.setUnitPic4Name(s3UploadObjectDto.getS3FileName());
 				}
-				if(s3UploadObjectDto.getObjectName().equals(CommonConstants.UNIT_PIC5)){
+				if (s3UploadObjectDto.getObjectName().equals(CommonConstants.UNIT_PIC5)) {
 					unit.setUnitPic5Name(s3UploadObjectDto.getS3FileName());
 				}
 			}
@@ -1032,10 +1036,12 @@ public class SubscriberServiceImpl implements SubscriberService {
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, unitResp, null, null);
 	}
 
+	@SuppressWarnings("unchecked")
 	public ApiResponse<Object> createUserAndMergeTenant(CreateUserRequest request) throws Exception {
 		User existingUser = null;
 		User user = null;
 		boolean existingTenant = false;
+		@SuppressWarnings("unused")
 		boolean existingSubscriber = false;
 		NotificationEmailResponseDTO resp = null;
 		Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
@@ -1145,6 +1151,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		}
 
 		if (resp != null && resp.isEmailSent()) {
+			@SuppressWarnings("rawtypes")
 			GenericResponse gr = new GenericResponse();
 			gr.setId(tenant.getTenantId());
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, gr, null, null);
@@ -1368,6 +1375,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	}
 
+	@SuppressWarnings("unused")
 	@Override
 	public ApiResponse<Object> addDepartment(@Valid DepartmentRequest request) {
 
@@ -1489,8 +1497,10 @@ public class SubscriberServiceImpl implements SubscriberService {
 			BuildingDetailDTO bt = new BuildingDetailDTO();
 			BeanUtils.copyProperties(b, bt);
 			if (StringUtils.isNotBlank(b.getBuildingLogoFileName())) {
-				//dto.setUnitMainPic1Link(s3Service.generatePresignedUrl(unit.getUnitId(), unit.getUnitMainPic1Name()));
-				bt.setBuildingLogoLink(s3Service.generatePresignedUrl(subscriberId,b.getBuildingId() ,null,b.getBuildingLogoFileName() ));
+				// dto.setUnitMainPic1Link(s3Service.generatePresignedUrl(unit.getUnitId(),
+				// unit.getUnitMainPic1Name()));
+				bt.setBuildingLogoLink(s3Service.generatePresignedUrl(subscriberId, b.getBuildingId(), null,
+						b.getBuildingLogoFileName()));
 			}
 			if (b.getCommunity() != null) {
 				Community ct = b.getCommunity();
@@ -1560,7 +1570,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			if (unit.getUnitStatus() != null)
 				dto.setUnitStatusId(unit.getUnitStatus().getUnitStatusId());
 
-			if (unit.getUnitStatus() != null && unit.getUnitStatus().getUnitStatusId() == 2) { //Occupied
+			if (unit.getUnitStatus() != null && unit.getUnitStatus().getUnitStatusId() == 2) { // Occupied
 				Optional<TenantUnit> tenantUnitOptional = tenantUnitRepository.findByUnitAndActiveTrue(unit);
 				if (tenantUnitOptional.isPresent()) {
 					TenantUnit tenantUnit = tenantUnitOptional.get();
@@ -1570,31 +1580,36 @@ public class SubscriberServiceImpl implements SubscriberService {
 					dto.setTenantDetails(tenantDetail);
 				}
 			}
-			
+
 			if (StringUtils.isNotBlank(unit.getUnitMainPic1Name())) {
-				S3DownloadDto s3DownloadDto =new S3DownloadDto(subscriberId,buildingId,unit.getUnitId(),unit.getUnitMainPic1Name());
+				S3DownloadDto s3DownloadDto = new S3DownloadDto(subscriberId, buildingId, unit.getUnitId(),
+						unit.getUnitMainPic1Name());
 				s3Service.generatePresignedUrl(s3DownloadDto);
-				
+
 			}
 			if (StringUtils.isNotBlank(unit.getUnitPic2Name())) {
-				S3DownloadDto s3DownloadDto =new S3DownloadDto(subscriberId,buildingId,unit.getUnitId(),unit.getUnitPic2Name());
+				S3DownloadDto s3DownloadDto = new S3DownloadDto(subscriberId, buildingId, unit.getUnitId(),
+						unit.getUnitPic2Name());
 				s3Service.generatePresignedUrl(s3DownloadDto);
-				
+
 			}
 			if (StringUtils.isNotBlank(unit.getUnitPic3Name())) {
-				S3DownloadDto s3DownloadDto =new S3DownloadDto(subscriberId,buildingId,unit.getUnitId(),unit.getUnitPic3Name());
+				S3DownloadDto s3DownloadDto = new S3DownloadDto(subscriberId, buildingId, unit.getUnitId(),
+						unit.getUnitPic3Name());
 				s3Service.generatePresignedUrl(s3DownloadDto);
-				
+
 			}
 			if (StringUtils.isNotBlank(unit.getUnitPic4Name())) {
-				S3DownloadDto s3DownloadDto =new S3DownloadDto(subscriberId,buildingId,unit.getUnitId(),unit.getUnitPic4Name());
+				S3DownloadDto s3DownloadDto = new S3DownloadDto(subscriberId, buildingId, unit.getUnitId(),
+						unit.getUnitPic4Name());
 				s3Service.generatePresignedUrl(s3DownloadDto);
-				
+
 			}
 			if (StringUtils.isNotBlank(unit.getUnitPic5Name())) {
-				S3DownloadDto s3DownloadDto =new S3DownloadDto(subscriberId,buildingId,unit.getUnitId(),unit.getUnitPic5Name());
+				S3DownloadDto s3DownloadDto = new S3DownloadDto(subscriberId, buildingId, unit.getUnitId(),
+						unit.getUnitPic5Name());
 				s3Service.generatePresignedUrl(s3DownloadDto);
-			
+
 			}
 
 			return dto;
@@ -1641,24 +1656,40 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	public ApiResponse<?> deleteBuilding(DeleteBuildingRequest request) {
 		try {
-			//Do validatation-> buildingid assosiated with this subscriber
-			
-			List <Unit> units=unitRepository.getAllUnitsByBuildingId(request.getBuildingId());
-			List<Integer> unitids=null;
-			if(units!=null && !units.isEmpty()) {
-				 unitids = units
-		            .stream()
-		            .map(Unit::getUnitId)
-		            .collect(Collectors.toList());
-			}
-			
-			if (unitRepository.existsByBuildingBuildingId(request.getBuildingId())) {
-				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
-						"Cannot delete building because it has associated units.Unit ids="+unitids, null, null);
+			Building building = buildingRepository.findById(request.getBuildingId()).orElseThrow(
+					() -> new ResourceNotFoundException("Building not found with id: " + request.getBuildingId()));
+
+			if (building.getIsDeleted()) {
+				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Building is already marked as deleted.", null,
+						null);
 			}
 
-			buildingRepository.deleteById(request.getBuildingId());
-			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Building successfully deleted", null, null);
+			List<Floor> floors = floorRepository.findByBuildingBuildingId(request.getBuildingId());
+			if (!floors.isEmpty()) {
+				List<Integer> floorIds = floors.stream().map(Floor::getFloorId).collect(Collectors.toList());
+				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
+						"Cannot delete building because it has associated floors. Floor ids=" + floorIds, null, null);
+			}
+
+			List<Parking> parkingList = parkingRepository.findByBuildingBuildingId(request.getBuildingId());
+			if (!parkingList.isEmpty()) {
+				List<Integer> parkingIds = parkingList.stream().map(Parking::getParkingId).collect(Collectors.toList());
+				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
+						"Cannot delete building because it has associated parking. Parking ids=" + parkingIds, null,
+						null);
+			}
+
+			List<Unit> units = unitRepository.findByBuildingBuildingId(request.getBuildingId());
+			if (!units.isEmpty()) {
+				List<Integer> unitIds = units.stream().map(Unit::getUnitId).collect(Collectors.toList());
+				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
+						"Cannot delete building because it has associated units. Unit ids=" + unitIds, null, null);
+			}
+
+			building.setIsDeleted(true);
+			buildingRepository.save(building);
+
+			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Building successfully marked as deleted", null, null);
 		} catch (Exception e) {
 			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to delete building: " + e.getMessage(), null,
 					null);
@@ -1667,30 +1698,92 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	public ApiResponse<?> deleteUnit(DeleteUnitRequest request) {
 		try {
-			
-			//Do validatation-> buildingid & unit id assosiated with this subscriber
-			
-			
-			Optional <TenantUnit> tuop=tenantUnitRepository.findTenantsByUnitId(request.getBuildingId(),request.getUnitId(),request.getSubscriberId());
-			if (tuop.isPresent()) {
-				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
-					"Cannot delete unit because it has associated tenant id="+tuop.get().getTenant().getTenantId(), null, null);
+			Unit unit = unitRepository.findById(request.getUnitId())
+					.orElseThrow(() -> new ResourceNotFoundException("Unit not found with id: " + request.getUnitId()));
+
+			if (unit.getIsDeleted()) {
+				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Unit is already marked as deleted.", null, null);
 			}
 
-			unitRepository.deleteById(request.getUnitId());
-			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Unit successfully deleted", null, null);
+			List<TenantUnit> tenantUnits = tenantUnitRepository.findByUnitUnitId(request.getUnitId());
+			if (!tenantUnits.isEmpty()) {
+				List<Integer> tenantUnitIds = tenantUnits.stream().map(TenantUnit::getTenantUnitId)
+						.collect(Collectors.toList());
+				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
+						"Cannot delete unit because it has associated tenant units. Tenant Unit ids=" + tenantUnitIds,
+						null, null);
+			}
+
+			List<UnitKeys> unitKeys = unitKeysRepository.findByUnitUnitId(request.getUnitId());
+			if (!unitKeys.isEmpty()) {
+				List<Integer> unitKeysIds = unitKeys.stream().map(UnitKeys::getUnitKeysId).collect(Collectors.toList());
+				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
+						"Cannot delete unit because it has associated unit keys. Unit Keys ids=" + unitKeysIds, null,
+						null);
+			}
+
+			List<UnitReserveDetails> unitReserveDetails = unitReserveDetailsRepository
+					.findByUnitUnitId(request.getUnitId());
+			if (!unitReserveDetails.isEmpty()) {
+				List<Integer> unitReserveIds = unitReserveDetails.stream().map(UnitReserveDetails::getUnitReserveId)
+						.collect(Collectors.toList());
+				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
+						"Cannot delete unit because it has associated unit reserve details. Unit Reserve ids="
+								+ unitReserveIds,
+						null, null);
+			}
+
+			unit.setIsDeleted(true);
+			unitRepository.save(unit);
+
+			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Unit successfully marked as deleted", null, null);
 		} catch (Exception e) {
 			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to delete unit: " + e.getMessage(), null,
 					null);
 		}
 	}
 
-	public ApiResponse<?> deleteTenant(Integer subscriberId, Integer tenantId) {
+	public ApiResponse<?> deleteTenant(TenantIdRequest request) {
 		try {
-			//Do TO Validation on any payment pending
-			
-			tenantRepository.deleteById(tenantId);
-			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Tenant successfully deleted", null, null);
+			Tenant tenant = tenantRepository.findById(request.getTenantId()).orElseThrow(
+					() -> new ResourceNotFoundException("Tenant not found with id: " + request.getTenantId()));
+
+			if (tenant.getIsDeleted()) {
+				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Tenant is already marked as deleted.", null,
+						null);
+			}
+
+			List<TenantUnit> tenantUnits = tenantUnitRepository.findByTenantTenantId(request.getTenantId());
+			if (!tenantUnits.isEmpty()) {
+				List<Integer> tenantUnitIds = tenantUnits.stream().map(TenantUnit::getTenantUnitId)
+						.collect(Collectors.toList());
+				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
+						"Cannot delete tenant because it has associated tenant units. Tenant Unit ids=" + tenantUnitIds,
+						null, null);
+			}
+
+			List<Order> orders = orderRepository.findByTenantTenantId(request.getTenantId());
+			if (!orders.isEmpty()) {
+				List<Integer> orderIds = orders.stream().map(Order::getOrderId).collect(Collectors.toList());
+				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
+						"Cannot delete tenant because it has associated orders. Order ids=" + orderIds, null, null);
+			}
+
+			List<TenureDetails> tenureDetails = tenureDetailsRepository
+					.findByTenantUnitTenantTenantId(request.getTenantId());
+			if (!tenureDetails.isEmpty()) {
+				List<Integer> tenureDetailIds = tenureDetails.stream().map(TenureDetails::getTenantTenureId)
+						.collect(Collectors.toList());
+				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
+						"Cannot delete tenant because it has associated tenure details. Tenure Detail ids="
+								+ tenureDetailIds,
+						null, null);
+			}
+
+			tenant.setIsDeleted(true);
+			tenantRepository.save(tenant);
+
+			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Tenant successfully marked as deleted", null, null);
 		} catch (Exception e) {
 			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to delete tenant: " + e.getMessage(), null,
 					null);
@@ -1771,12 +1864,12 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	@Override
 	public ApiResponse<?> getAllFloors() {
-		List <FloorMaster> floors= floorMasterRepository.findAll();
+		List<FloorMaster> floors = floorMasterRepository.findAll();
 		if (floors.isEmpty()) {
 			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
 		}
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, floors, null, null);
-		
+
 	}
 
 }

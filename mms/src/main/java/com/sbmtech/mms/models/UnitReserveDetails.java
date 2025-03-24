@@ -70,7 +70,4 @@ public class UnitReserveDetails implements Serializable {
 	@Column(name = "updated_by")
 	private Integer updatedBy;
 
-	
-	
-
 }

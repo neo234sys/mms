@@ -1,5 +1,6 @@
 package com.sbmtech.mms.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -22,14 +23,17 @@ public interface TenantUnitRepository extends JpaRepository<TenantUnit, Integer>
 
 	@Query("SELECT tu FROM TenantUnit tu JOIN tu.unit u WHERE u.building.buildingId = :buildingId")
 	Page<TenantUnit> findTenantsByBuildingIdWithPagination(@Param("buildingId") Integer buildingId, Pageable pageable);
-	
-	
+
 	@Query("SELECT tu FROM TenantUnit tu WHERE tu.unit = :unit AND tu.active = true")
-    Optional<TenantUnit> findByUnitAndActiveTrue(@Param("unit") Unit unit);
-	
+	Optional<TenantUnit> findByUnitAndActiveTrue(@Param("unit") Unit unit);
+
 	@Query("SELECT tu FROM TenantUnit tu JOIN tu.unit u WHERE u.building.buildingId = :buildingId and u.unitId= :unitId "
 			+ " and  u.building.subscriber.subscriberId= :subscriberId ")
-	Optional<TenantUnit> findTenantsByUnitId(@Param("buildingId") Integer buildingId,@Param("unitId") Integer unitId,
+	Optional<TenantUnit> findTenantsByUnitId(@Param("buildingId") Integer buildingId, @Param("unitId") Integer unitId,
 			@Param("subscriberId") Integer subscriberId);
+
+	List<TenantUnit> findByTenantTenantId(Integer tenantId);
+
+	List<TenantUnit> findByUnitUnitId(Integer unitId);
 
 }

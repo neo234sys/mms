@@ -10,7 +10,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -35,10 +34,6 @@ public class Building implements Serializable {
 	@Column(name = "address")
 	private String address;
 
-//	@Lob
-//	@Column(name = "building_logo")
-//	private byte[] buildingLogo;
-	
 	private String buildingLogoFileName;
 
 	@Column(name = "has_gym")
@@ -56,7 +51,7 @@ public class Building implements Serializable {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "community_id")
 	private Community community;
-	
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "area_id")
 	private Area area;
@@ -64,17 +59,16 @@ public class Building implements Serializable {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "subscriber_id")
 	private Subscriber subscriber;
-	
-	
+
 	@Column(name = "no_of_floors")
 	private Integer noOfFloors;
-	
+
 	@Column(name = "no_of_units")
 	private Integer noOfUnits;
-	
+
 	@Column(name = "latitude")
 	private String latitude;
-	
+
 	@Column(name = "longitude")
 	private String longitude;
 
@@ -82,6 +76,9 @@ public class Building implements Serializable {
 	@Temporal(TemporalType.TIMESTAMP)
 	@CreatedDate
 	private Date createdAt;
+
+	@Column(name = "is_deleted", nullable = false)
+	private Boolean isDeleted = false;
 
 	public Integer getBuildingId() {
 		return buildingId;
@@ -107,13 +104,13 @@ public class Building implements Serializable {
 		this.address = address;
 	}
 
-//	public byte[] getBuildingLogo() {
-//		return buildingLogo;
-//	}
-//
-//	public void setBuildingLogo(byte[] buildingLogo) {
-//		this.buildingLogo = buildingLogo;
-//	}
+	public String getBuildingLogoFileName() {
+		return buildingLogoFileName;
+	}
+
+	public void setBuildingLogoFileName(String buildingLogoFileName) {
+		this.buildingLogoFileName = buildingLogoFileName;
+	}
 
 	public Boolean getHasGym() {
 		return hasGym;
@@ -155,28 +152,20 @@ public class Building implements Serializable {
 		this.community = community;
 	}
 
-	public Subscriber getSubscriber() {
-		return subscriber;
-	}
-
-	public void setSubscriber(Subscriber subscriber) {
-		this.subscriber = subscriber;
-	}
-
-	public Date getCreatedAt() {
-		return createdAt;
-	}
-
-	public void setCreatedAt(Date createdAt) {
-		this.createdAt = createdAt;
-	}
-
 	public Area getArea() {
 		return area;
 	}
 
 	public void setArea(Area area) {
 		this.area = area;
+	}
+
+	public Subscriber getSubscriber() {
+		return subscriber;
+	}
+
+	public void setSubscriber(Subscriber subscriber) {
+		this.subscriber = subscriber;
 	}
 
 	public Integer getNoOfFloors() {
@@ -211,14 +200,34 @@ public class Building implements Serializable {
 		this.longitude = longitude;
 	}
 
-	public String getBuildingLogoFileName() {
-		return buildingLogoFileName;
+	public Date getCreatedAt() {
+		return createdAt;
 	}
 
-	public void setBuildingLogoFileName(String buildingLogoFileName) {
-		this.buildingLogoFileName = buildingLogoFileName;
+	public void setCreatedAt(Date createdAt) {
+		this.createdAt = createdAt;
 	}
 
-	
+	public Boolean getIsDeleted() {
+		return isDeleted;
+	}
+
+	public void setIsDeleted(Boolean isDeleted) {
+		this.isDeleted = isDeleted;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
+
+	@Override
+	public String toString() {
+		return "Building [buildingId=" + buildingId + ", buildingName=" + buildingName + ", address=" + address
+				+ ", buildingLogoFileName=" + buildingLogoFileName + ", hasGym=" + hasGym + ", hasSwimpool="
+				+ hasSwimpool + ", hasKidsPlayground=" + hasKidsPlayground + ", hasPlaycourt=" + hasPlaycourt
+				+ ", community=" + community + ", area=" + area + ", subscriber=" + subscriber + ", noOfFloors="
+				+ noOfFloors + ", noOfUnits=" + noOfUnits + ", latitude=" + latitude + ", longitude=" + longitude
+				+ ", createdAt=" + createdAt + ", isDeleted=" + isDeleted + "]";
+	}
 
 }

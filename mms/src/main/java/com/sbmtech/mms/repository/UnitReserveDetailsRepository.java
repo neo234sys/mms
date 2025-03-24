@@ -14,4 +14,6 @@ public interface UnitReserveDetailsRepository extends JpaRepository<UnitReserveD
 	@Query("SELECT urd FROM UnitReserveDetails urd WHERE urd.reserveEndDate < CURRENT_TIMESTAMP AND urd.unit.unitStatus.unitStatusName = 'RESERVED'")
 	List<UnitReserveDetails> findReservedUnitsWithPastReserveEndDate();
 
+	List<UnitReserveDetails> findByUnitUnitId(Integer unitId);
+
 }

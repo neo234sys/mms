@@ -29,6 +29,7 @@ import com.sbmtech.mms.payload.request.ReserveUnitRequest;
 import com.sbmtech.mms.payload.request.SubscriberRequest;
 import com.sbmtech.mms.payload.request.SubscriptionPaymentRequest;
 import com.sbmtech.mms.payload.request.SubscriptionRequest;
+import com.sbmtech.mms.payload.request.TenantIdRequest;
 import com.sbmtech.mms.payload.request.TenantUnitRequest;
 import com.sbmtech.mms.payload.request.TenantUpdateRequest;
 import com.sbmtech.mms.payload.request.UnitKeysRequest;
@@ -102,7 +103,7 @@ public interface SubscriberService {
 
 	public ApiResponse<?> deleteUnit(DeleteUnitRequest request);
 
-	public ApiResponse<?> deleteTenant(Integer subscriberId, Integer tenantId);
+	public ApiResponse<?> deleteTenant(TenantIdRequest request);
 
 	public ApiResponse<?> updateBuilding(Integer subscriberId, BuildingUpdateRequest request);
 
