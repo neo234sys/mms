@@ -1464,24 +1464,46 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 			newUser.setNationality(nationality);
 			userRepository.save(newUser);
+			
+			if(unitReservePaymentOption) {
+				//create Order
+			}else {
+				unit.setUnitStatus(unitStatusRepository.findByUnitStatusName(UnitStatusEnum.RESERVED.toString()));
+				unitRepository.save(unit);
 
-			unit.setUnitStatus(unitStatusRepository.findByUnitStatusName(UnitStatusEnum.RESERVED.toString()));
-			unitRepository.save(unit);
-
-			UnitReserveDetails reserveDetails = new UnitReserveDetails();
-			reserveDetails.setUnit(unit);
-			reserveDetails.setUser(newUser);
-			reserveDetails.setReserveStartDate(new Date());
-			reserveDetails.setReserveEndDate(reserveEndDate);
-			reserveDetails.setPaymentRequired((unitReservePaymentOption) ? 1 : 0);
-			unitReserveDetailsRepository.save(reserveDetails);
-
-			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Unit successfully reserved", null, null);
+				UnitReserveDetails reserveDetails = new UnitReserveDetails();
+				reserveDetails.setUnit(unit);
+				reserveDetails.setUser(newUser);
+				reserveDetails.setReserveStartDate(new Date());
+				reserveDetails.setReserveEndDate(reserveEndDate);
+				reserveDetails.setPaymentRequired((unitReservePaymentOption) ? 1 : 0);
+				UnitReserveDetails reserveDet= unitReserveDetailsRepository.save(reserveDetails);
+				if(reserveDet!=null && reserveDet.getUnitReserveId()!=null) {
+					NotifEmailDTO dto = new NotifEmailDTO();
+					dto.setEmailTo(request.getEmail());
+					dto.setCustomerName(request.getEmail());
+					dto.setBuildingId(CommonUtil.getStringValofObject(unit.getBuilding().getBuildingId()));
+					dto.setBuildingName(unit.getBuilding().getBuildingName());
+					dto.setUnitId(CommonUtil.getStringValofObject(unit.getUnitId()));
+					dto.setUnitName(unit.getUnitName());
+					dto.setReserveFromDate(CommonUtil.getStringDatefromDate(new Date()));
+					dto.setReserveToDate(CommonUtil.getStringDatefromDate(reserveEndDate));;
+					
+					NotificationEmailResponseDTO notifResp=notificationService.sendUnitReservationEmail(null);
+					if(notifResp!=null && notifResp.isEmailSent()) {
+						return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Unit successfully reserved", null, null);
+					}
+				}
+				
+				//return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Unit successfully reserved", null, null);
+			}
 
 		} catch (Exception e) {
 			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to reserve unit: " + e.getMessage(), null,
 					null);
 		}
+		return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to reserve unit: ", null,
+				null);
 	}
 
 	@SuppressWarnings("rawtypes")

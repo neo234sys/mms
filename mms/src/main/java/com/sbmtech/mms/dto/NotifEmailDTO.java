@@ -24,6 +24,13 @@ public class NotifEmailDTO {
 	private String msg2;
 	private String msg3;
 	
+	private String buildingId;
+	private String unitId;
+	private String buildingName;
+	private String unitName;
+	private String reserveFromDate;
+	private String reserveToDate;
+	
 	private List<MultipleAttachmentsEmailDTO> multipleAttachmentsEmailDTO;
 	
 	private List<EmailAttachmentDTO> multipleAttachList;
@@ -148,6 +155,42 @@ public class NotifEmailDTO {
 	}
 	public void setMsg3(String msg3) {
 		this.msg3 = msg3;
+	}
+	public String getReserveFromDate() {
+		return reserveFromDate;
+	}
+	public void setReserveFromDate(String reserveFromDate) {
+		this.reserveFromDate = reserveFromDate;
+	}
+	public String getReserveToDate() {
+		return reserveToDate;
+	}
+	public void setReserveToDate(String reserveToDate) {
+		this.reserveToDate = reserveToDate;
+	}
+	public String getBuildingId() {
+		return buildingId;
+	}
+	public void setBuildingId(String buildingId) {
+		this.buildingId = buildingId;
+	}
+	public String getUnitId() {
+		return unitId;
+	}
+	public void setUnitId(String unitId) {
+		this.unitId = unitId;
+	}
+	public String getBuildingName() {
+		return buildingName;
+	}
+	public void setBuildingName(String buildingName) {
+		this.buildingName = buildingName;
+	}
+	public String getUnitName() {
+		return unitName;
+	}
+	public void setUnitName(String unitName) {
+		this.unitName = unitName;
 	}
 	
 	

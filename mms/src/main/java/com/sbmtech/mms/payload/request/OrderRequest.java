@@ -1,13 +1,6 @@
 package com.sbmtech.mms.payload.request;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-
 import com.sbmtech.mms.validator.ValidChannelId;
-import com.sbmtech.mms.validator.ValidCurrentAndFutureDate;
-import com.sbmtech.mms.validator.ValidDateDDMMYYYY;
-import com.sbmtech.mms.validator.ValidFutureDate;
-import com.sbmtech.mms.validator.ValidPlanId;
 import com.sbmtech.mms.validator.ValidSubscriberlId;
 
 import lombok.Getter;
@@ -17,7 +10,7 @@ import lombok.Setter;
 @Getter
 public class OrderRequest {
 
-	//@ValidPlanId
+
 	private Long userId;
 	
 	private Integer tenantId;

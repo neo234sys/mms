@@ -8,5 +8,6 @@ public interface NotificationService {
 	public NotificationEmailResponseDTO sendAcctActivationEmail(NotifEmailDTO dto)throws Exception;
 	public NotificationEmailResponseDTO sendTenentAccountCreationEmail(NotifEmailDTO dto) throws Exception ;
 	public NotificationEmailResponseDTO sendTenentAccountCreationEmailExistingUser(NotifEmailDTO dto) throws Exception ;
+	public NotificationEmailResponseDTO sendUnitReservationEmail(NotifEmailDTO dto) throws Exception ;
 	
 }

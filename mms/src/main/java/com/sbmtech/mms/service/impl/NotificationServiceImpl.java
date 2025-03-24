@@ -1,5 +1,6 @@
 package com.sbmtech.mms.service.impl;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -108,6 +109,25 @@ public class NotificationServiceImpl implements NotificationService {
 		
 		
 		isEmailSent =emailService.sendEmailWithMultiAttachments(emailSenderDTO);
+		
+		emailResponseDTO.setEmailSent(isEmailSent);
+		emailResponseDTO.setEmail(emailSenderDTO.getEmailTo());
+		
+		return emailResponseDTO;
+	}
+
+	@Override
+	public NotificationEmailResponseDTO sendUnitReservationEmail(NotifEmailDTO dto) throws Exception {
+		NotificationEmailResponseDTO emailResponseDTO = new NotificationEmailResponseDTO();
+		NotifEmailDTO emailSenderDTO = new NotifEmailDTO();
+		boolean isEmailSent = false;
+		
+		BeanUtils.copyProperties(dto, emailSenderDTO);
+		emailSenderDTO.setEmailBody(util.prepareReserveUnitEmail(dto));
+		emailSenderDTO.setSubject(util.getReserveUnitNotifEmailSubject());
+
+		isEmailSent =emailService.sendEmailWithMultiAttachments(emailSenderDTO);
+		
 		
 		emailResponseDTO.setEmailSent(isEmailSent);
 		emailResponseDTO.setEmail(emailSenderDTO.getEmailTo());
