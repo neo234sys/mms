@@ -1462,11 +1462,21 @@ public class SubscriberServiceImpl implements SubscriberService {
 			Countries nationality = countriesRepository.findById(request.getNationalityId()).orElse(null);
 
 			newUser.setNationality(nationality);
-			userRepository.save(newUser);
+			Optional <User> existingUser=userRepository.findByEmail(request.getEmail());
+			if(existingUser.isPresent()) {
+				logger.info("reserveUnit existing user="+newUser.getEmail());
+				newUser = existingUser.get();
+			}else {
+				logger.info("reserveUnit new user="+newUser.getEmail());
+				userRepository.save(newUser);
+			}
 
-			if (unitReservePaymentOption) {
-				// create Order
-			} else {
+			
+			
+			if(unitReservePaymentOption) {
+				//create Order todo
+				
+			}else {
 				unit.setUnitStatus(unitStatusRepository.findByUnitStatusName(UnitStatusEnum.RESERVED.toString()));
 				unitRepository.save(unit);
 
@@ -1486,24 +1496,21 @@ public class SubscriberServiceImpl implements SubscriberService {
 					dto.setUnitId(CommonUtil.getStringValofObject(unit.getUnitId()));
 					dto.setUnitName(unit.getUnitName());
 					dto.setReserveFromDate(CommonUtil.getStringDatefromDate(new Date()));
-					dto.setReserveToDate(CommonUtil.getStringDatefromDate(reserveEndDate));
-					;
-
-					NotificationEmailResponseDTO notifResp = notificationService.sendUnitReservationEmail(null);
-					if (notifResp != null && notifResp.isEmailSent()) {
+					dto.setReserveToDate(CommonUtil.getStringDatefromDate(reserveEndDate));;
+					
+					NotificationEmailResponseDTO notifResp=notificationService.sendUnitReservationEmail(dto);
+					if(notifResp!=null && notifResp.isEmailSent()) {
+						logger.info("reserveUnit email successfully sent to user{}, reserveDet={}"+newUser.getEmail(),reserveDet);
 						return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Unit successfully reserved", null, null);
 					}
 				}
-
-				// return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Unit successfully
-				// reserved", null, null);
 			}
 
 		} catch (Exception e) {
-			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to reserve unit: " + e.getMessage(), null,
-					null);
+			throw new BusinessException("Failed to reserve unit", null);
 		}
-		return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to reserve unit: ", null, null);
+		return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to reserve unit: ", null,
+				null);
 	}
 
 	@SuppressWarnings("rawtypes")

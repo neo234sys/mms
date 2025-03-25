@@ -70,4 +70,13 @@ public class UnitReserveDetails implements Serializable {
 	@Column(name = "updated_by")
 	private Integer updatedBy;
 
+	@Override
+	public String toString() {
+		return "UnitReserveDetails [unitReserveId=" + unitReserveId + ", unit=" + unit + ", user=" + user
+				+ ", reserveStartDate=" + reserveStartDate + ", reserveEndDate=" + reserveEndDate + ", paymentRequired="
+				+ paymentRequired + "]";
+	}
+	
+	
+
 }

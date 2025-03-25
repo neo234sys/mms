@@ -18,12 +18,12 @@
     <th>Reserve To Date</th>
   </tr>
   <tr>
-    <td>${buildingId}</td>
-    <td>${buildingName}</td>
-    <td>${unitId}</td>
-    <td>${unitName}</td>
-    <td>${reserveFromDate}</td>
-    <td>${reserveToDate}</td>
+    <td>$dataHolderDTO.buildingId</td>
+    <td>$dataHolderDTO.buildingName</td>
+    <td>$dataHolderDTO.unitId</td>
+    <td>$dataHolderDTO.unitName</td>
+    <td>$dataHolderDTO.reserveFromDate</td>
+    <td>$dataHolderDTO.reserveToDate</td>
   </tr>
   
 </table>
