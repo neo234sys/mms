@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.validation.Valid;
 
@@ -1464,10 +1463,10 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 			newUser.setNationality(nationality);
 			userRepository.save(newUser);
-			
-			if(unitReservePaymentOption) {
-				//create Order
-			}else {
+
+			if (unitReservePaymentOption) {
+				// create Order
+			} else {
 				unit.setUnitStatus(unitStatusRepository.findByUnitStatusName(UnitStatusEnum.RESERVED.toString()));
 				unitRepository.save(unit);
 
@@ -1477,8 +1476,8 @@ public class SubscriberServiceImpl implements SubscriberService {
 				reserveDetails.setReserveStartDate(new Date());
 				reserveDetails.setReserveEndDate(reserveEndDate);
 				reserveDetails.setPaymentRequired((unitReservePaymentOption) ? 1 : 0);
-				UnitReserveDetails reserveDet= unitReserveDetailsRepository.save(reserveDetails);
-				if(reserveDet!=null && reserveDet.getUnitReserveId()!=null) {
+				UnitReserveDetails reserveDet = unitReserveDetailsRepository.save(reserveDetails);
+				if (reserveDet != null && reserveDet.getUnitReserveId() != null) {
 					NotifEmailDTO dto = new NotifEmailDTO();
 					dto.setEmailTo(request.getEmail());
 					dto.setCustomerName(request.getEmail());
@@ -1487,23 +1486,24 @@ public class SubscriberServiceImpl implements SubscriberService {
 					dto.setUnitId(CommonUtil.getStringValofObject(unit.getUnitId()));
 					dto.setUnitName(unit.getUnitName());
 					dto.setReserveFromDate(CommonUtil.getStringDatefromDate(new Date()));
-					dto.setReserveToDate(CommonUtil.getStringDatefromDate(reserveEndDate));;
-					
-					NotificationEmailResponseDTO notifResp=notificationService.sendUnitReservationEmail(null);
-					if(notifResp!=null && notifResp.isEmailSent()) {
+					dto.setReserveToDate(CommonUtil.getStringDatefromDate(reserveEndDate));
+					;
+
+					NotificationEmailResponseDTO notifResp = notificationService.sendUnitReservationEmail(null);
+					if (notifResp != null && notifResp.isEmailSent()) {
 						return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Unit successfully reserved", null, null);
 					}
 				}
-				
-				//return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Unit successfully reserved", null, null);
+
+				// return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Unit successfully
+				// reserved", null, null);
 			}
 
 		} catch (Exception e) {
 			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to reserve unit: " + e.getMessage(), null,
 					null);
 		}
-		return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to reserve unit: ", null,
-				null);
+		return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to reserve unit: ", null, null);
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -1582,16 +1582,28 @@ public class SubscriberServiceImpl implements SubscriberService {
 				UnitDetailResponse dto = new UnitDetailResponse();
 				BeanUtils.copyProperties(unit, dto);
 
-				if (unit.getBuilding() != null)
+				if (unit.getBuilding() != null) {
 					dto.setBuildingId(unit.getBuilding().getBuildingId());
-				if (unit.getFloor() != null)
+				}
+
+				if (unit.getFloor() != null) {
 					dto.setFloor(unit.getFloor().getFloorName());
-				if (unit.getUnitType() != null)
+				}
+
+				if (unit.getUnitType() != null) {
 					dto.setUnitTypeId(unit.getUnitType().getUnitTypeId());
-				if (unit.getUnitSubType() != null)
+					dto.setUnitTypeName(unit.getUnitType().getUnitTypeName());
+				}
+
+				if (unit.getUnitSubType() != null) {
 					dto.setUnitSubTypeId(unit.getUnitSubType().getUnitSubtypeId());
-				if (unit.getUnitStatus() != null)
+					dto.setUnitSubTypeName(unit.getUnitSubType().getUnitSubtypeName());
+				}
+
+				if (unit.getUnitStatus() != null) {
 					dto.setUnitStatusId(unit.getUnitStatus().getUnitStatusId());
+					dto.setUnitStatusName(unit.getUnitStatus().getUnitStatusName());
+				}
 
 				if (unit.getUnitStatus() != null && unit.getUnitStatus().getUnitStatusId() == 2) {
 					tenantUnitRepository.findByUnitAndActiveTrue(unit).ifPresent(tenantUnit -> {
@@ -1601,37 +1613,27 @@ public class SubscriberServiceImpl implements SubscriberService {
 					});
 				}
 
-//				Stream.of(unit.getUnitMainPic1Name(), unit.getUnitPic2Name(), unit.getUnitPic3Name(),
-//						unit.getUnitPic4Name(), unit.getUnitPic5Name()).filter(StringUtils::isNotBlank)
-//						.forEach(imageName -> {
-//							S3DownloadDto s3DownloadDto = new S3DownloadDto(subscriberId, buildingId, unit.getUnitId(),
-//									imageName);
-//							@SuppressWarnings("unused")
-//							String url = s3Service.generatePresignedUrl(s3DownloadDto);
-//							
-//						});
-				
-				if(StringUtils.isNotBlank(unit.getUnitMainPic1Name())) {
+				if (StringUtils.isNotBlank(unit.getUnitMainPic1Name())) {
 					S3DownloadDto s3DownloadDto = new S3DownloadDto(subscriberId, buildingId, unit.getUnitId(),
 							unit.getUnitMainPic1Name());
 					dto.setUnitMainPic1Link(s3Service.generatePresignedUrl(s3DownloadDto));
 				}
-				if(StringUtils.isNotBlank(unit.getUnitPic2Name())) {
+				if (StringUtils.isNotBlank(unit.getUnitPic2Name())) {
 					S3DownloadDto s3DownloadDto = new S3DownloadDto(subscriberId, buildingId, unit.getUnitId(),
 							unit.getUnitPic2Name());
 					dto.setUnitPic2Link(s3Service.generatePresignedUrl(s3DownloadDto));
 				}
-				if(StringUtils.isNotBlank(unit.getUnitPic3Name())) {
+				if (StringUtils.isNotBlank(unit.getUnitPic3Name())) {
 					S3DownloadDto s3DownloadDto = new S3DownloadDto(subscriberId, buildingId, unit.getUnitId(),
 							unit.getUnitPic3Name());
 					dto.setUnitPic3Link(s3Service.generatePresignedUrl(s3DownloadDto));
 				}
-				if(StringUtils.isNotBlank(unit.getUnitPic4Name())) {
+				if (StringUtils.isNotBlank(unit.getUnitPic4Name())) {
 					S3DownloadDto s3DownloadDto = new S3DownloadDto(subscriberId, buildingId, unit.getUnitId(),
 							unit.getUnitPic4Name());
 					dto.setUnitPic4Link(s3Service.generatePresignedUrl(s3DownloadDto));
 				}
-				if(StringUtils.isNotBlank(unit.getUnitPic5Name())) {
+				if (StringUtils.isNotBlank(unit.getUnitPic5Name())) {
 					S3DownloadDto s3DownloadDto = new S3DownloadDto(subscriberId, buildingId, unit.getUnitId(),
 							unit.getUnitPic5Name());
 					dto.setUnitPic5Link(s3Service.generatePresignedUrl(s3DownloadDto));

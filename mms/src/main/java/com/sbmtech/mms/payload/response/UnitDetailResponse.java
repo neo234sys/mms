@@ -8,25 +8,21 @@ public class UnitDetailResponse {
 
 	private Integer unitId;
 	private Integer buildingId;
-//	private Integer floorId;
 	private String floor;
 	private String unitName;
 	private Integer unitTypeId;
+	private String unitTypeName;
 	private Integer unitSubTypeId;
+	private String unitSubTypeName;
 	private String size;
 	private Boolean hasBalcony;
 	private Integer unitStatusId;
+	private String unitStatusName;
 	private Double rentMonth;
 	private Double rentYear;
 	private Double securityDeposit;
 	private String waterConnNo;
 	private String ebConnNo;
-//	private String unitMainPic1Name;
-//	private String unitPic2Name;
-//	private String unitPic3Name;
-//	private String unitPic4Name;
-//	private String unitPic5Name;
-
 	private String unitMainPic1Link;
 	private String unitPic2Link;
 	private String unitPic3Link;
@@ -74,12 +70,28 @@ public class UnitDetailResponse {
 		this.unitTypeId = unitTypeId;
 	}
 
+	public String getUnitTypeName() {
+		return unitTypeName;
+	}
+
+	public void setUnitTypeName(String unitTypeName) {
+		this.unitTypeName = unitTypeName;
+	}
+
 	public Integer getUnitSubTypeId() {
 		return unitSubTypeId;
 	}
 
 	public void setUnitSubTypeId(Integer unitSubTypeId) {
 		this.unitSubTypeId = unitSubTypeId;
+	}
+
+	public String getUnitSubTypeName() {
+		return unitSubTypeName;
+	}
+
+	public void setUnitSubTypeName(String unitSubTypeName) {
+		this.unitSubTypeName = unitSubTypeName;
 	}
 
 	public String getSize() {
@@ -104,6 +116,14 @@ public class UnitDetailResponse {
 
 	public void setUnitStatusId(Integer unitStatusId) {
 		this.unitStatusId = unitStatusId;
+	}
+
+	public String getUnitStatusName() {
+		return unitStatusName;
+	}
+
+	public void setUnitStatusName(String unitStatusName) {
+		this.unitStatusName = unitStatusName;
 	}
 
 	public Double getRentMonth() {
@@ -197,12 +217,13 @@ public class UnitDetailResponse {
 	@Override
 	public String toString() {
 		return "UnitDetailResponse [unitId=" + unitId + ", buildingId=" + buildingId + ", floor=" + floor
-				+ ", unitName=" + unitName + ", unitTypeId=" + unitTypeId + ", unitSubTypeId=" + unitSubTypeId
-				+ ", size=" + size + ", hasBalcony=" + hasBalcony + ", unitStatusId=" + unitStatusId + ", rentMonth="
-				+ rentMonth + ", rentYear=" + rentYear + ", securityDeposit=" + securityDeposit + ", waterConnNo="
-				+ waterConnNo + ", ebConnNo=" + ebConnNo + ", unitMainPic1Link=" + unitMainPic1Link + ", unitPic2Link="
-				+ unitPic2Link + ", unitPic3Link=" + unitPic3Link + ", unitPic4Link=" + unitPic4Link + ", unitPic5Link="
-				+ unitPic5Link + ", tenantDetails=" + tenantDetails + "]";
+				+ ", unitName=" + unitName + ", unitTypeId=" + unitTypeId + ", unitTypeName=" + unitTypeName
+				+ ", unitSubTypeId=" + unitSubTypeId + ", unitSubTypeName=" + unitSubTypeName + ", size=" + size
+				+ ", hasBalcony=" + hasBalcony + ", unitStatusId=" + unitStatusId + ", unitStatusName=" + unitStatusName
+				+ ", rentMonth=" + rentMonth + ", rentYear=" + rentYear + ", securityDeposit=" + securityDeposit
+				+ ", waterConnNo=" + waterConnNo + ", ebConnNo=" + ebConnNo + ", unitMainPic1Link=" + unitMainPic1Link
+				+ ", unitPic2Link=" + unitPic2Link + ", unitPic3Link=" + unitPic3Link + ", unitPic4Link=" + unitPic4Link
+				+ ", unitPic5Link=" + unitPic5Link + ", tenantDetails=" + tenantDetails + "]";
 	}
 
 }
