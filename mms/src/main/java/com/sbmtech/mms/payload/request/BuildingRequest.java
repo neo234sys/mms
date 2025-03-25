@@ -15,7 +15,7 @@ public class BuildingRequest {
 	
 	private Integer countryId;
 	private Integer stateId;
-	//private Integer cityId;
+	private Integer buildingId;
 	
 	
 	@NotEmpty(message = "cityName must not be empty and null")

@@ -13,6 +13,7 @@ public class BuildingUpdateRequest {
 	private Integer noOfUnits;
 	private String latitude;
 	private String longitude;
+	private byte[] buildingLogo;
 
 	public Integer getBuildingId() {
 		return buildingId;

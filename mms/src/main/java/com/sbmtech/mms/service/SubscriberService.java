@@ -105,7 +105,7 @@ public interface SubscriberService {
 
 	public ApiResponse<?> deleteTenant(TenantIdRequest request);
 
-	public ApiResponse<?> updateBuilding(Integer subscriberId, BuildingUpdateRequest request);
+	public ApiResponse<?> updateBuilding(Integer subscriberId, BuildingRequest request);
 
 	public ApiResponse<?> updateUnit(Integer subscriberId, UnitUpdateRequest request);
 

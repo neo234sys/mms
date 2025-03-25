@@ -1654,7 +1654,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, response, null, null);
 		} catch (Exception e) {
-			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Error fetching units", null, null);
+			throw new BusinessException("Error fetching units", null);
 		}
 	}
 
@@ -1728,8 +1728,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Building successfully marked as deleted", null, null);
 		} catch (Exception e) {
-			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to delete building: " + e.getMessage(), null,
-					null);
+			throw new BusinessException("Failed to delete building:", e);
 		}
 	}
 
@@ -1775,8 +1774,8 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Unit successfully marked as deleted", null, null);
 		} catch (Exception e) {
-			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to delete unit: " + e.getMessage(), null,
-					null);
+			
+			throw new BusinessException("Failed to delete unit:", e);
 		}
 	}
 
@@ -1822,15 +1821,20 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Tenant successfully marked as deleted", null, null);
 		} catch (Exception e) {
-			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to delete tenant: " + e.getMessage(), null,
-					null);
+			throw new BusinessException("Failed to delete tenant:", e);
 		}
 	}
 
-	public ApiResponse<?> updateBuilding(Integer subscriberId, BuildingUpdateRequest request) {
+	public ApiResponse<?> updateBuilding(Integer subscriberId, BuildingRequest request) {
 		try {
-			Building existingBuilding = buildingRepository.findById(request.getBuildingId())
-					.orElseThrow(() -> new Exception("Building not found"));
+			
+			Building existingBuilding =buildingRepository.findByBuildingIdAndSubscriberId(request.getBuildingId(),subscriberId);
+			if(existingBuilding==null) {
+				throw new BusinessException("Building not found",null);
+			}
+			
+//			Building existingBuilding = buildingRepository.findById(request.getBuildingId())
+//					.orElseThrow(() -> new Exception("Building not found"));
 
 			existingBuilding.setBuildingName(request.getBuildingName());
 			existingBuilding.setAddress(request.getAddress());
@@ -1839,15 +1843,14 @@ public class SubscriberServiceImpl implements SubscriberService {
 			existingBuilding.setHasKidsPlayground(request.getHasKidsPlayground());
 			existingBuilding.setHasPlaycourt(request.getHasPlaycourt());
 			existingBuilding.setNoOfFloors(request.getNoOfFloors());
-			existingBuilding.setNoOfUnits(request.getNoOfUnits());
+			existingBuilding.setNoOfUnits(request.getNoOfunits());
 			existingBuilding.setLatitude(request.getLatitude());
 			existingBuilding.setLongitude(request.getLongitude());
 
 			buildingRepository.save(existingBuilding);
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Building successfully updated", null, null);
 		} catch (Exception e) {
-			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to update building: " + e.getMessage(), null,
-					null);
+			throw new BusinessException("Failed to update building:", e);
 		}
 	}
 
@@ -1870,8 +1873,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			unitRepository.save(existingUnit);
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Unit successfully updated", null, null);
 		} catch (Exception e) {
-			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to update unit: " + e.getMessage(), null,
-					null);
+			throw new BusinessException("Failed to update unit:", e);
 		}
 	}
 
@@ -1894,8 +1896,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			tenantRepository.save(existingTenant);
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Tenant successfully updated", null, null);
 		} catch (Exception e) {
-			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to update tenant: " + e.getMessage(), null,
-					null);
+			throw new BusinessException("FFailed to update tenant:", e);
 		}
 	}
 
