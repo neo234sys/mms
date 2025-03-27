@@ -113,4 +113,8 @@ public interface SubscriberService {
 
 	public ApiResponse<?> getAllFloors();
 
+	public ApiResponse<Object> getAllParkingZoneByBuilding(@Valid ParkingZoneRequest request);
+
+	public ApiResponse<Object> getAllParkingByBuilding(ParkingRequest request);
+
 }

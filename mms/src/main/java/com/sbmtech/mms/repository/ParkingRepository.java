@@ -16,4 +16,7 @@ public interface ParkingRepository extends JpaRepository<Parking, Integer> {
 	public Parking findByParkingIdAndSubscriberId(Integer parkingId,Integer subscriberId);
 	
 	List<Parking> findByBuildingBuildingId(Integer buildingId);
+	
+	@Query(value="SELECT P from Parking P   where P.parkZone.parkZoneId=?1 and  P.building.buildingId =?2")
+	List<Parking> findAllParkingByParkZoneIdAndBuildingId(Integer parkZoneId,Integer buildingId);
 }

@@ -124,8 +124,10 @@ import com.sbmtech.mms.payload.response.FloorResponse;
 import com.sbmtech.mms.payload.response.GenericResponse;
 import com.sbmtech.mms.payload.response.KeyResponse;
 import com.sbmtech.mms.payload.response.PaginationResponse;
+import com.sbmtech.mms.payload.response.ParkingDetailResponse;
 import com.sbmtech.mms.payload.response.AreaResponse;
 import com.sbmtech.mms.payload.response.ParkingResponse;
+import com.sbmtech.mms.payload.response.ParkingZoneResponse;
 import com.sbmtech.mms.payload.response.SubscriptionPlans;
 import com.sbmtech.mms.payload.response.TenantDetailResponse;
 import com.sbmtech.mms.payload.response.TenantUnitResponse;
@@ -1917,6 +1919,69 @@ public class SubscriberServiceImpl implements SubscriberService {
 		}
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, floors, null, null);
 
+	}
+
+	@Override
+	public ApiResponse<Object> getAllParkingZoneByBuilding(ParkingZoneRequest request) {
+		Building existingBuilding =buildingRepository.findByBuildingIdAndSubscriberId(request.getBuildingId(),request.getSubscriberId());
+		if(existingBuilding==null) {
+			throw new BusinessException("Building not found",null);
+		}
+		List <ParkingZone> listParkingZone=parkingZoneRepository.findAllParkZoneByBuildingId(request.getBuildingId(),request.getSubscriberId());
+		
+		if (listParkingZone.isEmpty()) {
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
+		}
+		List<ParkingZoneResponse> pzDTOs = listParkingZone.stream().map(pz -> {
+			ParkingZoneResponse dto = new ParkingZoneResponse();
+			BeanUtils.copyProperties(pz, dto);
+
+			
+
+			if (pz.getBuilding()!=null) {
+				dto.setBuildingId(pz.getBuilding().getBuildingId());
+				dto.setBuildingName(pz.getBuilding().getBuildingName());
+			}
+
+		
+
+			return dto;
+		}).collect(Collectors.toList());
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, pzDTOs, null, null);
+	}
+
+	@Override
+	public ApiResponse<Object> getAllParkingByBuilding(ParkingRequest request) {
+		ParkingZone pz =parkingZoneRepository.findByParkZoneIdAndBuildingIdSubscriberId(
+				request.getParkZoneId(),request.getBuildingId(),request.getSubscriberId());
+		if(pz==null) {
+			throw new BusinessException("ParkingZone or Building or subscriber not associated",null);
+		}
+		List <Parking> listParking=parkingRepository.findAllParkingByParkZoneIdAndBuildingId(request.getParkZoneId(),request.getBuildingId());
+		
+		if (listParking.isEmpty()) {
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
+		}
+		List<ParkingDetailResponse> pzDTOs = listParking.stream().map(pk -> {
+			ParkingDetailResponse dto = new ParkingDetailResponse();
+			BeanUtils.copyProperties(pk, dto);
+
+			if (pk.getBuilding()!=null) {
+				dto.setBuildingId(pk.getBuilding().getBuildingId());
+				dto.setBuildingName(pk.getBuilding().getBuildingName());
+			}
+			if (pk.getParkZone()!=null) {
+				dto.setParkZoneId(pk.getParkZone().getParkZoneId());
+				dto.setParkZoneName(pk.getParkZone().getParkZoneName());
+			}
+
+			
+
+		
+
+			return dto;
+		}).collect(Collectors.toList());
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, pzDTOs, null, null);
 	}
 
 }

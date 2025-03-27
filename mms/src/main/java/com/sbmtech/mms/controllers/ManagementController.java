@@ -165,6 +165,14 @@ public class ManagementController {
 		request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.createParkingZone(request));
 	}
+	
+	@PostMapping("/getAllParkingZoneByBuilding")
+	public ResponseEntity<?> getAllParkingZoneByBuilding(@RequestBody ParkingZoneRequest request,
+			@CurrentSecurityContext(expression = "authentication") Authentication auth) throws Exception {
+		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
+		request.setSubscriberId(subscriberId);
+		return ResponseEntity.ok(subscriberService.getAllParkingZoneByBuilding(request)); 
+	}
 
 	@PostMapping("/addParking")
 	public ResponseEntity<?> addParking(@Valid @RequestBody ParkingRequest request,
@@ -172,6 +180,14 @@ public class ManagementController {
 		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
 		request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.createParking(request));
+	}
+	
+	@PostMapping("/getAllParkingByBuilding")
+	public ResponseEntity<?> getAllParkingByBuilding(@RequestBody ParkingRequest request,
+			@CurrentSecurityContext(expression = "authentication") Authentication auth) throws Exception {
+		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
+		request.setSubscriberId(subscriberId);
+		return ResponseEntity.ok(subscriberService.getAllParkingByBuilding(request)); 
 	}
 
 	@PostMapping("/addKey")
