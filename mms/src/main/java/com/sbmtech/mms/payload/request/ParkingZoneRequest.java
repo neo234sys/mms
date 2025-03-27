@@ -4,6 +4,7 @@ import javax.validation.constraints.NotEmpty;
 
 import com.sbmtech.mms.validator.ValidSubscriberlId;
 
+
 public class ParkingZoneRequest {
 
 	@NotEmpty(message = "parkZoneName cannot be null")
@@ -11,6 +12,9 @@ public class ParkingZoneRequest {
 	
 	//@ValidSubscriberlId
 	private Integer subscriberId;
+	
+
+	private Integer buildingId;
 
 	public String getParkZoneName() {
 		return parkZoneName;
@@ -26,6 +30,14 @@ public class ParkingZoneRequest {
 
 	public void setSubscriberId(Integer subscriberId) {
 		this.subscriberId = subscriberId;
+	}
+
+	public Integer getBuildingId() {
+		return buildingId;
+	}
+
+	public void setBuildingId(Integer buildingId) {
+		this.buildingId = buildingId;
 	}
 
 }

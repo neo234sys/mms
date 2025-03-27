@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -28,6 +29,10 @@ public class ParkingZone implements Serializable {
 	@ManyToOne
 	@JoinColumn(name = "subscriber_id", referencedColumnName = "subscriber_id")
 	private Subscriber subscriber;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "building_id", referencedColumnName = "building_id")
+	private Building building;
 
 	public Integer getParkZoneId() {
 		return parkZoneId;
@@ -53,8 +58,14 @@ public class ParkingZone implements Serializable {
 		this.subscriber = subscriber;
 	}
 
-	public static long getSerialversionuid() {
-		return serialVersionUID;
+	public Building getBuilding() {
+		return building;
 	}
+
+	public void setBuilding(Building building) {
+		this.building = building;
+	}
+
+
 
 }

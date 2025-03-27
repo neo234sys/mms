@@ -76,7 +76,7 @@ public interface SubscriberService {
 
 	public ApiResponse<Object> createUserAndMergeTenant(CreateUserRequest request) throws Exception;
 
-	public ApiResponse<String> createParkingZone(ParkingZoneRequest request);
+	public ApiResponse<Object> createParkingZone(ParkingZoneRequest request);
 
 	public ApiResponse<Object> createParking(ParkingRequest request);
 

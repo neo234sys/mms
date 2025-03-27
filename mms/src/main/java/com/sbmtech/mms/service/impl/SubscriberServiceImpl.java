@@ -1162,20 +1162,32 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	}
 
-	public ApiResponse<String> createParkingZone(ParkingZoneRequest request) {
-		Optional<Subscriber> subscriberOptional = subscriberRepository.findById(request.getSubscriberId());
-		if (!subscriberOptional.isPresent()) {
-			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
-					"Subscriber not found with ID: " + request.getSubscriberId(), null, null);
+	public ApiResponse<Object> createParkingZone(ParkingZoneRequest request) {
+//		Optional<Subscriber> subscriberOptional = subscriberRepository.findById(request.getSubscriberId());
+//		if (!subscriberOptional.isPresent()) {
+//			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
+//					"Subscriber not found with ID: " + request.getSubscriberId(), null, null);
+//		}
+		
+		Building building = buildingRepository.findByBuildingIdAndSubscriberId(request.getBuildingId(),request.getSubscriberId());
+		if (ObjectUtils.isEmpty(building)) {
+			throw new BusinessException("Building not found with id: " + request.getBuildingId(), null);
 		}
 
 		ParkingZone parkingZone = new ParkingZone();
 		parkingZone.setParkZoneName(request.getParkZoneName());
-		parkingZone.setSubscriber(subscriberOptional.get());
+		parkingZone.setSubscriber(building.getSubscriber());
+		parkingZone.setBuilding(building);
 
 		parkingZoneRepository.save(parkingZone);
 
-		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Parking Zone created successfully.", null, null);
+		//return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Parking Zone created successfully.", null, null);
+//		ParkingZoneResponse parkResp = new ParkingResponse();
+//		BeanUtils.copyProperties(parking, parkResp);
+//		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, parkResp, null, null);
+		GenericResponse gr = new GenericResponse();
+		gr.setId(parkingZone.getParkZoneId());
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, gr, null, null);
 	}
 
 	public ApiResponse<Object> createParking(ParkingRequest request) {
@@ -1835,6 +1847,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			
 //			Building existingBuilding = buildingRepository.findById(request.getBuildingId())
 //					.orElseThrow(() -> new Exception("Building not found"));
+			//TO DO 
 
 			existingBuilding.setBuildingName(request.getBuildingName());
 			existingBuilding.setAddress(request.getAddress());

@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -64,6 +65,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler{
         ErrorDetails errorDetails = new ErrorDetails(HttpStatus.INTERNAL_SERVER_ERROR.value(), ex.getMessage(), 
         		request.getDescription(false),formattedDateTime);
         logger.error("Exception Time="+dateTime, ex);
+        if(ex instanceof DataIntegrityViolationException) {
+        	errorDetails.setMessage("Data Integrity Exception");
+        }
         return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     
