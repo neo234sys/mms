@@ -37,7 +37,7 @@ public class CronJobController {
 	private CronJobService cronJobService;
 	
 	
-	@Scheduled(cron = "0 */5 * * * ?") // every 5 hrs
+	@Scheduled(cron = "0 0 * * * ?") // Every midnight (12:00 AM)
 	public void expireSubscriptionsJob()throws Exception {
 
 		logger.info("expireSubscriptionsJob invoked at="+new Date());

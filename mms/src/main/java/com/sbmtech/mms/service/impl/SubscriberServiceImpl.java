@@ -1163,12 +1163,11 @@ public class SubscriberServiceImpl implements SubscriberService {
 	}
 
 	public ApiResponse<Object> createParkingZone(ParkingZoneRequest request) {
-//		Optional<Subscriber> subscriberOptional = subscriberRepository.findById(request.getSubscriberId());
-//		if (!subscriberOptional.isPresent()) {
-//			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
-//					"Subscriber not found with ID: " + request.getSubscriberId(), null, null);
-//		}
-		
+
+		Optional<Building> buildingOptional = buildingRepository.findById(request.getBuildingId());
+		if (!buildingOptional.isPresent()) {
+			throw new BusinessException("Building not found with id: " + request.getBuildingId(), null);
+		}
 		Building building = buildingRepository.findByBuildingIdAndSubscriberId(request.getBuildingId(),request.getSubscriberId());
 		if (ObjectUtils.isEmpty(building)) {
 			throw new BusinessException("Building not found with id: " + request.getBuildingId(), null);
@@ -1181,10 +1180,6 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		parkingZoneRepository.save(parkingZone);
 
-		//return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Parking Zone created successfully.", null, null);
-//		ParkingZoneResponse parkResp = new ParkingResponse();
-//		BeanUtils.copyProperties(parking, parkResp);
-//		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, parkResp, null, null);
 		GenericResponse gr = new GenericResponse();
 		gr.setId(parkingZone.getParkZoneId());
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, gr, null, null);
@@ -1195,13 +1190,13 @@ public class SubscriberServiceImpl implements SubscriberService {
 		Building building = buildingRepository.findByBuildingIdAndSubscriberId(request.getBuildingId(),
 				request.getSubscriberId());
 		if (ObjectUtils.isEmpty(building)) {
-			throw new BusinessException("Building not found with id: " + request.getBuildingId(), null);
+			throw new BusinessException("BuildingId not found with this subscriber", null);
 		}
 
 		ParkingZone parkZone = parkingZoneRepository.findByParkZoneIdAndSubscriberId(request.getParkZoneId(),
 				request.getSubscriberId());
 		if (ObjectUtils.isEmpty(parkZone)) {
-			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Parking Zone not found", null, null);
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Parking Zone not found with this subscriber", null, null);
 		}
 
 		Optional<ParkingTypeEnum> ops = Arrays.stream(ParkingTypeEnum.values())
@@ -1217,6 +1212,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		parking.setParkingType(request.getParkingType());
 		parking.setIsAvailable(request.getIsAvailable());
 		parking.setBuilding(building);
+		parking.setCreatedTime(new Date());
 
 		parkingRepository.save(parking);
 

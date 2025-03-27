@@ -237,6 +237,12 @@ public class ManagementController {
 			@CurrentSecurityContext(expression = "authentication") Authentication auth) throws Exception {
 		return ResponseEntity.ok(constantLookupService.getRentCycleLookup());
 	}
+	
+	@GetMapping("/getPakingTypeLookup")
+	public ResponseEntity<?> getPakingTypeLookup(
+			@CurrentSecurityContext(expression = "authentication") Authentication auth) throws Exception {
+		return ResponseEntity.ok(constantLookupService.getParkingTypeLookup());
+	}
 
 	@GetMapping("/getProductConfig")
 	public ProductConfig getProductConfig(@CurrentSecurityContext(expression = "authentication") Authentication auth)

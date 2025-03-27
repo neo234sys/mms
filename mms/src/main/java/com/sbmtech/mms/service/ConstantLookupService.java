@@ -14,5 +14,7 @@ public interface ConstantLookupService {
 
 	public ApiResponse<Object> getRentCycleLookup()throws Exception;
 
+	public ApiResponse<Object> getParkingTypeLookup() throws Exception ;
+
 	
 }
