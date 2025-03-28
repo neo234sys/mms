@@ -1,4 +1,5 @@
 package com.sbmtech.mms.exception;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
@@ -9,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -67,6 +69,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler{
         logger.error("Exception Time="+dateTime, ex);
         if(ex instanceof DataIntegrityViolationException) {
         	errorDetails.setMessage("Data Integrity Exception");
+        }else if(ex instanceof SQLException ) {
+        	errorDetails.setMessage("QueryException");
+        	
+        }else if(ex instanceof DataAccessException ) {
+        	errorDetails.setMessage("DataAccessException");
+        	
         }
         return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
     }

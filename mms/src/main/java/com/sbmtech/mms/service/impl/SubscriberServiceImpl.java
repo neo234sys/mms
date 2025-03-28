@@ -1684,12 +1684,21 @@ public class SubscriberServiceImpl implements SubscriberService {
 			BeanUtils.copyProperties(tenant, dto);
 			if (tenantUnit.getUnit() != null) {
 				dto.setUnitId(tenantUnit.getUnit().getUnitId());
+				dto.setUnitName(tenantUnit.getUnit().getUnitName());
 				if (tenantUnit.getUnit().getBuilding() != null) {
 					dto.setBuildingId(tenantUnit.getUnit().getBuilding().getBuildingId());
+					dto.setBuildingName(tenantUnit.getUnit().getBuilding().getBuildingName());
 				}
 			}
 			if (tenantUnit.getParking() != null) {
 				dto.setParkingId(tenantUnit.getParking().getParkingId());
+				dto.setParkingName(tenantUnit.getParking().getParkingName());
+				dto.setParkingType(tenantUnit.getParking().getParkingType());
+				if(tenantUnit.getParking().getParkZone()!=null) {
+					dto.setParkingZoneId(tenantUnit.getParking().getParkZone().getParkZoneId());
+					dto.setParkingZoneName(tenantUnit.getParking().getParkZone().getParkZoneName());
+				}
+				
 			}
 			return dto;
 		}).collect(Collectors.toList());
