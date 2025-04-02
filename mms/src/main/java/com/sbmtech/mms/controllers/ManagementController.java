@@ -24,7 +24,6 @@ import com.sbmtech.mms.payload.request.DeleteBuildingRequest;
 import com.sbmtech.mms.payload.request.DeleteUnitRequest;
 import com.sbmtech.mms.payload.request.BuildingRequest;
 import com.sbmtech.mms.payload.request.BuildingUnitPaginationRequest;
-import com.sbmtech.mms.payload.request.BuildingUpdateRequest;
 import com.sbmtech.mms.payload.request.CommunityRequest;
 import com.sbmtech.mms.payload.request.CreateUserRequest;
 import com.sbmtech.mms.payload.request.DepartmentRequest;
@@ -36,6 +35,7 @@ import com.sbmtech.mms.payload.request.ParkingZoneRequest;
 import com.sbmtech.mms.payload.request.ReserveUnitRequest;
 import com.sbmtech.mms.payload.request.SubscriptionPaymentRequest;
 import com.sbmtech.mms.payload.request.SubscriptionRequest;
+import com.sbmtech.mms.payload.request.TenantFilterRequest;
 import com.sbmtech.mms.payload.request.TenantIdRequest;
 import com.sbmtech.mms.payload.request.TenantUnitRequest;
 import com.sbmtech.mms.payload.request.TenantUpdateRequest;
@@ -165,13 +165,13 @@ public class ManagementController {
 		request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.createParkingZone(request));
 	}
-	
+
 	@PostMapping("/getAllParkingZoneByBuilding")
 	public ResponseEntity<?> getAllParkingZoneByBuilding(@RequestBody ParkingZoneRequest request,
 			@CurrentSecurityContext(expression = "authentication") Authentication auth) throws Exception {
 		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
 		request.setSubscriberId(subscriberId);
-		return ResponseEntity.ok(subscriberService.getAllParkingZoneByBuilding(request)); 
+		return ResponseEntity.ok(subscriberService.getAllParkingZoneByBuilding(request));
 	}
 
 	@PostMapping("/addParking")
@@ -181,13 +181,13 @@ public class ManagementController {
 		request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.createParking(request));
 	}
-	
+
 	@PostMapping("/getAllParkingByBuilding")
 	public ResponseEntity<?> getAllParkingByBuilding(@RequestBody ParkingRequest request,
 			@CurrentSecurityContext(expression = "authentication") Authentication auth) throws Exception {
 		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
 		request.setSubscriberId(subscriberId);
-		return ResponseEntity.ok(subscriberService.getAllParkingByBuilding(request)); 
+		return ResponseEntity.ok(subscriberService.getAllParkingByBuilding(request));
 	}
 
 	@PostMapping("/addKey")
@@ -253,7 +253,7 @@ public class ManagementController {
 			@CurrentSecurityContext(expression = "authentication") Authentication auth) throws Exception {
 		return ResponseEntity.ok(constantLookupService.getRentCycleLookup());
 	}
-	
+
 	@GetMapping("/getPakingTypeLookup")
 	public ResponseEntity<?> getPakingTypeLookup(
 			@CurrentSecurityContext(expression = "authentication") Authentication auth) throws Exception {
@@ -329,8 +329,7 @@ public class ManagementController {
 	@PostMapping("/updateBuilding")
 	public ResponseEntity<?> updateBuilding(@CurrentSecurityContext(expression = "authentication") Authentication auth,
 			@Valid @RequestBody BuildingRequest request) throws Exception {
-		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
-		return ResponseEntity.ok(subscriberService.updateBuilding(subscriberId, request));
+		return ResponseEntity.ok(subscriberService.updateBuilding(request));
 	}
 
 	@PostMapping("/updateUnit")
@@ -345,6 +344,14 @@ public class ManagementController {
 			@Valid @RequestBody TenantUpdateRequest request) throws Exception {
 		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
 		return ResponseEntity.ok(subscriberService.updateTenant(subscriberId, request));
+	}
+
+	@PostMapping("/getAllByBuilding")
+	public ResponseEntity<?> getAllTenantsByBuildingId(
+			@CurrentSecurityContext(expression = "authentication") Authentication auth,
+			@Valid @RequestBody TenantFilterRequest request) throws Exception {
+		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
+		return ResponseEntity.ok(subscriberService.getAllTenantsByBuildingIdWithFilters(subscriberId, request));
 	}
 
 }

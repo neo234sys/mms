@@ -1,7 +1,9 @@
 package com.sbmtech.mms.models;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -11,6 +13,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -77,6 +80,9 @@ public class TenantUnit implements Serializable {
 	@Column(name = "updated_by")
 	private Integer updatedBy;
 
+	@OneToMany(mappedBy = "tenantUnit", fetch = FetchType.LAZY)
+	private List<TenureDetails> tenureDetails = new ArrayList<>();
+
 	public Integer getTenantUnitId() {
 		return tenantUnitId;
 	}
@@ -109,12 +115,12 @@ public class TenantUnit implements Serializable {
 		this.parking = parking;
 	}
 
-	public RentCycle getRentCycle() {
-		return rentCycle;
+	public Integer getTenurePeriodMonth() {
+		return tenurePeriodMonth;
 	}
 
-	public void setRentCycle(RentCycle rentCycle) {
-		this.rentCycle = rentCycle;
+	public void setTenurePeriodMonth(Integer tenurePeriodMonth) {
+		this.tenurePeriodMonth = tenurePeriodMonth;
 	}
 
 	public Boolean getExpired() {
@@ -139,6 +145,14 @@ public class TenantUnit implements Serializable {
 
 	public void setPaymentMode(PaymentMode paymentMode) {
 		this.paymentMode = paymentMode;
+	}
+
+	public RentCycle getRentCycle() {
+		return rentCycle;
+	}
+
+	public void setRentCycle(RentCycle rentCycle) {
+		this.rentCycle = rentCycle;
 	}
 
 	public Date getCreatedTime() {
@@ -173,23 +187,25 @@ public class TenantUnit implements Serializable {
 		this.updatedBy = updatedBy;
 	}
 
+	public List<TenureDetails> getTenureDetails() {
+		return tenureDetails;
+	}
+
+	public void setTenureDetails(List<TenureDetails> tenureDetails) {
+		this.tenureDetails = tenureDetails;
+	}
+
 	public static long getSerialversionuid() {
 		return serialVersionUID;
 	}
 
-	public Integer getTenurePeriodMonth() {
-		return tenurePeriodMonth;
-	}
-
-	public void setTenurePeriodMonth(Integer tenurePeriodMonth) {
-		this.tenurePeriodMonth = tenurePeriodMonth;
-	}
-
 	@Override
 	public String toString() {
-		return "TenantUnit [tenantUnitId=" + tenantUnitId + ", tenant=" + tenant + ", unit=" + unit
-				+ ", tenurePeriodMonth=" + tenurePeriodMonth + ", rentCycle=" + rentCycle + ", expired=" + expired
-				+ ", active=" + active + "]";
+		return "TenantUnit [tenantUnitId=" + tenantUnitId + ", tenant=" + tenant + ", unit=" + unit + ", parking="
+				+ parking + ", tenurePeriodMonth=" + tenurePeriodMonth + ", expired=" + expired + ", active=" + active
+				+ ", paymentMode=" + paymentMode + ", rentCycle=" + rentCycle + ", createdTime=" + createdTime
+				+ ", updatedTime=" + updatedTime + ", createdBy=" + createdBy + ", updatedBy=" + updatedBy
+				+ ", tenureDetails=" + tenureDetails + "]";
 	}
 
 }

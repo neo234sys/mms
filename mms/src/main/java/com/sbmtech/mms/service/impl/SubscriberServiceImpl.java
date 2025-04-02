@@ -93,7 +93,6 @@ import com.sbmtech.mms.models.UserTypeMaster;
 import com.sbmtech.mms.payload.request.AdditionalDetailsRequest;
 import com.sbmtech.mms.payload.request.ApiResponse;
 import com.sbmtech.mms.payload.request.BuildingRequest;
-import com.sbmtech.mms.payload.request.BuildingUpdateRequest;
 import com.sbmtech.mms.payload.request.CommunityRequest;
 import com.sbmtech.mms.payload.request.CreateUserRequest;
 import com.sbmtech.mms.payload.request.DeleteBuildingRequest;
@@ -110,6 +109,7 @@ import com.sbmtech.mms.payload.request.AreaRequest;
 import com.sbmtech.mms.payload.request.SubscriberRequest;
 import com.sbmtech.mms.payload.request.SubscriptionPaymentRequest;
 import com.sbmtech.mms.payload.request.SubscriptionRequest;
+import com.sbmtech.mms.payload.request.TenantFilterRequest;
 import com.sbmtech.mms.payload.request.TenantIdRequest;
 import com.sbmtech.mms.payload.request.TenantUnitRequest;
 import com.sbmtech.mms.payload.request.TenantUpdateRequest;
@@ -131,6 +131,7 @@ import com.sbmtech.mms.payload.response.ParkingZoneResponse;
 import com.sbmtech.mms.payload.response.SubscriptionPlans;
 import com.sbmtech.mms.payload.response.TenantDetailResponse;
 import com.sbmtech.mms.payload.response.TenantUnitResponse;
+import com.sbmtech.mms.payload.response.TenureDetailsResponse;
 import com.sbmtech.mms.payload.response.UniKeyResponse;
 import com.sbmtech.mms.payload.response.UnitDetailResponse;
 import com.sbmtech.mms.payload.response.UnitResponse;
@@ -898,7 +899,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		floor.setFloorName(request.getFloorName());
 		floor.setBuilding(building);
 
-		// floorRepository.save(floor);
+		floorRepository.save(floor);
 
 		FloorResponse floorResp = new FloorResponse();
 		BeanUtils.copyProperties(floor, floorResp);
@@ -945,7 +946,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 //			throw new BusinessException("Floor not found with id: " + request.getFloorId(), null);
 //		}
 
-		Optional<FloorMaster> floorOptional = floorMasterRepository.findById(request.getFloorName());
+		Optional<FloorMaster> floorOptional = floorMasterRepository.findByFloorName(request.getFloorName());
 		if (!floorOptional.isPresent()) {
 			throw new BusinessException("FloorName not found: " + request.getFloorName(), null);
 		}
@@ -1164,13 +1165,15 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public ApiResponse<Object> createParkingZone(ParkingZoneRequest request) {
 
 		Optional<Building> buildingOptional = buildingRepository.findById(request.getBuildingId());
 		if (!buildingOptional.isPresent()) {
 			throw new BusinessException("Building not found with id: " + request.getBuildingId(), null);
 		}
-		Building building = buildingRepository.findByBuildingIdAndSubscriberId(request.getBuildingId(),request.getSubscriberId());
+		Building building = buildingRepository.findByBuildingIdAndSubscriberId(request.getBuildingId(),
+				request.getSubscriberId());
 		if (ObjectUtils.isEmpty(building)) {
 			throw new BusinessException("Building not found with id: " + request.getBuildingId(), null);
 		}
@@ -1198,7 +1201,8 @@ public class SubscriberServiceImpl implements SubscriberService {
 		ParkingZone parkZone = parkingZoneRepository.findByParkZoneIdAndSubscriberId(request.getParkZoneId(),
 				request.getSubscriberId());
 		if (ObjectUtils.isEmpty(parkZone)) {
-			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Parking Zone not found with this subscriber", null, null);
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Parking Zone not found with this subscriber", null,
+					null);
 		}
 
 		Optional<ParkingTypeEnum> ops = Arrays.stream(ParkingTypeEnum.values())
@@ -1472,21 +1476,19 @@ public class SubscriberServiceImpl implements SubscriberService {
 			Countries nationality = countriesRepository.findById(request.getNationalityId()).orElse(null);
 
 			newUser.setNationality(nationality);
-			Optional <User> existingUser=userRepository.findByEmail(request.getEmail());
-			if(existingUser.isPresent()) {
-				logger.info("reserveUnit existing user="+newUser.getEmail());
+			Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
+			if (existingUser.isPresent()) {
+				logger.info("reserveUnit existing user=" + newUser.getEmail());
 				newUser = existingUser.get();
-			}else {
-				logger.info("reserveUnit new user="+newUser.getEmail());
+			} else {
+				logger.info("reserveUnit new user=" + newUser.getEmail());
 				userRepository.save(newUser);
 			}
 
-			
-			
-			if(unitReservePaymentOption) {
-				//create Order todo
-				
-			}else {
+			if (unitReservePaymentOption) {
+				// create Order todo
+
+			} else {
 				unit.setUnitStatus(unitStatusRepository.findByUnitStatusName(UnitStatusEnum.RESERVED.toString()));
 				unitRepository.save(unit);
 
@@ -1506,11 +1508,13 @@ public class SubscriberServiceImpl implements SubscriberService {
 					dto.setUnitId(CommonUtil.getStringValofObject(unit.getUnitId()));
 					dto.setUnitName(unit.getUnitName());
 					dto.setReserveFromDate(CommonUtil.getStringDatefromDate(new Date()));
-					dto.setReserveToDate(CommonUtil.getStringDatefromDate(reserveEndDate));;
-					
-					NotificationEmailResponseDTO notifResp=notificationService.sendUnitReservationEmail(dto);
-					if(notifResp!=null && notifResp.isEmailSent()) {
-						logger.info("reserveUnit email successfully sent to user{}, reserveDet={}"+newUser.getEmail(),reserveDet);
+					dto.setReserveToDate(CommonUtil.getStringDatefromDate(reserveEndDate));
+					;
+
+					NotificationEmailResponseDTO notifResp = notificationService.sendUnitReservationEmail(dto);
+					if (notifResp != null && notifResp.isEmailSent()) {
+						logger.info("reserveUnit email successfully sent to user{}, reserveDet={}" + newUser.getEmail(),
+								reserveDet);
 						return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Unit successfully reserved", null, null);
 					}
 				}
@@ -1519,8 +1523,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		} catch (Exception e) {
 			throw new BusinessException("Failed to reserve unit", null);
 		}
-		return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to reserve unit: ", null,
-				null);
+		return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to reserve unit: ", null, null);
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -1694,11 +1697,11 @@ public class SubscriberServiceImpl implements SubscriberService {
 				dto.setParkingId(tenantUnit.getParking().getParkingId());
 				dto.setParkingName(tenantUnit.getParking().getParkingName());
 				dto.setParkingType(tenantUnit.getParking().getParkingType());
-				if(tenantUnit.getParking().getParkZone()!=null) {
+				if (tenantUnit.getParking().getParkZone() != null) {
 					dto.setParkingZoneId(tenantUnit.getParking().getParkZone().getParkZoneId());
 					dto.setParkingZoneName(tenantUnit.getParking().getParkZone().getParkZoneName());
 				}
-				
+
 			}
 			return dto;
 		}).collect(Collectors.toList());
@@ -1793,7 +1796,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Unit successfully marked as deleted", null, null);
 		} catch (Exception e) {
-			
+
 			throw new BusinessException("Failed to delete unit:", e);
 		}
 	}
@@ -1844,34 +1847,115 @@ public class SubscriberServiceImpl implements SubscriberService {
 		}
 	}
 
-	public ApiResponse<?> updateBuilding(Integer subscriberId, BuildingRequest request) {
-		try {
-			
-			Building existingBuilding =buildingRepository.findByBuildingIdAndSubscriberId(request.getBuildingId(),subscriberId);
-			if(existingBuilding==null) {
-				throw new BusinessException("Building not found",null);
-			}
-			
-//			Building existingBuilding = buildingRepository.findById(request.getBuildingId())
-//					.orElseThrow(() -> new Exception("Building not found"));
-			//TO DO 
+	public ApiResponse<?> updateBuilding(BuildingRequest request) throws Exception {
+		List<S3UploadObjectDto> s3UploadObjectDtoList = new ArrayList<>();
+		S3UploadObjectDto s3BuildingLogoDto = null;
 
-			existingBuilding.setBuildingName(request.getBuildingName());
-			existingBuilding.setAddress(request.getAddress());
-			existingBuilding.setHasGym(request.getHasGym());
-			existingBuilding.setHasSwimpool(request.getHasSwimpool());
-			existingBuilding.setHasKidsPlayground(request.getHasKidsPlayground());
-			existingBuilding.setHasPlaycourt(request.getHasPlaycourt());
-			existingBuilding.setNoOfFloors(request.getNoOfFloors());
-			existingBuilding.setNoOfUnits(request.getNoOfunits());
-			existingBuilding.setLatitude(request.getLatitude());
-			existingBuilding.setLongitude(request.getLongitude());
-
-			buildingRepository.save(existingBuilding);
-			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Building successfully updated", null, null);
-		} catch (Exception e) {
-			throw new BusinessException("Failed to update building:", e);
+		Building existingBuilding = buildingRepository.findByBuildingIdAndSubscriberId(request.getBuildingId(),
+				request.getSubscriberId());
+		if (existingBuilding == null) {
+			throw new BusinessException("Building not found with id: " + request.getBuildingId(), null);
 		}
+
+		Countries country = null;
+		State state = null;
+
+		if (request.getCountryId() != null || request.getStateId() != null) {
+			Optional<Countries> countryOpt = countriesRepository.findById(request.getCountryId());
+			if (!countryOpt.isPresent()) {
+				throw new BusinessException("Country not found with id: " + request.getCountryId(), null);
+			}
+
+			Optional<State> stateOpt = stateRepository.findById(request.getStateId());
+			if (!stateOpt.isPresent()) {
+				throw new BusinessException("State not found with id: " + request.getStateId(), null);
+			} else {
+				state = stateOpt.get();
+				country = state.getCountry();
+				if (country.getCountryId().intValue() != request.getCountryId().intValue()) {
+					throw new BusinessException("Invalid stateId /stateId not matching with CountryId", null);
+				}
+			}
+		}
+
+		City city = existingBuilding.getArea().getCity();
+		if (StringUtils.isNotBlank(request.getCityName()) && !request.getCityName().equals(city.getName())) {
+			city.setName(request.getCityName());
+			if (country != null)
+				city.setCountry(country);
+			if (state != null)
+				city.setState(state);
+			cityRepository.save(city);
+		}
+
+		Area area = existingBuilding.getArea();
+		if (StringUtils.isNotBlank(request.getAreaName())) {
+			area.setAreaName(request.getAreaName());
+			if (country != null)
+				area.setCountry(country);
+			if (state != null)
+				area.setState(state);
+			area.setCity(city);
+			areaRepository.save(area);
+		}
+
+		Community community = existingBuilding.getCommunity();
+		if (StringUtils.isNotBlank(request.getCommunityName())) {
+			if (community == null) {
+				community = new Community();
+				community.setArea(area);
+				community.setSubscriber(existingBuilding.getSubscriber());
+			}
+			community.setCommunityName(request.getCommunityName());
+			communityRepository.save(community);
+		}
+
+		existingBuilding.setBuildingName(request.getBuildingName());
+		existingBuilding.setAddress(request.getAddress());
+
+		if (!ObjectUtils.isEmpty(request.getBuildingLogo())) {
+			String contentType = CommonUtil.validateAttachment(request.getBuildingLogo());
+			String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+			s3BuildingLogoDto = new S3UploadObjectDto(CommonConstants.BUILD_MAIN_PIC, contentType, fileExt,
+					Base64.getEncoder().encodeToString(request.getBuildingLogo()), null);
+			s3UploadObjectDtoList.add(s3BuildingLogoDto);
+		}
+
+		existingBuilding.setHasGym(request.getHasGym());
+		existingBuilding.setHasSwimpool(request.getHasSwimpool());
+		existingBuilding.setHasKidsPlayground(request.getHasKidsPlayground());
+		existingBuilding.setHasPlaycourt(request.getHasPlaycourt());
+		existingBuilding.setNoOfFloors(request.getNoOfFloors());
+		existingBuilding.setNoOfUnits(request.getNoOfunits());
+		existingBuilding.setArea(area);
+		existingBuilding.setCommunity(community);
+		existingBuilding.setLatitude(request.getLatitude());
+		existingBuilding.setLongitude(request.getLongitude());
+
+		buildingRepository.save(existingBuilding);
+
+		if (!s3UploadObjectDtoList.isEmpty()) {
+			S3UploadDto s3UploadDto = new S3UploadDto();
+			s3UploadDto.setSubscriberId(request.getSubscriberId());
+			s3UploadDto.setBuildingId(existingBuilding.getBuildingId());
+			s3UploadDto.setObjectType(S3UploadObjTypeEnum.BUILDING.toString());
+			s3UploadDto.setS3UploadObjectDtoList(s3UploadObjectDtoList);
+
+			List<S3UploadObjectDto> s3UploadObjectDtoListRet = s3Service.upload(s3UploadDto);
+			for (S3UploadObjectDto s3UploadObjectDto : s3UploadObjectDtoListRet) {
+				if (s3UploadObjectDto != null && StringUtils.isNotBlank(s3UploadObjectDto.getS3FileName())) {
+					if (s3UploadObjectDto.getObjectName().equals(CommonConstants.BUILD_MAIN_PIC)) {
+						existingBuilding.setBuildingLogoFileName(s3UploadObjectDto.getS3FileName());
+					}
+				}
+			}
+			buildingRepository.save(existingBuilding);
+		}
+
+		BuildingResponse buildingResp = new BuildingResponse();
+		BeanUtils.copyProperties(existingBuilding, buildingResp);
+
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, buildingResp, null, request.getSubscriberId());
 	}
 
 	public ApiResponse<?> updateUnit(Integer subscriberId, UnitUpdateRequest request) {
@@ -1932,12 +2016,14 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	@Override
 	public ApiResponse<Object> getAllParkingZoneByBuilding(ParkingZoneRequest request) {
-		Building existingBuilding =buildingRepository.findByBuildingIdAndSubscriberId(request.getBuildingId(),request.getSubscriberId());
-		if(existingBuilding==null) {
-			throw new BusinessException("Building not found",null);
+		Building existingBuilding = buildingRepository.findByBuildingIdAndSubscriberId(request.getBuildingId(),
+				request.getSubscriberId());
+		if (existingBuilding == null) {
+			throw new BusinessException("Building not found", null);
 		}
-		List <ParkingZone> listParkingZone=parkingZoneRepository.findAllParkZoneByBuildingId(request.getBuildingId(),request.getSubscriberId());
-		
+		List<ParkingZone> listParkingZone = parkingZoneRepository.findAllParkZoneByBuildingId(request.getBuildingId(),
+				request.getSubscriberId());
+
 		if (listParkingZone.isEmpty()) {
 			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
 		}
@@ -1945,14 +2031,10 @@ public class SubscriberServiceImpl implements SubscriberService {
 			ParkingZoneResponse dto = new ParkingZoneResponse();
 			BeanUtils.copyProperties(pz, dto);
 
-			
-
-			if (pz.getBuilding()!=null) {
+			if (pz.getBuilding() != null) {
 				dto.setBuildingId(pz.getBuilding().getBuildingId());
 				dto.setBuildingName(pz.getBuilding().getBuildingName());
 			}
-
-		
 
 			return dto;
 		}).collect(Collectors.toList());
@@ -1961,13 +2043,14 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	@Override
 	public ApiResponse<Object> getAllParkingByBuilding(ParkingRequest request) {
-		ParkingZone pz =parkingZoneRepository.findByParkZoneIdAndBuildingIdSubscriberId(
-				request.getParkZoneId(),request.getBuildingId(),request.getSubscriberId());
-		if(pz==null) {
-			throw new BusinessException("ParkingZone or Building or subscriber not associated",null);
+		ParkingZone pz = parkingZoneRepository.findByParkZoneIdAndBuildingIdSubscriberId(request.getParkZoneId(),
+				request.getBuildingId(), request.getSubscriberId());
+		if (pz == null) {
+			throw new BusinessException("ParkingZone or Building or subscriber not associated", null);
 		}
-		List <Parking> listParking=parkingRepository.findAllParkingByParkZoneIdAndBuildingId(request.getParkZoneId(),request.getBuildingId());
-		
+		List<Parking> listParking = parkingRepository.findAllParkingByParkZoneIdAndBuildingId(request.getParkZoneId(),
+				request.getBuildingId());
+
 		if (listParking.isEmpty()) {
 			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
 		}
@@ -1975,22 +2058,77 @@ public class SubscriberServiceImpl implements SubscriberService {
 			ParkingDetailResponse dto = new ParkingDetailResponse();
 			BeanUtils.copyProperties(pk, dto);
 
-			if (pk.getBuilding()!=null) {
+			if (pk.getBuilding() != null) {
 				dto.setBuildingId(pk.getBuilding().getBuildingId());
 				dto.setBuildingName(pk.getBuilding().getBuildingName());
 			}
-			if (pk.getParkZone()!=null) {
+			if (pk.getParkZone() != null) {
 				dto.setParkZoneId(pk.getParkZone().getParkZoneId());
 				dto.setParkZoneName(pk.getParkZone().getParkZoneName());
 			}
 
-			
-
-		
-
 			return dto;
 		}).collect(Collectors.toList());
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, pzDTOs, null, null);
+	}
+
+	@SuppressWarnings("rawtypes")
+	public ApiResponse<Object> getAllTenantsByBuildingIdWithFilters(Integer subscriberId,
+			TenantFilterRequest filterRequest) {
+		Sort sort = filterRequest.getSortDirection().equalsIgnoreCase("desc")
+				? Sort.by(filterRequest.getSortBy()).descending()
+				: Sort.by(filterRequest.getSortBy()).ascending();
+
+		PageRequest pageable = PageRequest.of(filterRequest.getPage(), filterRequest.getSize(), sort);
+
+		Page<TenantUnit> tenantUnitPage = tenantUnitRepository.findTenantsByBuildingIdWithFilters(
+				filterRequest.getBuildingId(), filterRequest.getTenantName(), filterRequest.getNationalityId(),
+				filterRequest.getUnitName(), filterRequest.getUnitId(), pageable);
+
+		List<TenantDetailResponse> tenantDTOs = tenantUnitPage.getContent().stream().map(tenantUnit -> {
+			TenantDetailResponse dto = new TenantDetailResponse();
+			Tenant tenant = tenantUnit.getTenant();
+			BeanUtils.copyProperties(tenant, dto);
+
+			if (tenant.getNationality() != null) {
+				dto.setNationality(tenant.getNationality().getName());
+			}
+
+			if (tenantUnit.getUnit() != null) {
+				dto.setUnitId(tenantUnit.getUnit().getUnitId());
+				dto.setUnitName(tenantUnit.getUnit().getUnitName());
+				if (tenantUnit.getUnit().getBuilding() != null) {
+					dto.setBuildingId(tenantUnit.getUnit().getBuilding().getBuildingId());
+					dto.setBuildingName(tenantUnit.getUnit().getBuilding().getBuildingName());
+				}
+			}
+			if (tenantUnit.getParking() != null) {
+				dto.setParkingId(tenantUnit.getParking().getParkingId());
+				dto.setParkingName(tenantUnit.getParking().getParkingName());
+				dto.setParkingType(tenantUnit.getParking().getParkingType());
+				if (tenantUnit.getParking().getParkZone() != null) {
+					dto.setParkingZoneId(tenantUnit.getParking().getParkZone().getParkZoneId());
+					dto.setParkingZoneName(tenantUnit.getParking().getParkZone().getParkZoneName());
+				}
+			}
+
+			if (tenantUnit.getTenureDetails() != null && !tenantUnit.getTenureDetails().isEmpty()) {
+				List<TenureDetailsResponse> tenureResponses = tenantUnit.getTenureDetails().stream().map(tenure -> {
+					TenureDetailsResponse tenureResponse = new TenureDetailsResponse();
+					BeanUtils.copyProperties(tenure, tenureResponse);
+					return tenureResponse;
+				}).collect(Collectors.toList());
+				dto.setTenureDetails(tenureResponses);
+			}
+
+			return dto;
+		}).collect(Collectors.toList());
+
+		PaginationResponse response = new PaginationResponse<>(tenantDTOs, tenantUnitPage.getNumber(),
+				tenantUnitPage.getTotalPages(), tenantUnitPage.getTotalElements(), tenantUnitPage.isFirst(),
+				tenantUnitPage.isLast());
+
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, response, null, null);
 	}
 
 }

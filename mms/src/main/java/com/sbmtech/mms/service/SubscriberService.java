@@ -13,7 +13,6 @@ import com.sbmtech.mms.payload.request.AdditionalDetailsRequest;
 import com.sbmtech.mms.payload.request.ApiResponse;
 import com.sbmtech.mms.payload.request.AreaRequest;
 import com.sbmtech.mms.payload.request.BuildingRequest;
-import com.sbmtech.mms.payload.request.BuildingUpdateRequest;
 import com.sbmtech.mms.payload.request.CommunityRequest;
 import com.sbmtech.mms.payload.request.CreateUserRequest;
 import com.sbmtech.mms.payload.request.DeleteBuildingRequest;
@@ -29,6 +28,7 @@ import com.sbmtech.mms.payload.request.ReserveUnitRequest;
 import com.sbmtech.mms.payload.request.SubscriberRequest;
 import com.sbmtech.mms.payload.request.SubscriptionPaymentRequest;
 import com.sbmtech.mms.payload.request.SubscriptionRequest;
+import com.sbmtech.mms.payload.request.TenantFilterRequest;
 import com.sbmtech.mms.payload.request.TenantIdRequest;
 import com.sbmtech.mms.payload.request.TenantUnitRequest;
 import com.sbmtech.mms.payload.request.TenantUpdateRequest;
@@ -105,7 +105,7 @@ public interface SubscriberService {
 
 	public ApiResponse<?> deleteTenant(TenantIdRequest request);
 
-	public ApiResponse<?> updateBuilding(Integer subscriberId, BuildingRequest request);
+	public ApiResponse<?> updateBuilding(BuildingRequest request) throws Exception;
 
 	public ApiResponse<?> updateUnit(Integer subscriberId, UnitUpdateRequest request);
 
@@ -116,5 +116,7 @@ public interface SubscriberService {
 	public ApiResponse<Object> getAllParkingZoneByBuilding(@Valid ParkingZoneRequest request);
 
 	public ApiResponse<Object> getAllParkingByBuilding(ParkingRequest request);
+
+	public ApiResponse<?> getAllTenantsByBuildingIdWithFilters(Integer subscriberId, TenantFilterRequest filterRequest);
 
 }
