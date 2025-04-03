@@ -39,16 +39,16 @@ public interface TenantUnitRepository extends JpaRepository<TenantUnit, Integer>
 	@Query(value = "SELECT DISTINCT tu FROM TenantUnit tu " + "LEFT JOIN FETCH tu.tenureDetails " + "JOIN tu.unit u "
 			+ "JOIN u.building b " + "JOIN tu.tenant t " + "WHERE b.buildingId = :buildingId "
 			+ "AND t.isDeleted = false " + "AND u.isDeleted = false "
-			+ "AND (:tenantName IS NULL OR CONCAT(t.firstName, ' ', t.lastName) LIKE %:tenantName%) "
-			+ "AND (:nationalityId IS NULL OR t.nationalityId = :nationalityId) "
-			+ "AND (:unitName IS NULL OR u.unitName LIKE %:unitName%) "
-			+ "AND (:unitId IS NULL OR u.unitId = :unitId)", countQuery = "SELECT COUNT(DISTINCT tu) FROM TenantUnit tu "
+			+ "OR (:tenantName IS NULL OR CONCAT(t.firstName, ' ', t.lastName) LIKE %:tenantName%) "
+			+ "OR (:nationalityId IS NULL OR t.nationalityId = :nationalityId) "
+			+ "OR (:unitName IS NULL OR u.unitName LIKE %:unitName%) "
+			+ "OR (:unitId IS NULL OR u.unitId = :unitId)", countQuery = "SELECT COUNT(DISTINCT tu) FROM TenantUnit tu "
 					+ "JOIN tu.unit u " + "JOIN u.building b " + "JOIN tu.tenant t "
 					+ "WHERE b.buildingId = :buildingId " + "AND t.isDeleted = false " + "AND u.isDeleted = false "
-					+ "AND (:tenantName IS NULL OR CONCAT(t.firstName, ' ', t.lastName) LIKE %:tenantName%) "
-					+ "AND (:nationalityId IS NULL OR t.nationalityId = :nationalityId) "
-					+ "AND (:unitName IS NULL OR u.unitName LIKE %:unitName%) "
-					+ "AND (:unitId IS NULL OR u.unitId = :unitId)")
+					+ "OR (:tenantName IS NULL OR CONCAT(t.firstName, ' ', t.lastName) LIKE %:tenantName%) "
+					+ "OR (:nationalityId IS NULL OR t.nationalityId = :nationalityId) "
+					+ "OR (:unitName IS NULL OR u.unitName LIKE %:unitName%) "
+					+ "OR (:unitId IS NULL OR u.unitId = :unitId)")
 	Page<TenantUnit> findTenantsByBuildingIdWithFilters(@Param("buildingId") Integer buildingId,
 			@Param("tenantName") String tenantName, @Param("nationalityId") Integer nationalityId,
 			@Param("unitName") String unitName, @Param("unitId") Integer unitId, Pageable pageable);
