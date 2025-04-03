@@ -116,16 +116,14 @@ public class ManagementController {
 	public ResponseEntity<?> addSubscriberLocation(@Valid @RequestBody AreaRequest request,
 			@CurrentSecurityContext(expression = "authentication") Authentication auth) throws Exception {
 		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
-		request.setSubscriberId(subscriberId);
-		return ResponseEntity.ok(subscriberService.addArea(request));
+		return ResponseEntity.ok(subscriberService.addArea(subscriberId, request));
 	}
 
 	@PostMapping("/addCommunity")
 	public ResponseEntity<?> addCommunity(@Valid @RequestBody CommunityRequest request,
 			@CurrentSecurityContext(expression = "authentication") Authentication auth) throws Exception {
 		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
-		request.setSubscriberId(subscriberId);
-		return ResponseEntity.ok(subscriberService.addCommunity(request));
+		return ResponseEntity.ok(subscriberService.addCommunity(subscriberId, request));
 	}
 
 	@PostMapping("/addBuilding")
@@ -329,8 +327,6 @@ public class ManagementController {
 	@PostMapping("/updateBuilding")
 	public ResponseEntity<?> updateBuilding(@CurrentSecurityContext(expression = "authentication") Authentication auth,
 			@Valid @RequestBody BuildingRequest request) throws Exception {
-		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
-		request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.updateBuilding(request));
 	}
 

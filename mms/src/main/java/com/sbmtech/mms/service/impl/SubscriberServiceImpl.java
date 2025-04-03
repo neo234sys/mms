@@ -713,8 +713,8 @@ public class SubscriberServiceImpl implements SubscriberService {
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, responses, null, null);
 	}
 
-	public ApiResponse<Object> addArea(AreaRequest request) {
-		Optional<Subscriber> subscriberOpt = subscriberRepository.findById(request.getSubscriberId());
+	public ApiResponse<Object> addArea(Integer subscriberId, AreaRequest request) {
+		Optional<Subscriber> subscriberOpt = subscriberRepository.findById(subscriberId);
 
 		Optional<Countries> countryOpt = countriesRepository.findById(request.getCountryId());
 		if (!countryOpt.isPresent()) {
@@ -751,14 +751,14 @@ public class SubscriberServiceImpl implements SubscriberService {
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, locResp, null, area.getSubscriber().getSubscriberId());
 	}
 
-	public ApiResponse<Object> addCommunity(CommunityRequest request) {
+	public ApiResponse<Object> addCommunity(Integer subscriberId, CommunityRequest request) {
 
-		Area location = areaRepoCustom.findByAreaIdAndSubscriberId(request.getLocationId(), request.getSubscriberId());
+		Area location = areaRepoCustom.findByAreaIdAndSubscriberId(request.getLocationId(), subscriberId);
 		if (ObjectUtils.isEmpty(location)) {
 			throw new BusinessException("Area not found with id: " + request.getLocationId(), null);
 		}
 
-		Optional<Subscriber> subscriberOptional = subscriberRepository.findById(request.getSubscriberId());
+		Optional<Subscriber> subscriberOptional = subscriberRepository.findById(subscriberId);
 
 		Subscriber subscriber = subscriberOptional.get();
 
@@ -771,7 +771,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		CommunityResponse commuResp = new CommunityResponse();
 		BeanUtils.copyProperties(community, commuResp);
-		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, commuResp, null, request.getSubscriberId());
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, commuResp, null, subscriberId);
 	}
 
 	public ApiResponse<Object> addBuilding(BuildingRequest request) {

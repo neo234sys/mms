@@ -64,9 +64,9 @@ public interface SubscriberService {
 
 	public ApiResponse<Object> getCitiesByStateAndCountryId(Integer stateId, Integer countryId);
 
-	public ApiResponse<Object> addArea(AreaRequest request);
+	public ApiResponse<Object> addArea(Integer subscriberId, AreaRequest request);
 
-	public ApiResponse<Object> addCommunity(CommunityRequest request);
+	public ApiResponse<Object> addCommunity(Integer subscriberId, CommunityRequest request);
 
 	public ApiResponse<Object> addBuilding(BuildingRequest request);
 

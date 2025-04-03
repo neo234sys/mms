@@ -1,16 +1,11 @@
 package com.sbmtech.mms.payload.request;
 
-import com.sbmtech.mms.validator.ValidSubscriberlId;
-
 public class AreaRequest {
 
 	private String locationName;
 	private Integer countryId;
 	private Integer stateId;
 	private Integer cityId;
-	
-	//@ValidSubscriberlId
-	private Integer subscriberId;
 
 	public String getLocationName() {
 		return locationName;
@@ -44,12 +39,10 @@ public class AreaRequest {
 		this.cityId = cityId;
 	}
 
-	public Integer getSubscriberId() {
-		return subscriberId;
-	}
-
-	public void setSubscriberId(Integer subscriberId) {
-		this.subscriberId = subscriberId;
+	@Override
+	public String toString() {
+		return "AreaRequest [locationName=" + locationName + ", countryId=" + countryId + ", stateId=" + stateId
+				+ ", cityId=" + cityId + "]";
 	}
 
 }

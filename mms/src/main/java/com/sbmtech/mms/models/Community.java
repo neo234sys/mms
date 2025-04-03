@@ -30,10 +30,6 @@ public class Community implements Serializable {
 	@Column(name = "community_name")
 	private String communityName;
 
-//	@ManyToOne
-//	@JoinColumn(name = "location_id", referencedColumnName = "location_id")
-//	private SubscriberLocation location;
-	
 	@ManyToOne
 	@JoinColumn(name = "area_id", referencedColumnName = "area_id")
 	private Area area;
@@ -41,8 +37,5 @@ public class Community implements Serializable {
 	@ManyToOne
 	@JoinColumn(name = "subscriber_id", referencedColumnName = "subscriber_id")
 	private Subscriber subscriber;
-
-	
-	
 
 }
