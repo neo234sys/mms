@@ -1878,27 +1878,32 @@ public class SubscriberServiceImpl implements SubscriberService {
 			}
 		}
 
-		City city = existingBuilding.getArea().getCity();
-		if (StringUtils.isNotBlank(request.getCityName()) && !request.getCityName().equals(city.getName())) {
-			city.setName(request.getCityName());
-			if (country != null)
-				city.setCountry(country);
-			if (state != null)
-				city.setState(state);
-			cityRepository.save(city);
+		City city =null;
+		if (existingBuilding.getArea()!=null) {
+			city=existingBuilding.getArea().getCity();
+			if (city!=null && StringUtils.isNotBlank(request.getCityName()) && !request.getCityName().equals(city.getName())) {
+				city.setName(request.getCityName());
+				if (country != null)
+					city.setCountry(country);
+				if (state != null)
+					city.setState(state);
+				cityRepository.save(city);
+			} 
 		}
-
+		
+		
 		Area area = existingBuilding.getArea();
-		if (StringUtils.isNotBlank(request.getAreaName())) {
-			area.setAreaName(request.getAreaName());
-			if (country != null)
-				area.setCountry(country);
-			if (state != null)
-				area.setState(state);
-			area.setCity(city);
-			areaRepository.save(area);
+		if (area!=null) {
+			if (StringUtils.isNotBlank(request.getAreaName())) {
+				area.setAreaName(request.getAreaName());
+				if (country != null)
+					area.setCountry(country);
+				if (state != null)
+					area.setState(state);
+				area.setCity(city);
+				areaRepository.save(area);
+			} 
 		}
-
 		Community community = existingBuilding.getCommunity();
 		if (StringUtils.isNotBlank(request.getCommunityName())) {
 			if (community == null) {
