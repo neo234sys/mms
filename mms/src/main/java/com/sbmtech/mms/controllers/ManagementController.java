@@ -327,6 +327,8 @@ public class ManagementController {
 	@PostMapping("/updateBuilding")
 	public ResponseEntity<?> updateBuilding(@CurrentSecurityContext(expression = "authentication") Authentication auth,
 			@Valid @RequestBody BuildingRequest request) throws Exception {
+		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
+		request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.updateBuilding(request));
 	}
 
