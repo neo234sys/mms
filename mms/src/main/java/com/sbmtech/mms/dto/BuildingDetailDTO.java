@@ -1,31 +1,27 @@
 package com.sbmtech.mms.dto;
 
+import java.util.List;
+
 import lombok.Getter;
 import lombok.Setter;
-
+import lombok.ToString;
 
 @Setter
 @Getter
+@ToString
 public class BuildingDetailDTO {
-
 
 	private Integer buildingId;
 	private String buildingName;
 	private String address;
-	//private byte[] buildingLogo;
 	private Boolean hasGym;
 	private Boolean hasSwimpool;
 	private Boolean hasKidsPlayground;
 	private Boolean hasPlaycourt;
-	//private CommunityDetailsDTO community;
-	//private AreaDTO area;
-	
 	private Integer noOfFloors;
 	private Integer noOfUnits;
 	private String latitude;
 	private String longitude;
-	
-	
 	private Integer communityId;
 	private String communityName;
 	private Integer areaId;
@@ -37,5 +33,9 @@ public class BuildingDetailDTO {
 	private Integer cityId;
 	private String cityName;
 	private String buildingLogoLink;
-	
+	private List<FloorDTO> floors;
+	private List<ParkingDTO> parkings;
+	private List<ParkingZoneDTO> parkingZones;
+	private List<UnitDTO> units;
+
 }

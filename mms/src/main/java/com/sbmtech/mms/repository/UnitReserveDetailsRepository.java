@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import com.sbmtech.mms.models.Unit;
 import com.sbmtech.mms.models.UnitReserveDetails;
 
 @Repository
@@ -15,5 +16,7 @@ public interface UnitReserveDetailsRepository extends JpaRepository<UnitReserveD
 	List<UnitReserveDetails> findReservedUnitsWithPastReserveEndDate();
 
 	List<UnitReserveDetails> findByUnitUnitId(Integer unitId);
+
+	UnitReserveDetails findByUnit(Unit unit);
 
 }

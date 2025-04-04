@@ -47,6 +47,4 @@ public class Area implements Serializable {
 	@JoinColumn(name = "subscriber_id", referencedColumnName = "subscriber_id")
 	private Subscriber subscriber;
 
-	
-
 }

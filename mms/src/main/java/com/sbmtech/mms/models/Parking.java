@@ -5,8 +5,6 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -34,13 +32,11 @@ public class Parking implements Serializable {
 	@ManyToOne
 	@JoinColumn(name = "park_zone_id", referencedColumnName = "park_zone_id")
 	private ParkingZone parkZone;
-	
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "building_id", referencedColumnName = "building_id")
 	private Building building;
 
-
-	//@Enumerated(EnumType.STRING)
 	@Column(name = "parking_type", nullable = false)
 	private String parkingType;
 
@@ -122,7 +118,5 @@ public class Parking implements Serializable {
 	public void setBuilding(Building building) {
 		this.building = building;
 	}
-	
-	
 
 }

@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.sbmtech.mms.models.Building;
 import com.sbmtech.mms.models.Unit;
 import org.springframework.data.domain.Pageable;
 
@@ -31,5 +32,7 @@ public interface UnitRepository extends JpaRepository<Unit, Integer> {
 	List<Unit> getAllUnitsByBuildingId(@Param("buildingId") Integer buildingId);
 
 	List<Unit> findByBuildingBuildingId(Integer buildingId);
+
+	List<Unit> findByBuildingAndIsDeletedFalse(Building building);
 
 }

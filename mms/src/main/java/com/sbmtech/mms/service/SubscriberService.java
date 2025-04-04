@@ -13,6 +13,7 @@ import com.sbmtech.mms.payload.request.AdditionalDetailsRequest;
 import com.sbmtech.mms.payload.request.ApiResponse;
 import com.sbmtech.mms.payload.request.AreaRequest;
 import com.sbmtech.mms.payload.request.BuildingRequest;
+import com.sbmtech.mms.payload.request.BuildingSearchRequest;
 import com.sbmtech.mms.payload.request.CommunityRequest;
 import com.sbmtech.mms.payload.request.CreateUserRequest;
 import com.sbmtech.mms.payload.request.DeleteBuildingRequest;
@@ -28,7 +29,6 @@ import com.sbmtech.mms.payload.request.ReserveUnitRequest;
 import com.sbmtech.mms.payload.request.SubscriberRequest;
 import com.sbmtech.mms.payload.request.SubscriptionPaymentRequest;
 import com.sbmtech.mms.payload.request.SubscriptionRequest;
-import com.sbmtech.mms.payload.request.TenantFilterRequest;
 import com.sbmtech.mms.payload.request.TenantIdRequest;
 import com.sbmtech.mms.payload.request.TenantUnitRequest;
 import com.sbmtech.mms.payload.request.TenantUpdateRequest;
@@ -88,8 +88,7 @@ public interface SubscriberService {
 
 	public ApiResponse<Object> addDepartment(@Valid DepartmentRequest request);
 
-	public ApiResponse<Object> getAllBuildings(Integer subscriberId, PaginationRequest paginationRequest)
-			throws Exception;
+	public ApiResponse<Object> getAllBuildings(Integer subscriberId, BuildingSearchRequest request) throws Exception;
 
 	public ApiResponse<Object> reserveUnit(Integer subscriberId, ReserveUnitRequest reserveUnitRequest);
 
@@ -116,7 +115,5 @@ public interface SubscriberService {
 	public ApiResponse<Object> getAllParkingZoneByBuilding(@Valid ParkingZoneRequest request);
 
 	public ApiResponse<Object> getAllParkingByBuilding(ParkingRequest request);
-
-	public ApiResponse<?> getAllTenantsByBuildingIdWithFilters(Integer subscriberId, TenantFilterRequest filterRequest);
 
 }

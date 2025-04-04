@@ -13,7 +13,9 @@ import com.sbmtech.mms.models.UnitKeys;
 public interface UnitKeysRepository extends JpaRepository<UnitKeys, Integer> {
 
 	boolean existsByUnitAndKeyMaster(Unit unit, KeyMaster keyMaster);
-	
+
 	List<UnitKeys> findByUnitUnitId(Integer unitId);
+
+	List<UnitKeys> findByUnit(Unit unit);
 
 }

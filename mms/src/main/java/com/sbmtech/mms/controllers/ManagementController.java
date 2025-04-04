@@ -23,19 +23,18 @@ import com.sbmtech.mms.payload.request.AreaRequest;
 import com.sbmtech.mms.payload.request.DeleteBuildingRequest;
 import com.sbmtech.mms.payload.request.DeleteUnitRequest;
 import com.sbmtech.mms.payload.request.BuildingRequest;
+import com.sbmtech.mms.payload.request.BuildingSearchRequest;
 import com.sbmtech.mms.payload.request.BuildingUnitPaginationRequest;
 import com.sbmtech.mms.payload.request.CommunityRequest;
 import com.sbmtech.mms.payload.request.CreateUserRequest;
 import com.sbmtech.mms.payload.request.DepartmentRequest;
 import com.sbmtech.mms.payload.request.FloorRequest;
 import com.sbmtech.mms.payload.request.KeyMasterRequest;
-import com.sbmtech.mms.payload.request.PaginationRequest;
 import com.sbmtech.mms.payload.request.ParkingRequest;
 import com.sbmtech.mms.payload.request.ParkingZoneRequest;
 import com.sbmtech.mms.payload.request.ReserveUnitRequest;
 import com.sbmtech.mms.payload.request.SubscriptionPaymentRequest;
 import com.sbmtech.mms.payload.request.SubscriptionRequest;
-import com.sbmtech.mms.payload.request.TenantFilterRequest;
 import com.sbmtech.mms.payload.request.TenantIdRequest;
 import com.sbmtech.mms.payload.request.TenantUnitRequest;
 import com.sbmtech.mms.payload.request.TenantUpdateRequest;
@@ -275,10 +274,9 @@ public class ManagementController {
 
 	@PostMapping("/getAllBuildings")
 	public ResponseEntity<?> getAllBuildings(@CurrentSecurityContext(expression = "authentication") Authentication auth,
-			@RequestBody PaginationRequest paginationRequest) throws Exception {
-
+			@RequestBody BuildingSearchRequest request) throws Exception {
 		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
-		return ResponseEntity.ok(subscriberService.getAllBuildings(subscriberId, paginationRequest));
+		return ResponseEntity.ok(subscriberService.getAllBuildings(subscriberId, request));
 	}
 
 	@PostMapping("/reserveUnit")
@@ -344,14 +342,6 @@ public class ManagementController {
 			@Valid @RequestBody TenantUpdateRequest request) throws Exception {
 		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
 		return ResponseEntity.ok(subscriberService.updateTenant(subscriberId, request));
-	}
-
-	@PostMapping("/getAllByBuilding")
-	public ResponseEntity<?> getAllTenantsByBuildingId(
-			@CurrentSecurityContext(expression = "authentication") Authentication auth,
-			@Valid @RequestBody TenantFilterRequest request) throws Exception {
-		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
-		return ResponseEntity.ok(subscriberService.getAllTenantsByBuildingIdWithFilters(subscriberId, request));
 	}
 
 }

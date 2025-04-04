@@ -43,12 +43,22 @@ import org.springframework.transaction.annotation.Transactional;
 import com.sbmtech.mms.constant.CommonConstants;
 import com.sbmtech.mms.constant.SubscriptionStatus;
 import com.sbmtech.mms.dto.BuildingDetailDTO;
+import com.sbmtech.mms.dto.FloorDTO;
 import com.sbmtech.mms.dto.KeyValuePairDTO;
 import com.sbmtech.mms.dto.NotifEmailDTO;
 import com.sbmtech.mms.dto.NotificationEmailResponseDTO;
+import com.sbmtech.mms.dto.ParkingDTO;
+import com.sbmtech.mms.dto.ParkingZoneDTO;
+import com.sbmtech.mms.dto.ParkingZoneSimpleDTO;
 import com.sbmtech.mms.dto.S3DownloadDto;
 import com.sbmtech.mms.dto.S3UploadDto;
 import com.sbmtech.mms.dto.S3UploadObjectDto;
+import com.sbmtech.mms.dto.TenantSimpleDTO;
+import com.sbmtech.mms.dto.TenureDetailsDTO;
+import com.sbmtech.mms.dto.UnitDTO;
+import com.sbmtech.mms.dto.UnitKeyDTO;
+import com.sbmtech.mms.dto.UnitReserveDetailsDTO;
+import com.sbmtech.mms.dto.UserSimpleDTO;
 import com.sbmtech.mms.exception.BusinessException;
 import com.sbmtech.mms.models.Area;
 import com.sbmtech.mms.models.Building;
@@ -93,6 +103,7 @@ import com.sbmtech.mms.models.UserTypeMaster;
 import com.sbmtech.mms.payload.request.AdditionalDetailsRequest;
 import com.sbmtech.mms.payload.request.ApiResponse;
 import com.sbmtech.mms.payload.request.BuildingRequest;
+import com.sbmtech.mms.payload.request.BuildingSearchRequest;
 import com.sbmtech.mms.payload.request.CommunityRequest;
 import com.sbmtech.mms.payload.request.CreateUserRequest;
 import com.sbmtech.mms.payload.request.DeleteBuildingRequest;
@@ -109,7 +120,6 @@ import com.sbmtech.mms.payload.request.AreaRequest;
 import com.sbmtech.mms.payload.request.SubscriberRequest;
 import com.sbmtech.mms.payload.request.SubscriptionPaymentRequest;
 import com.sbmtech.mms.payload.request.SubscriptionRequest;
-import com.sbmtech.mms.payload.request.TenantFilterRequest;
 import com.sbmtech.mms.payload.request.TenantIdRequest;
 import com.sbmtech.mms.payload.request.TenantUnitRequest;
 import com.sbmtech.mms.payload.request.TenantUpdateRequest;
@@ -131,7 +141,6 @@ import com.sbmtech.mms.payload.response.ParkingZoneResponse;
 import com.sbmtech.mms.payload.response.SubscriptionPlans;
 import com.sbmtech.mms.payload.response.TenantDetailResponse;
 import com.sbmtech.mms.payload.response.TenantUnitResponse;
-import com.sbmtech.mms.payload.response.TenureDetailsResponse;
 import com.sbmtech.mms.payload.response.UniKeyResponse;
 import com.sbmtech.mms.payload.response.UnitDetailResponse;
 import com.sbmtech.mms.payload.response.UnitResponse;
@@ -1527,8 +1536,8 @@ public class SubscriberServiceImpl implements SubscriberService {
 	}
 
 	@SuppressWarnings("rawtypes")
-	public ApiResponse<Object> getAllBuildings(Integer subscriberId, PaginationRequest paginationRequest) {
-
+	public ApiResponse<Object> getAllBuildings(Integer subscriberId, BuildingSearchRequest request) {
+		PaginationRequest paginationRequest = request.getPaginationRequest();
 		Sort sort = paginationRequest.getSortDirection().equalsIgnoreCase("desc")
 				? Sort.by(paginationRequest.getSortBy()).descending()
 				: Sort.by(paginationRequest.getSortBy()).ascending();
@@ -1536,15 +1545,56 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		List<Building> listOfBuildings = buildingRepository.findAllBySubscriberIdAndIsDeletedFalse(subscriberId);
 
+		listOfBuildings = listOfBuildings.stream().filter(b -> {
+			boolean matches = true;
+
+			if (request.getBuildingId() != null) {
+				matches = matches && b.getBuildingId().equals(request.getBuildingId());
+			}
+
+			if (StringUtils.isNotBlank(request.getBuildingName())) {
+				matches = matches && StringUtils.containsIgnoreCase(b.getBuildingName(), request.getBuildingName());
+			}
+
+			if (StringUtils.isNotBlank(request.getCityName())) {
+				if (b.getCommunity() != null && b.getCommunity().getArea() != null
+						&& b.getCommunity().getArea().getCity() != null) {
+					matches = matches && StringUtils.containsIgnoreCase(b.getCommunity().getArea().getCity().getName(),
+							request.getCityName());
+				} else if (b.getArea() != null && b.getArea().getCity() != null) {
+					matches = matches
+							&& StringUtils.containsIgnoreCase(b.getArea().getCity().getName(), request.getCityName());
+				} else {
+					matches = false;
+				}
+			}
+
+			if (StringUtils.isNotBlank(request.getAreaName())) {
+				if (b.getCommunity() != null && b.getCommunity().getArea() != null) {
+					matches = matches && StringUtils.containsIgnoreCase(b.getCommunity().getArea().getAreaName(),
+							request.getAreaName());
+				} else if (b.getArea() != null) {
+					matches = matches
+							&& StringUtils.containsIgnoreCase(b.getArea().getAreaName(), request.getAreaName());
+				} else {
+					matches = false;
+				}
+			}
+
+			return matches;
+		}).collect(Collectors.toList());
+
 		List<BuildingDetailDTO> listBD = new ArrayList<>();
 
 		for (Building b : listOfBuildings) {
 			BuildingDetailDTO bt = new BuildingDetailDTO();
 			BeanUtils.copyProperties(b, bt);
+
 			if (StringUtils.isNotBlank(b.getBuildingLogoFileName())) {
 				bt.setBuildingLogoLink(s3Service.generatePresignedUrl(subscriberId, b.getBuildingId(), null,
 						b.getBuildingLogoFileName()));
 			}
+
 			if (b.getCommunity() != null) {
 				Community ct = b.getCommunity();
 				bt.setCommunityId(ct.getCommunityId());
@@ -1577,6 +1627,133 @@ public class SubscriberServiceImpl implements SubscriberService {
 				bt.setCityId(city.getCityId());
 				bt.setCityName(city.getName());
 			}
+
+			List<Floor> floors = floorRepository.findByBuilding(b);
+			bt.setFloors(floors.stream().map(f -> {
+				FloorDTO dto = new FloorDTO();
+				dto.setFloorId(f.getFloorId());
+				dto.setFloorName(f.getFloorName());
+				return dto;
+			}).collect(Collectors.toList()));
+
+			List<Parking> parkings = parkingRepository.findByBuilding(b);
+			bt.setParkings(parkings.stream().map(p -> {
+				ParkingDTO dto = new ParkingDTO();
+				dto.setParkingId(p.getParkingId());
+				dto.setParkingName(p.getParkingName());
+				dto.setParkingType(p.getParkingType());
+				dto.setIsAvailable(p.getIsAvailable());
+				if (p.getParkZone() != null) {
+					ParkingZoneSimpleDTO zoneDto = new ParkingZoneSimpleDTO();
+					zoneDto.setParkZoneId(p.getParkZone().getParkZoneId());
+					zoneDto.setParkZoneName(p.getParkZone().getParkZoneName());
+					dto.setParkZone(zoneDto);
+				}
+				return dto;
+			}).collect(Collectors.toList()));
+
+			List<ParkingZone> parkingZones = parkingZoneRepository.findByBuilding(b);
+			bt.setParkingZones(parkingZones.stream().map(pz -> {
+				ParkingZoneDTO dto = new ParkingZoneDTO();
+				dto.setParkZoneId(pz.getParkZoneId());
+				dto.setParkZoneName(pz.getParkZoneName());
+				return dto;
+			}).collect(Collectors.toList()));
+
+			List<Unit> units = unitRepository.findByBuildingAndIsDeletedFalse(b);
+			bt.setUnits(units.stream().map(u -> {
+				UnitDTO dto = new UnitDTO();
+				dto.setUnitId(u.getUnitId());
+				dto.setUnitName(u.getUnitName());
+				if (u.getFloor() != null) {
+					dto.setFloorName(u.getFloor().getFloorName());
+				}
+				if (u.getUnitType() != null) {
+					dto.setUnitType(u.getUnitType().getUnitTypeName());
+				}
+				if (u.getUnitSubType() != null) {
+					dto.setUnitSubType(u.getUnitSubType().getUnitSubtypeName());
+				}
+				dto.setSize(u.getSize());
+				dto.setHasBalcony(u.getHasBalcony());
+				if (u.getUnitStatus() != null) {
+					dto.setUnitStatus(u.getUnitStatus().getUnitStatusName());
+				}
+				dto.setRentMonth(u.getRentMonth());
+				dto.setRentYear(u.getRentYear());
+				dto.setSecurityDeposit(u.getSecurityDeposit());
+				dto.setWaterConnNo(u.getWaterConnNo());
+				dto.setEbConnNo(u.getEbConnNo());
+
+				List<String> unitImages = new ArrayList<>();
+				if (StringUtils.isNotBlank(u.getUnitMainPic1Name())) {
+					unitImages.add(s3Service.generatePresignedUrl(subscriberId, b.getBuildingId(), u.getUnitId(),
+							u.getUnitMainPic1Name()));
+				}
+				dto.setUnitImages(unitImages);
+
+				Optional<TenantUnit> tenantUnit = tenantUnitRepository.findByUnitAndActiveTrue(u);
+				if (tenantUnit != null && tenantUnit.get().getTenant() != null
+						&& !tenantUnit.get().getTenant().getIsDeleted()) {
+					Tenant tenant = tenantUnit.get().getTenant();
+					TenantSimpleDTO tenantDto = new TenantSimpleDTO();
+					tenantDto.setTenantId(tenant.getTenantId());
+					tenantDto.setFirstName(tenant.getFirstName());
+					tenantDto.setLastName(tenant.getLastName());
+					tenantDto.setEmail(tenant.getEmail());
+					tenantDto.setPhoneNumber(tenant.getPhoneNumber());
+					tenantDto.setEidaExpiryDate(tenant.getEidaExpiryDate());
+					tenantDto.setPassportNo(tenant.getPassportNo());
+					tenantDto.setPassportExpiryDate(tenant.getPassportExpiryDate());
+					if (tenant.getNationality() != null) {
+						tenantDto.setNationality(tenant.getNationality().getName());
+					}
+
+					List<TenureDetails> tenureDetails = tenureDetailsRepository.findByTenantUnit(tenantUnit.get());
+					if (!tenureDetails.isEmpty()) {
+						tenantDto.setTenureDetails(tenureDetails.stream().map(td -> {
+							TenureDetailsDTO tenureDto = new TenureDetailsDTO();
+							tenureDto.setTenantTenureId(td.getTenantTenureId());
+							tenureDto.setTenancyStartDate(td.getTenancyStartDate());
+							tenureDto.setTenancyEndDate(td.getTenancyEndDate());
+							return tenureDto;
+						}).collect(Collectors.toList()));
+					}
+
+					dto.setTenant(tenantDto);
+				}
+
+				UnitReserveDetails reservation = unitReserveDetailsRepository.findByUnit(u);
+				if (reservation != null) {
+					UnitReserveDetailsDTO reserveDto = new UnitReserveDetailsDTO();
+					reserveDto.setUnitReserveId(reservation.getUnitReserveId());
+					reserveDto.setReserveStartDate(reservation.getReserveStartDate());
+					reserveDto.setReserveEndDate(reservation.getReserveEndDate());
+					reserveDto.setPaymentRequired(reservation.getPaymentRequired());
+					if (reservation.getUser() != null) {
+						UserSimpleDTO userDto = new UserSimpleDTO();
+						userDto.setUserId(reservation.getUser().getUserId().intValue());
+						userDto.setUserName(reservation.getUser().getEmail());
+						userDto.setEmail(reservation.getUser().getEmail());
+						reserveDto.setReservedBy(userDto);
+					}
+					dto.setReservation(reserveDto);
+				}
+
+				List<UnitKeys> unitKeys = unitKeysRepository.findByUnit(u);
+				if (!unitKeys.isEmpty()) {
+					dto.setKeys(unitKeys.stream().map(uk -> {
+						UnitKeyDTO keyDto = new UnitKeyDTO();
+						keyDto.setUnitKeysId(uk.getUnitKeysId());
+						if (uk.getKeyMaster() != null) {
+							keyDto.setKeyName(uk.getKeyMaster().getKeyName());
+						}
+						return keyDto;
+					}).collect(Collectors.toList()));
+				}
+
+				return dto;
+			}).collect(Collectors.toList()));
 			listBD.add(bt);
 		}
 
@@ -1878,22 +2055,22 @@ public class SubscriberServiceImpl implements SubscriberService {
 			}
 		}
 
-		City city =null;
-		if (existingBuilding.getArea()!=null) {
-			city=existingBuilding.getArea().getCity();
-			if (city!=null && StringUtils.isNotBlank(request.getCityName()) && !request.getCityName().equals(city.getName())) {
+		City city = null;
+		if (existingBuilding.getArea() != null) {
+			city = existingBuilding.getArea().getCity();
+			if (city != null && StringUtils.isNotBlank(request.getCityName())
+					&& !request.getCityName().equals(city.getName())) {
 				city.setName(request.getCityName());
 				if (country != null)
 					city.setCountry(country);
 				if (state != null)
 					city.setState(state);
 				cityRepository.save(city);
-			} 
+			}
 		}
-		
-		
+
 		Area area = existingBuilding.getArea();
-		if (area!=null) {
+		if (area != null) {
 			if (StringUtils.isNotBlank(request.getAreaName())) {
 				area.setAreaName(request.getAreaName());
 				if (country != null)
@@ -1902,7 +2079,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 					area.setState(state);
 				area.setCity(city);
 				areaRepository.save(area);
-			} 
+			}
 		}
 		Community community = existingBuilding.getCommunity();
 		if (StringUtils.isNotBlank(request.getCommunityName())) {
@@ -2075,65 +2252,6 @@ public class SubscriberServiceImpl implements SubscriberService {
 			return dto;
 		}).collect(Collectors.toList());
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, pzDTOs, null, null);
-	}
-
-	@SuppressWarnings("rawtypes")
-	public ApiResponse<Object> getAllTenantsByBuildingIdWithFilters(Integer subscriberId,
-			TenantFilterRequest filterRequest) {
-		Sort sort = filterRequest.getSortDirection().equalsIgnoreCase("desc")
-				? Sort.by(filterRequest.getSortBy()).descending()
-				: Sort.by(filterRequest.getSortBy()).ascending();
-
-		PageRequest pageable = PageRequest.of(filterRequest.getPage(), filterRequest.getSize(), sort);
-
-		Page<TenantUnit> tenantUnitPage = tenantUnitRepository.findTenantsByBuildingIdWithFilters(
-				filterRequest.getBuildingId(), filterRequest.getTenantName(), filterRequest.getNationalityId(),
-				filterRequest.getUnitName(), filterRequest.getUnitId(), pageable);
-
-		List<TenantDetailResponse> tenantDTOs = tenantUnitPage.getContent().stream().map(tenantUnit -> {
-			TenantDetailResponse dto = new TenantDetailResponse();
-			Tenant tenant = tenantUnit.getTenant();
-			BeanUtils.copyProperties(tenant, dto);
-
-			if (tenant.getNationality() != null) {
-				dto.setNationality(tenant.getNationality().getName());
-			}
-
-			if (tenantUnit.getUnit() != null) {
-				dto.setUnitId(tenantUnit.getUnit().getUnitId());
-				dto.setUnitName(tenantUnit.getUnit().getUnitName());
-				if (tenantUnit.getUnit().getBuilding() != null) {
-					dto.setBuildingId(tenantUnit.getUnit().getBuilding().getBuildingId());
-					dto.setBuildingName(tenantUnit.getUnit().getBuilding().getBuildingName());
-				}
-			}
-			if (tenantUnit.getParking() != null) {
-				dto.setParkingId(tenantUnit.getParking().getParkingId());
-				dto.setParkingName(tenantUnit.getParking().getParkingName());
-				dto.setParkingType(tenantUnit.getParking().getParkingType());
-				if (tenantUnit.getParking().getParkZone() != null) {
-					dto.setParkingZoneId(tenantUnit.getParking().getParkZone().getParkZoneId());
-					dto.setParkingZoneName(tenantUnit.getParking().getParkZone().getParkZoneName());
-				}
-			}
-
-			if (tenantUnit.getTenureDetails() != null && !tenantUnit.getTenureDetails().isEmpty()) {
-				List<TenureDetailsResponse> tenureResponses = tenantUnit.getTenureDetails().stream().map(tenure -> {
-					TenureDetailsResponse tenureResponse = new TenureDetailsResponse();
-					BeanUtils.copyProperties(tenure, tenureResponse);
-					return tenureResponse;
-				}).collect(Collectors.toList());
-				dto.setTenureDetails(tenureResponses);
-			}
-
-			return dto;
-		}).collect(Collectors.toList());
-
-		PaginationResponse response = new PaginationResponse<>(tenantDTOs, tenantUnitPage.getNumber(),
-				tenantUnitPage.getTotalPages(), tenantUnitPage.getTotalElements(), tenantUnitPage.isFirst(),
-				tenantUnitPage.isLast());
-
-		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, response, null, null);
 	}
 
 }
