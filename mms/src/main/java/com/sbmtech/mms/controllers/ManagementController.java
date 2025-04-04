@@ -274,7 +274,7 @@ public class ManagementController {
 
 	@PostMapping("/getAllBuildings")
 	public ResponseEntity<?> getAllBuildings(@CurrentSecurityContext(expression = "authentication") Authentication auth,
-			@RequestBody BuildingSearchRequest request) throws Exception {
+			@RequestBody(required = false) BuildingSearchRequest request) throws Exception {
 		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
 		return ResponseEntity.ok(subscriberService.getAllBuildings(subscriberId, request));
 	}
