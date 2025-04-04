@@ -43,9 +43,9 @@ public class User implements Serializable {
 	@Column(name = "address")
 	private String address;
 
-	@Lob
-	@Column(name = "eida_copy", columnDefinition = "longblob")
-	private byte[] eidaCopy;
+	//@Lob
+	@Column(name = "eida_copy_filename")
+	private String eidaCopyFilename;
 
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "nat_id", referencedColumnName = "country_id")
@@ -158,12 +158,14 @@ public class User implements Serializable {
 		this.address = address;
 	}
 
-	public byte[] getEidaCopy() {
-		return eidaCopy;
+	
+
+	public String getEidaCopyFilename() {
+		return eidaCopyFilename;
 	}
 
-	public void setEidaCopy(byte[] eidaCopy) {
-		this.eidaCopy = eidaCopy;
+	public void setEidaCopyFilename(String eidaCopyFilename) {
+		this.eidaCopyFilename = eidaCopyFilename;
 	}
 
 	public Countries getNationality() {

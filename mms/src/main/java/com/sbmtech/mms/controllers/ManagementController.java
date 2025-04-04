@@ -334,6 +334,7 @@ public class ManagementController {
 	public ResponseEntity<?> updateUnit(@CurrentSecurityContext(expression = "authentication") Authentication auth,
 			@Valid @RequestBody UnitUpdateRequest request) throws Exception {
 		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
+		request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.updateUnit(subscriberId, request));
 	}
 

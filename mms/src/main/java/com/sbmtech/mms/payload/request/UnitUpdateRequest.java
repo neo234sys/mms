@@ -16,7 +16,7 @@ public class UnitUpdateRequest {
 	private Double securityDeposit;
 	private String waterConnNo;
 	private String ebConnNo;
-
+	private Integer subscriberId;
 	public Integer getUnitId() {
 		return unitId;
 	}
@@ -103,6 +103,14 @@ public class UnitUpdateRequest {
 
 	public void setEbConnNo(String ebConnNo) {
 		this.ebConnNo = ebConnNo;
+	}
+
+	public Integer getSubscriberId() {
+		return subscriberId;
+	}
+
+	public void setSubscriberId(Integer subscriberId) {
+		this.subscriberId = subscriberId;
 	}
 
 	@Override

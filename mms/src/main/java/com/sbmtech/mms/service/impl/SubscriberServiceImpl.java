@@ -571,6 +571,8 @@ public class SubscriberServiceImpl implements SubscriberService {
 	}
 
 	public ApiResponse<String> addAdditionalDetails(AdditionalDetailsRequest request) {
+		List<S3UploadObjectDto> s3UploadObjectDtoList = new ArrayList<>();
+		S3UploadObjectDto s3BuildingLogoDto = null;
 		Subscriber subscriber = subscriberRepository.findById(request.getSubscriberId())
 				.orElseThrow(() -> new RuntimeException("Subscriber not found with id: " + request.getSubscriberId()));
 
@@ -586,11 +588,57 @@ public class SubscriberServiceImpl implements SubscriberService {
 		if (request.getCompanyTradeLicense() != null) {
 			subscriber.setCompanyTradeLicense(request.getCompanyTradeLicense());
 		}
-		if (request.getCompanyTradeLicenseCopy() != null) {
-			subscriber.setCompanyTradeLicenseCopy(request.getCompanyTradeLicenseCopy());
-		}
-		if (request.getCompanyLogo() != null) {
-			subscriber.setCompanyLogo(request.getCompanyLogo());
+		try {
+			if (request.getCompanyTradeLicenseCopy() != null) {
+				if (!ObjectUtils.isEmpty(request.getCompanyTradeLicenseCopy())) {
+					String contentType = CommonUtil.validateAttachment(request.getCompanyTradeLicenseCopy());
+					String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+					s3BuildingLogoDto = new S3UploadObjectDto(CommonConstants.TRADE_LIC_PIC, contentType, fileExt,
+							Base64.getEncoder().encodeToString(request.getCompanyTradeLicenseCopy()), null);
+					s3UploadObjectDtoList.add(s3BuildingLogoDto);
+					
+					S3UploadDto s3UploadDto = new S3UploadDto();
+					s3UploadDto.setSubscriberId(request.getSubscriberId());
+					s3UploadDto.setObjectType(S3UploadObjTypeEnum.COMPANYTRADELICENSE.toString());
+					s3UploadDto.setS3UploadObjectDtoList(s3UploadObjectDtoList);
+					List<S3UploadObjectDto> s3UploadObjectDtoListRet = s3Service.upload(s3UploadDto);
+					for (S3UploadObjectDto s3UploadObjectDto : s3UploadObjectDtoListRet) {
+						if (s3UploadObjectDto != null && StringUtils.isNotBlank(s3UploadObjectDto.getS3FileName())) {
+							if (s3UploadObjectDto.getObjectName().equals(CommonConstants.TRADE_LIC_PIC)) {
+								subscriber.setCompanyTradeLicenseCopyFilename(s3UploadObjectDto.getS3FileName());
+							}
+
+						}
+					}	
+
+				}
+			}
+			if (request.getCompanyLogo() != null) {
+				if (!ObjectUtils.isEmpty(request.getCompanyLogo())) {
+					String contentType = CommonUtil.validateAttachment(request.getCompanyLogo());
+					String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+					s3BuildingLogoDto = new S3UploadObjectDto(CommonConstants.COMPANY_LOGO_PIC, contentType, fileExt,
+							Base64.getEncoder().encodeToString(request.getCompanyLogo()), null);
+					s3UploadObjectDtoList.add(s3BuildingLogoDto);
+					
+					S3UploadDto s3UploadDto = new S3UploadDto();
+					s3UploadDto.setSubscriberId(request.getSubscriberId());
+					s3UploadDto.setObjectType(S3UploadObjTypeEnum.COMPANYLOGO.toString());
+					s3UploadDto.setS3UploadObjectDtoList(s3UploadObjectDtoList);
+					List<S3UploadObjectDto> s3UploadObjectDtoListRet = s3Service.upload(s3UploadDto);
+					for (S3UploadObjectDto s3UploadObjectDto : s3UploadObjectDtoListRet) {
+						if (s3UploadObjectDto != null && StringUtils.isNotBlank(s3UploadObjectDto.getS3FileName())) {
+							if (s3UploadObjectDto.getObjectName().equals(CommonConstants.COMPANY_LOGO_PIC)) {
+								subscriber.setCompanyLogoFilename(s3UploadObjectDto.getS3FileName());
+							}
+
+						}
+					}	
+
+				}
+			}
+		} catch (Exception e) {
+			logger.error("image upload failed");
 		}
 
 		subscriber.setUpdatedDate(new Date());
@@ -1051,6 +1099,8 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	@SuppressWarnings("unchecked")
 	public ApiResponse<Object> createUserAndMergeTenant(CreateUserRequest request) throws Exception {
+		List<S3UploadObjectDto> s3UploadObjectDtoList = new ArrayList<>();
+		S3UploadObjectDto s3BuildingLogoDto = null;
 		User existingUser = null;
 		User user = null;
 		boolean existingTenant = false;
@@ -1097,11 +1147,76 @@ public class SubscriberServiceImpl implements SubscriberService {
 		tenant.setDateOfBirth(CommonUtil.getDatefromString(request.getDob(), DATE_ddMMyyyy));
 		tenant.setEmiratesId(CommonUtil.getLongValofObject(request.getEmiratesId()));
 		tenant.setEidaExpiryDate(CommonUtil.getDatefromString(request.getEidaExpiryDate(), DATE_ddMMyyyy));
-		tenant.setEidaCopy(request.getEidaCopy());
 		tenant.setPassportNo(request.getPassportNo());
 		tenant.setPassportExpiryDate(CommonUtil.getDatefromString(request.getPassportExpiryDate(), DATE_ddMMyyyy));
-		tenant.setPassportCopy(request.getPassportCopy());
-		tenant.setPhoto(request.getPhoto());
+		
+
+		if (!ObjectUtils.isEmpty(request.getEidaCopy())) {
+			String contentType = CommonUtil.validateAttachment(request.getEidaCopy());
+			String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+			s3BuildingLogoDto = new S3UploadObjectDto(CommonConstants.EID_PIC, contentType, fileExt,
+					Base64.getEncoder().encodeToString(request.getEidaCopy()), null);
+			s3UploadObjectDtoList.add(s3BuildingLogoDto);
+			
+			S3UploadDto s3UploadDto = new S3UploadDto();
+			s3UploadDto.setSubscriberId(request.getSubscriberId());
+			s3UploadDto.setObjectType(S3UploadObjTypeEnum.EID .toString());
+			s3UploadDto.setS3UploadObjectDtoList(s3UploadObjectDtoList);
+			List<S3UploadObjectDto> s3UploadObjectDtoListRet = s3Service.upload(s3UploadDto);
+			for (S3UploadObjectDto s3UploadObjectDto : s3UploadObjectDtoListRet) {
+				if (s3UploadObjectDto != null && StringUtils.isNotBlank(s3UploadObjectDto.getS3FileName())) {
+					if (s3UploadObjectDto.getObjectName().equals(CommonConstants.EID_PIC)) {
+						tenant.setEidaCopyFilename(s3UploadObjectDto.getS3FileName());
+					}
+
+				}
+			}
+		}
+		if (!ObjectUtils.isEmpty(request.getPassportCopy())) {
+			String contentType = CommonUtil.validateAttachment(request.getPassportCopy());
+			String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+			s3BuildingLogoDto = new S3UploadObjectDto(CommonConstants.PASSPORT_PIC, contentType, fileExt,
+					Base64.getEncoder().encodeToString(request.getPassportCopy()), null);
+			s3UploadObjectDtoList.add(s3BuildingLogoDto);
+			
+			S3UploadDto s3UploadDto = new S3UploadDto();
+			s3UploadDto.setSubscriberId(request.getSubscriberId());
+			s3UploadDto.setObjectType(S3UploadObjTypeEnum.PASSPORT.toString());
+			s3UploadDto.setS3UploadObjectDtoList(s3UploadObjectDtoList);
+			List<S3UploadObjectDto> s3UploadObjectDtoListRet = s3Service.upload(s3UploadDto);
+			for (S3UploadObjectDto s3UploadObjectDto : s3UploadObjectDtoListRet) {
+				if (s3UploadObjectDto != null && StringUtils.isNotBlank(s3UploadObjectDto.getS3FileName())) {
+					if (s3UploadObjectDto.getObjectName().equals(CommonConstants.PASSPORT_PIC)) {
+						tenant.setPassportCopyFilename(s3UploadObjectDto.getS3FileName());
+					}
+
+				}
+			}
+		}
+		
+		if (!ObjectUtils.isEmpty(request.getPhoto())) {
+			String contentType = CommonUtil.validateAttachment(request.getPhoto());
+			String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+			s3BuildingLogoDto = new S3UploadObjectDto(CommonConstants.PHOTO_PIC, contentType, fileExt,
+					Base64.getEncoder().encodeToString(request.getPhoto()), null);
+			s3UploadObjectDtoList.add(s3BuildingLogoDto);
+			
+			S3UploadDto s3UploadDto = new S3UploadDto();
+			s3UploadDto.setSubscriberId(request.getSubscriberId());
+			s3UploadDto.setObjectType(S3UploadObjTypeEnum.PHOTO.toString());
+			s3UploadDto.setS3UploadObjectDtoList(s3UploadObjectDtoList);
+			List<S3UploadObjectDto> s3UploadObjectDtoListRet = s3Service.upload(s3UploadDto);
+			for (S3UploadObjectDto s3UploadObjectDto : s3UploadObjectDtoListRet) {
+				if (s3UploadObjectDto != null && StringUtils.isNotBlank(s3UploadObjectDto.getS3FileName())) {
+					if (s3UploadObjectDto.getObjectName().equals(CommonConstants.PHOTO_PIC)) {
+						tenant.setPhotoFilename(s3UploadObjectDto.getS3FileName());
+					}
+
+				}
+			}
+		}
+		
+		
 		tenant.setNationality(nationality);
 		tenant = tenantRepository.save(tenant);
 		String pwd = CommonUtil.generateRandomPwd();
@@ -1116,8 +1231,9 @@ public class SubscriberServiceImpl implements SubscriberService {
 			existingUser.setDob(CommonUtil.getDatefromString(request.getDob(), DATE_ddMMyyyy));
 			existingUser.setGender(request.getGender());
 			existingUser.setAddress(request.getAddress());
-			if (request.getEidaCopy() != null && request.getEidaCopy().length > 1) {
-				existingUser.setEidaCopy(request.getEidaCopy());
+			if (request.getEidaCopy() != null && request.getEidaCopy().length > 1 && StringUtils.isNoneBlank(tenant.getEidaCopyFilename()) ){
+				//existingUser.setEidaCopy(request.getEidaCopy());
+				existingUser.setEidaCopyFilename(tenant.getEidaCopyFilename());
 			}
 			existingUser.setNationality(nationality);
 
@@ -1143,7 +1259,10 @@ public class SubscriberServiceImpl implements SubscriberService {
 			user.setDob(CommonUtil.getDatefromString(request.getDob(), DATE_ddMMyyyy));
 			user.setGender(request.getGender());
 			user.setAddress(request.getAddress());
-			user.setEidaCopy(request.getEidaCopy());
+			//user.setEidaCopy(request.getEidaCopy());
+			if (StringUtils.isNoneBlank(tenant.getEidaCopyFilename()) ){
+				user.setEidaCopyFilename(tenant.getEidaCopyFilename());
+			}
 			user.setNationality(nationality);
 			// user.setUserType(userType);
 			user.setSubscriber(subscriber);
@@ -1426,7 +1545,8 @@ public class SubscriberServiceImpl implements SubscriberService {
 	}
 
 	public ApiResponse<Object> reserveUnit(Integer subscriberId, ReserveUnitRequest request) {
-
+		List<S3UploadObjectDto> s3UploadObjectDtoList = new ArrayList<>();
+		S3UploadObjectDto s3BuildingLogoDto = null;
 		try {
 
 			ProductConfig productConfig = productConfigRepository.findBySubscriberId(subscriberId);
@@ -1480,7 +1600,29 @@ public class SubscriberServiceImpl implements SubscriberService {
 			newUser.setDob(CommonUtil.getDatefromString(request.getDob(), DATE_ddMMyyyy));
 			newUser.setGender(request.getGender());
 			newUser.setAddress(request.getAddress());
-			newUser.setEidaCopy(request.getEidaCopy());
+			//newUser.setEidaCopy(request.getEidaCopy());
+			
+			if (!ObjectUtils.isEmpty(request.getEidaCopy())) {
+				String contentType = CommonUtil.validateAttachment(request.getEidaCopy());
+				String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+				s3BuildingLogoDto = new S3UploadObjectDto(CommonConstants.EID_PIC, contentType, fileExt,
+						Base64.getEncoder().encodeToString(request.getEidaCopy()), null);
+				s3UploadObjectDtoList.add(s3BuildingLogoDto);
+				
+				S3UploadDto s3UploadDto = new S3UploadDto();
+				s3UploadDto.setSubscriberId(subscriberId);
+				s3UploadDto.setObjectType(S3UploadObjTypeEnum.EID.toString());
+				s3UploadDto.setS3UploadObjectDtoList(s3UploadObjectDtoList);
+				List<S3UploadObjectDto> s3UploadObjectDtoListRet = s3Service.upload(s3UploadDto);
+				for (S3UploadObjectDto s3UploadObjectDto : s3UploadObjectDtoListRet) {
+					if (s3UploadObjectDto != null && StringUtils.isNotBlank(s3UploadObjectDto.getS3FileName())) {
+						if (s3UploadObjectDto.getObjectName().equals(CommonConstants.EID_PIC)) {
+							newUser.setEidaCopyFilename(s3UploadObjectDto.getS3FileName());
+						}
+
+					}
+				}
+			}
 
 			Countries nationality = countriesRepository.findById(request.getNationalityId()).orElse(null);
 

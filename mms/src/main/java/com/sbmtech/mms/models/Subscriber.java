@@ -50,13 +50,13 @@ public class Subscriber implements Serializable {
 	@Column(name = "company_tradelicense")
 	private String companyTradeLicense;
 
-	@Lob
-	@Column(name = "company_tradelicense_copy")
-	private byte[] companyTradeLicenseCopy;
+	//@Lob
+	@Column(name = "company_tradelicense_copy_filename")
+	private String companyTradeLicenseCopyFilename;
 
-	@Lob
-	@Column(name = "company_logo")
-	private byte[] companyLogo;
+	//@Lob
+	@Column(name = "company_logo_filename")
+	private String companyLogoFilename;
 
 	@Column(name = "otp_verified")
 	private Integer otpVerified;
@@ -154,20 +154,23 @@ public class Subscriber implements Serializable {
 		this.companyTradeLicense = companyTradeLicense;
 	}
 
-	public byte[] getCompanyTradeLicenseCopy() {
-		return companyTradeLicenseCopy;
+	
+
+	public String getCompanyTradeLicenseCopyFilename() {
+		return companyTradeLicenseCopyFilename;
 	}
 
-	public void setCompanyTradeLicenseCopy(byte[] companyTradeLicenseCopy) {
-		this.companyTradeLicenseCopy = companyTradeLicenseCopy;
+	public void setCompanyTradeLicenseCopyFilename(String companyTradeLicenseCopyFilename) {
+		this.companyTradeLicenseCopyFilename = companyTradeLicenseCopyFilename;
 	}
 
-	public byte[] getCompanyLogo() {
-		return companyLogo;
+	
+	public String getCompanyLogoFilename() {
+		return companyLogoFilename;
 	}
 
-	public void setCompanyLogo(byte[] companyLogo) {
-		this.companyLogo = companyLogo;
+	public void setCompanyLogoFilename(String companyLogoFilename) {
+		this.companyLogoFilename = companyLogoFilename;
 	}
 
 	public Integer getOtpVerified() {

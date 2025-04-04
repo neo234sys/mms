@@ -51,9 +51,9 @@ public class Tenant {
 	@Temporal(TemporalType.DATE)
 	private Date eidaExpiryDate;
 
-	@Lob
-	@Column(name = "eida_copy")
-	private byte[] eidaCopy;
+	//@Lob
+	@Column(name = "eida_copy_filename")
+	private String eidaCopyFilename;
 
 	@Column(name = "passport_no")
 	private String passportNo;
@@ -62,13 +62,13 @@ public class Tenant {
 	@Temporal(TemporalType.DATE)
 	private Date passportExpiryDate;
 
-	@Lob
-	@Column(name = "passport_copy")
-	private byte[] passportCopy;
+	//@Lob
+	@Column(name = "passport_copy_filename")
+	private String passportCopyFilename;
 
-	@Lob
-	@Column(name = "photo")
-	private byte[] photo;
+	//@Lob
+	@Column(name = "photo_filename")
+	private String photoFilename;
 
 	@Column(name = "nat_id")
 	private Integer nationalityId;
@@ -160,13 +160,7 @@ public class Tenant {
 		this.eidaExpiryDate = eidaExpiryDate;
 	}
 
-	public byte[] getEidaCopy() {
-		return eidaCopy;
-	}
-
-	public void setEidaCopy(byte[] eidaCopy) {
-		this.eidaCopy = eidaCopy;
-	}
+	
 
 	public String getPassportNo() {
 		return passportNo;
@@ -184,20 +178,30 @@ public class Tenant {
 		this.passportExpiryDate = passportExpiryDate;
 	}
 
-	public byte[] getPassportCopy() {
-		return passportCopy;
+	
+
+	public String getEidaCopyFilename() {
+		return eidaCopyFilename;
 	}
 
-	public void setPassportCopy(byte[] passportCopy) {
-		this.passportCopy = passportCopy;
+	public void setEidaCopyFilename(String eidaCopyFilename) {
+		this.eidaCopyFilename = eidaCopyFilename;
 	}
 
-	public byte[] getPhoto() {
-		return photo;
+	public String getPassportCopyFilename() {
+		return passportCopyFilename;
 	}
 
-	public void setPhoto(byte[] photo) {
-		this.photo = photo;
+	public void setPassportCopyFilename(String passportCopyFilename) {
+		this.passportCopyFilename = passportCopyFilename;
+	}
+
+	public String getPhotoFilename() {
+		return photoFilename;
+	}
+
+	public void setPhotoFilename(String photoFilename) {
+		this.photoFilename = photoFilename;
 	}
 
 	public Integer getNationalityId() {
@@ -260,9 +264,9 @@ public class Tenant {
 	public String toString() {
 		return "Tenant [tenantId=" + tenantId + ", firstName=" + firstName + ", lastName=" + lastName + ", email="
 				+ email + ", phoneNumber=" + phoneNumber + ", dateOfBirth=" + dateOfBirth + ", emiratesId=" + emiratesId
-				+ ", eidaExpiryDate=" + eidaExpiryDate + ", eidaCopy=" + Arrays.toString(eidaCopy) + ", passportNo="
+				+ ", eidaExpiryDate=" + eidaExpiryDate +  ", passportNo="
 				+ passportNo + ", passportExpiryDate=" + passportExpiryDate + ", passportCopy="
-				+ Arrays.toString(passportCopy) + ", photo=" + Arrays.toString(photo) + ", nationalityId="
+				+ ", nationalityId="
 				+ nationalityId + ", nationality=" + nationality + ", createdTime=" + createdTime + ", updatedTime="
 				+ updatedTime + ", createdBy=" + createdBy + ", updatedBy=" + updatedBy + ", isDeleted=" + isDeleted
 				+ "]";
