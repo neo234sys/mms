@@ -2,42 +2,15 @@ package com.sbmtech.mms.payload.request;
 
 public class BuildingSearchRequest {
 
-	private Integer buildingId;
-	private String buildingName;
-	private String cityName;
-	private String areaName;
+	private String search;
 	private PaginationRequest paginationRequest;
 
-	public Integer getBuildingId() {
-		return buildingId;
+	public String getSearch() {
+		return search;
 	}
 
-	public void setBuildingId(Integer buildingId) {
-		this.buildingId = buildingId;
-	}
-
-	public String getBuildingName() {
-		return buildingName;
-	}
-
-	public void setBuildingName(String buildingName) {
-		this.buildingName = buildingName;
-	}
-
-	public String getCityName() {
-		return cityName;
-	}
-
-	public void setCityName(String cityName) {
-		this.cityName = cityName;
-	}
-
-	public String getAreaName() {
-		return areaName;
-	}
-
-	public void setAreaName(String areaName) {
-		this.areaName = areaName;
+	public void setSearch(String search) {
+		this.search = search;
 	}
 
 	public PaginationRequest getPaginationRequest() {
@@ -50,8 +23,7 @@ public class BuildingSearchRequest {
 
 	@Override
 	public String toString() {
-		return "BuildingSearchRequest [buildingId=" + buildingId + ", buildingName=" + buildingName + ", cityName="
-				+ cityName + ", areaName=" + areaName + ", paginationRequest=" + paginationRequest + "]";
+		return "BuildingSearchRequest [search=" + search + ", paginationRequest=" + paginationRequest + "]";
 	}
 
 }

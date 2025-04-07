@@ -596,7 +596,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 					s3BuildingLogoDto = new S3UploadObjectDto(CommonConstants.TRADE_LIC_PIC, contentType, fileExt,
 							Base64.getEncoder().encodeToString(request.getCompanyTradeLicenseCopy()), null);
 					s3UploadObjectDtoList.add(s3BuildingLogoDto);
-					
+
 					S3UploadDto s3UploadDto = new S3UploadDto();
 					s3UploadDto.setSubscriberId(request.getSubscriberId());
 					s3UploadDto.setObjectType(S3UploadObjTypeEnum.COMPANYTRADELICENSE.toString());
@@ -609,7 +609,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 							}
 
 						}
-					}	
+					}
 
 				}
 			}
@@ -620,7 +620,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 					s3BuildingLogoDto = new S3UploadObjectDto(CommonConstants.COMPANY_LOGO_PIC, contentType, fileExt,
 							Base64.getEncoder().encodeToString(request.getCompanyLogo()), null);
 					s3UploadObjectDtoList.add(s3BuildingLogoDto);
-					
+
 					S3UploadDto s3UploadDto = new S3UploadDto();
 					s3UploadDto.setSubscriberId(request.getSubscriberId());
 					s3UploadDto.setObjectType(S3UploadObjTypeEnum.COMPANYLOGO.toString());
@@ -633,7 +633,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 							}
 
 						}
-					}	
+					}
 
 				}
 			}
@@ -1149,7 +1149,6 @@ public class SubscriberServiceImpl implements SubscriberService {
 		tenant.setEidaExpiryDate(CommonUtil.getDatefromString(request.getEidaExpiryDate(), DATE_ddMMyyyy));
 		tenant.setPassportNo(request.getPassportNo());
 		tenant.setPassportExpiryDate(CommonUtil.getDatefromString(request.getPassportExpiryDate(), DATE_ddMMyyyy));
-		
 
 		if (!ObjectUtils.isEmpty(request.getEidaCopy())) {
 			String contentType = CommonUtil.validateAttachment(request.getEidaCopy());
@@ -1157,10 +1156,10 @@ public class SubscriberServiceImpl implements SubscriberService {
 			s3BuildingLogoDto = new S3UploadObjectDto(CommonConstants.EID_PIC, contentType, fileExt,
 					Base64.getEncoder().encodeToString(request.getEidaCopy()), null);
 			s3UploadObjectDtoList.add(s3BuildingLogoDto);
-			
+
 			S3UploadDto s3UploadDto = new S3UploadDto();
 			s3UploadDto.setSubscriberId(request.getSubscriberId());
-			s3UploadDto.setObjectType(S3UploadObjTypeEnum.EID .toString());
+			s3UploadDto.setObjectType(S3UploadObjTypeEnum.EID.toString());
 			s3UploadDto.setS3UploadObjectDtoList(s3UploadObjectDtoList);
 			List<S3UploadObjectDto> s3UploadObjectDtoListRet = s3Service.upload(s3UploadDto);
 			for (S3UploadObjectDto s3UploadObjectDto : s3UploadObjectDtoListRet) {
@@ -1178,7 +1177,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			s3BuildingLogoDto = new S3UploadObjectDto(CommonConstants.PASSPORT_PIC, contentType, fileExt,
 					Base64.getEncoder().encodeToString(request.getPassportCopy()), null);
 			s3UploadObjectDtoList.add(s3BuildingLogoDto);
-			
+
 			S3UploadDto s3UploadDto = new S3UploadDto();
 			s3UploadDto.setSubscriberId(request.getSubscriberId());
 			s3UploadDto.setObjectType(S3UploadObjTypeEnum.PASSPORT.toString());
@@ -1193,14 +1192,14 @@ public class SubscriberServiceImpl implements SubscriberService {
 				}
 			}
 		}
-		
+
 		if (!ObjectUtils.isEmpty(request.getPhoto())) {
 			String contentType = CommonUtil.validateAttachment(request.getPhoto());
 			String fileExt = contentType.substring(contentType.indexOf("/") + 1);
 			s3BuildingLogoDto = new S3UploadObjectDto(CommonConstants.PHOTO_PIC, contentType, fileExt,
 					Base64.getEncoder().encodeToString(request.getPhoto()), null);
 			s3UploadObjectDtoList.add(s3BuildingLogoDto);
-			
+
 			S3UploadDto s3UploadDto = new S3UploadDto();
 			s3UploadDto.setSubscriberId(request.getSubscriberId());
 			s3UploadDto.setObjectType(S3UploadObjTypeEnum.PHOTO.toString());
@@ -1215,8 +1214,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 				}
 			}
 		}
-		
-		
+
 		tenant.setNationality(nationality);
 		tenant = tenantRepository.save(tenant);
 		String pwd = CommonUtil.generateRandomPwd();
@@ -1231,8 +1229,9 @@ public class SubscriberServiceImpl implements SubscriberService {
 			existingUser.setDob(CommonUtil.getDatefromString(request.getDob(), DATE_ddMMyyyy));
 			existingUser.setGender(request.getGender());
 			existingUser.setAddress(request.getAddress());
-			if (request.getEidaCopy() != null && request.getEidaCopy().length > 1 && StringUtils.isNoneBlank(tenant.getEidaCopyFilename()) ){
-				//existingUser.setEidaCopy(request.getEidaCopy());
+			if (request.getEidaCopy() != null && request.getEidaCopy().length > 1
+					&& StringUtils.isNoneBlank(tenant.getEidaCopyFilename())) {
+				// existingUser.setEidaCopy(request.getEidaCopy());
 				existingUser.setEidaCopyFilename(tenant.getEidaCopyFilename());
 			}
 			existingUser.setNationality(nationality);
@@ -1259,8 +1258,8 @@ public class SubscriberServiceImpl implements SubscriberService {
 			user.setDob(CommonUtil.getDatefromString(request.getDob(), DATE_ddMMyyyy));
 			user.setGender(request.getGender());
 			user.setAddress(request.getAddress());
-			//user.setEidaCopy(request.getEidaCopy());
-			if (StringUtils.isNoneBlank(tenant.getEidaCopyFilename()) ){
+			// user.setEidaCopy(request.getEidaCopy());
+			if (StringUtils.isNoneBlank(tenant.getEidaCopyFilename())) {
 				user.setEidaCopyFilename(tenant.getEidaCopyFilename());
 			}
 			user.setNationality(nationality);
@@ -1600,15 +1599,15 @@ public class SubscriberServiceImpl implements SubscriberService {
 			newUser.setDob(CommonUtil.getDatefromString(request.getDob(), DATE_ddMMyyyy));
 			newUser.setGender(request.getGender());
 			newUser.setAddress(request.getAddress());
-			//newUser.setEidaCopy(request.getEidaCopy());
-			
+			// newUser.setEidaCopy(request.getEidaCopy());
+
 			if (!ObjectUtils.isEmpty(request.getEidaCopy())) {
 				String contentType = CommonUtil.validateAttachment(request.getEidaCopy());
 				String fileExt = contentType.substring(contentType.indexOf("/") + 1);
 				s3BuildingLogoDto = new S3UploadObjectDto(CommonConstants.EID_PIC, contentType, fileExt,
 						Base64.getEncoder().encodeToString(request.getEidaCopy()), null);
 				s3UploadObjectDtoList.add(s3BuildingLogoDto);
-				
+
 				S3UploadDto s3UploadDto = new S3UploadDto();
 				s3UploadDto.setSubscriberId(subscriberId);
 				s3UploadDto.setObjectType(S3UploadObjTypeEnum.EID.toString());
@@ -1687,44 +1686,44 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		List<Building> listOfBuildings = buildingRepository.findAllBySubscriberIdAndIsDeletedFalse(subscriberId);
 
-		listOfBuildings = listOfBuildings.stream().filter(b -> {
-			boolean matches = true;
+		if (StringUtils.isNotBlank(request.getSearch())) {
+			String searchTerm = request.getSearch().toLowerCase();
+			listOfBuildings = listOfBuildings.stream().filter(b -> {
+				try {
+					if (b.getBuildingId().toString().contains(searchTerm)) {
+						return true;
+					}
+				} catch (Exception e) {
+				}
 
-			if (request.getBuildingId() != null) {
-				matches = matches && b.getBuildingId().equals(request.getBuildingId());
-			}
+				if (StringUtils.isNotBlank(b.getBuildingName())
+						&& b.getBuildingName().toLowerCase().contains(searchTerm)) {
+					return true;
+				}
 
-			if (StringUtils.isNotBlank(request.getBuildingName())) {
-				matches = matches && StringUtils.containsIgnoreCase(b.getBuildingName(), request.getBuildingName());
-			}
-
-			if (StringUtils.isNotBlank(request.getCityName())) {
 				if (b.getCommunity() != null && b.getCommunity().getArea() != null
-						&& b.getCommunity().getArea().getCity() != null) {
-					matches = matches && StringUtils.containsIgnoreCase(b.getCommunity().getArea().getCity().getName(),
-							request.getCityName());
-				} else if (b.getArea() != null && b.getArea().getCity() != null) {
-					matches = matches
-							&& StringUtils.containsIgnoreCase(b.getArea().getCity().getName(), request.getCityName());
-				} else {
-					matches = false;
+						&& b.getCommunity().getArea().getCity() != null
+						&& StringUtils.isNotBlank(b.getCommunity().getArea().getCity().getName())
+						&& b.getCommunity().getArea().getCity().getName().toLowerCase().contains(searchTerm)) {
+					return true;
+				} else if (b.getArea() != null && b.getArea().getCity() != null
+						&& StringUtils.isNotBlank(b.getArea().getCity().getName())
+						&& b.getArea().getCity().getName().toLowerCase().contains(searchTerm)) {
+					return true;
 				}
-			}
 
-			if (StringUtils.isNotBlank(request.getAreaName())) {
-				if (b.getCommunity() != null && b.getCommunity().getArea() != null) {
-					matches = matches && StringUtils.containsIgnoreCase(b.getCommunity().getArea().getAreaName(),
-							request.getAreaName());
-				} else if (b.getArea() != null) {
-					matches = matches
-							&& StringUtils.containsIgnoreCase(b.getArea().getAreaName(), request.getAreaName());
-				} else {
-					matches = false;
+				if (b.getCommunity() != null && b.getCommunity().getArea() != null
+						&& StringUtils.isNotBlank(b.getCommunity().getArea().getAreaName())
+						&& b.getCommunity().getArea().getAreaName().toLowerCase().contains(searchTerm)) {
+					return true;
+				} else if (b.getArea() != null && StringUtils.isNotBlank(b.getArea().getAreaName())
+						&& b.getArea().getAreaName().toLowerCase().contains(searchTerm)) {
+					return true;
 				}
-			}
 
-			return matches;
-		}).collect(Collectors.toList());
+				return false;
+			}).collect(Collectors.toList());
+		}
 
 		List<BuildingDetailDTO> listBD = new ArrayList<>();
 
