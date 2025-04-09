@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -43,6 +44,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.sbmtech.mms.constant.CommonConstants;
 import com.sbmtech.mms.constant.SubscriptionStatus;
 import com.sbmtech.mms.dto.BuildingDetailDTO;
+import com.sbmtech.mms.dto.BuildingSearchDto;
 import com.sbmtech.mms.dto.FloorDTO;
 import com.sbmtech.mms.dto.KeyValuePairDTO;
 import com.sbmtech.mms.dto.NotifEmailDTO;
@@ -146,6 +148,7 @@ import com.sbmtech.mms.payload.response.UnitDetailResponse;
 import com.sbmtech.mms.payload.response.UnitResponse;
 import com.sbmtech.mms.repository.AreaRepository;
 import com.sbmtech.mms.repository.BuildingRepository;
+import com.sbmtech.mms.repository.BuildingSpecification;
 import com.sbmtech.mms.repository.ChannelMasterRepository;
 import com.sbmtech.mms.repository.CityRepository;
 import com.sbmtech.mms.repository.CommunityRepository;
@@ -184,6 +187,8 @@ import com.sbmtech.mms.service.NotificationService;
 import com.sbmtech.mms.service.S3Service;
 import com.sbmtech.mms.service.SubscriberService;
 import com.sbmtech.mms.util.CommonUtil;
+import com.sbmtech.mms.util.DtoConverter;
+import com.sbmtech.mms.util.DtoMapperUtil;
 import com.sbmtech.mms.util.PaginationUtils;
 
 @Service
@@ -1903,6 +1908,226 @@ public class SubscriberServiceImpl implements SubscriberService {
 		PaginationResponse pgResp = new PaginationResponse<>(pageBD.getContent(), pageBD.getNumber(),
 				pageBD.getTotalPages(), pageBD.getTotalElements(), pageBD.isFirst(), pageBD.isLast());
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, pgResp, null, null);
+	}
+	
+	
+	public ApiResponse<Object> searchBuildings(Integer subscriberId, BuildingSearchRequest request) {
+		
+		PaginationRequest paginationRequest = request.getPaginationRequest();
+		Sort sort = paginationRequest.getSortDirection().equalsIgnoreCase("desc")
+				? Sort.by(paginationRequest.getSortBy()).descending()
+				: Sort.by(paginationRequest.getSortBy()).ascending();
+		
+		
+        PageRequest pageable = PageRequest.of(paginationRequest.getPage(), paginationRequest.getSize(), Sort.by("buildingName").ascending());
+        Specification<Building> spec = BuildingSpecification.searchByKeyword(request.getSearch());
+
+        Page<Building> pageResult = buildingRepository.findAll(spec, pageable);
+
+        List<BuildingSearchDto> dtos = pageResult.getContent().stream().map(building -> {
+            String areaName = building.getArea() != null ? building.getArea().getAreaName() : null;
+            String cityName = (building.getArea() != null && building.getArea().getCity() != null)
+                    ? building.getArea().getCity().getName()
+                    : null;
+
+            return new BuildingSearchDto(
+                building.getBuildingId(),
+                building.getBuildingName(),
+                areaName,
+                cityName,
+                building.getAddress(),
+                building.getHasGym(),
+                building.getHasSwimpool(),
+                building.getHasKidsPlayground(),
+                building.getHasPlaycourt(),
+                building.getNoOfFloors(),
+                building.getNoOfUnits(),
+                building.getLatitude(),
+                building.getLongitude(),
+                (building.getCommunity()!=null)?building.getCommunity().getCommunityId():0,
+                (building.getCommunity()!=null)?building.getCommunity().getCommunityName():"",
+                (building.getArea()!=null)?building.getArea().getAreaId():0,
+                (building.getArea()!=null)?(building.getArea().getCountry()!=null)?building.getArea().getCountry().getCountryId():0:0,
+                (building.getArea()!=null)?(building.getArea().getCountry()!=null)?building.getArea().getCountry().getName():"":"",		
+                (building.getArea()!=null)?(building.getArea().getState()!=null)?building.getArea().getState().getStateId():0:0,
+               	(building.getArea()!=null)?(building.getArea().getState()!=null)?building.getArea().getState().getName():"":"",
+               	(building.getArea()!=null)?(building.getArea().getCity()!=null)?building.getArea().getCity().getCityId():0:0,
+               	getBuildlingLogoLink(building),//logolink,
+               	getBuildlingFloors(building),//floor
+            	getBuildlingParking(building),//parking,
+            	getBuildlingParkingZone(building),//parkingzone,
+            	getBuildlingUnits(building)//units
+                
+            );
+        }).collect(Collectors.toList());
+
+        PaginationResponse pgResp= new PaginationResponse<>(
+            dtos,
+            pageResult.getNumber(),
+            pageResult.getTotalPages(),
+            pageResult.getTotalElements(),
+            pageResult.isFirst(),
+            pageResult.isLast()
+        );
+        
+        return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, pgResp, null, null);
+    }
+	
+	private List<FloorDTO> getBuildlingFloors(Building b) {
+		
+		List<Floor> floorList = floorRepository.findByBuilding(b);
+		
+		DtoConverter<Floor, FloorDTO> floorToDto = floor -> {
+		    FloorDTO dto = new FloorDTO();
+		    dto.setFloorId(floor.getFloorId());
+		    dto.setFloorName(floor.getFloorName());
+		    return dto;
+		};
+		List<FloorDTO> dtos = DtoMapperUtil.mapList(floorList, floorToDto);
+		return dtos;
+	}
+
+
+	private List<UnitDTO> getBuildlingUnits(Building b) {
+		List<Unit> units = unitRepository.findByBuildingAndIsDeletedFalse(b);
+		
+		List <UnitDTO> unitDtos=	units.stream().map(u -> {
+			UnitDTO dto = new UnitDTO();
+			dto.setUnitId(u.getUnitId());
+			dto.setUnitName(u.getUnitName());
+			if (u.getFloor() != null) {
+				dto.setFloorName(u.getFloor().getFloorName());
+			}
+			if (u.getUnitType() != null) {
+				dto.setUnitType(u.getUnitType().getUnitTypeName());
+			}
+			if (u.getUnitSubType() != null) {
+				dto.setUnitSubType(u.getUnitSubType().getUnitSubtypeName());
+			}
+			dto.setSize(u.getSize());
+			dto.setHasBalcony(u.getHasBalcony());
+			if (u.getUnitStatus() != null) {
+				dto.setUnitStatus(u.getUnitStatus().getUnitStatusName());
+			}
+			dto.setRentMonth(u.getRentMonth());
+			dto.setRentYear(u.getRentYear());
+			dto.setSecurityDeposit(u.getSecurityDeposit());
+			dto.setWaterConnNo(u.getWaterConnNo());
+			dto.setEbConnNo(u.getEbConnNo());
+
+			List<String> unitImages = new ArrayList<>();
+			if (StringUtils.isNotBlank(u.getUnitMainPic1Name())) {
+				unitImages.add(s3Service.generatePresignedUrl(b.getSubscriber().getSubscriberId(), b.getBuildingId(), u.getUnitId(),
+						u.getUnitMainPic1Name()));
+			}
+			dto.setUnitImages(unitImages);
+
+			Optional<TenantUnit> tenantUnit = tenantUnitRepository.findByUnitAndActiveTrue(u);
+			if (tenantUnit.isPresent() && tenantUnit != null && tenantUnit.get().getTenant() != null
+					&& !tenantUnit.get().getTenant().getIsDeleted()) {
+				Tenant tenant = tenantUnit.get().getTenant();
+				TenantSimpleDTO tenantDto = new TenantSimpleDTO();
+				tenantDto.setTenantId(tenant.getTenantId());
+				tenantDto.setFirstName(tenant.getFirstName());
+				tenantDto.setLastName(tenant.getLastName());
+				tenantDto.setEmail(tenant.getEmail());
+				tenantDto.setPhoneNumber(tenant.getPhoneNumber());
+				tenantDto.setEidaExpiryDate(tenant.getEidaExpiryDate());
+				tenantDto.setPassportNo(tenant.getPassportNo());
+				tenantDto.setPassportExpiryDate(tenant.getPassportExpiryDate());
+				if (tenant.getNationality() != null) {
+					tenantDto.setNationality(tenant.getNationality().getName());
+				}
+
+				List<TenureDetails> tenureDetails = tenureDetailsRepository.findByTenantUnit(tenantUnit.get());
+				if (!tenureDetails.isEmpty()) {
+					tenantDto.setTenureDetails(tenureDetails.stream().map(td -> {
+						TenureDetailsDTO tenureDto = new TenureDetailsDTO();
+						tenureDto.setTenantTenureId(td.getTenantTenureId());
+						tenureDto.setTenancyStartDate(td.getTenancyStartDate());
+						tenureDto.setTenancyEndDate(td.getTenancyEndDate());
+						return tenureDto;
+					}).collect(Collectors.toList()));
+				}
+
+				dto.setTenant(tenantDto);
+			}
+
+			UnitReserveDetails reservation = unitReserveDetailsRepository.findByUnit(u);
+			if (reservation != null) {
+				UnitReserveDetailsDTO reserveDto = new UnitReserveDetailsDTO();
+				reserveDto.setUnitReserveId(reservation.getUnitReserveId());
+				reserveDto.setReserveStartDate(reservation.getReserveStartDate());
+				reserveDto.setReserveEndDate(reservation.getReserveEndDate());
+				reserveDto.setPaymentRequired(reservation.getPaymentRequired());
+				if (reservation.getUser() != null) {
+					UserSimpleDTO userDto = new UserSimpleDTO();
+					userDto.setUserId(reservation.getUser().getUserId().intValue());
+					userDto.setUserName(reservation.getUser().getEmail());
+					userDto.setEmail(reservation.getUser().getEmail());
+					reserveDto.setReservedBy(userDto);
+				}
+				dto.setReservation(reserveDto);
+			}
+
+			List<UnitKeys> unitKeys = unitKeysRepository.findByUnit(u);
+			if (!unitKeys.isEmpty()) {
+				dto.setKeys(unitKeys.stream().map(uk -> {
+					UnitKeyDTO keyDto = new UnitKeyDTO();
+					keyDto.setUnitKeysId(uk.getUnitKeysId());
+					if (uk.getKeyMaster() != null) {
+						keyDto.setKeyName(uk.getKeyMaster().getKeyName());
+					}
+					return keyDto;
+				}).collect(Collectors.toList()));
+			}
+
+			return dto;
+		}).collect(Collectors.toList());
+		return unitDtos;
+	}
+
+	private List<ParkingZoneDTO> getBuildlingParkingZone(Building b) {
+		List<ParkingZone> parkingZonesList = parkingZoneRepository.findByBuilding(b);
+		
+		DtoConverter<ParkingZone, ParkingZoneDTO> parkToDto = park -> {
+			ParkingZoneDTO dto = new ParkingZoneDTO();
+		    dto.setParkZoneId (park.getParkZoneId());
+		    dto.setParkZoneName(park.getParkZoneName());
+		    return dto;
+		};
+		List<ParkingZoneDTO> dtos = DtoMapperUtil.mapList(parkingZonesList, parkToDto);
+		return dtos;
+		
+	}
+
+	private List<ParkingDTO> getBuildlingParking(Building b) {
+		List<Parking> parkings = parkingRepository.findByBuilding(b);
+		
+		List<ParkingDTO> parkingsDtos=
+			parkings.stream().map(p -> {
+			ParkingDTO dto = new ParkingDTO();
+			dto.setParkingId(p.getParkingId());
+			dto.setParkingName(p.getParkingName());
+			dto.setParkingType(p.getParkingType());
+			dto.setIsAvailable(p.getIsAvailable());
+			if (p.getParkZone() != null) {
+				ParkingZoneSimpleDTO zoneDto = new ParkingZoneSimpleDTO();
+				zoneDto.setParkZoneId(p.getParkZone().getParkZoneId());
+				zoneDto.setParkZoneName(p.getParkZone().getParkZoneName());
+				dto.setParkZone(zoneDto);
+			}
+			return dto;
+		}).collect(Collectors.toList());
+		return parkingsDtos;
+	}
+
+	private String getBuildlingLogoLink(Building b) {
+		if (StringUtils.isNotBlank(b.getBuildingLogoFileName())) {
+			return s3Service.generatePresignedUrl(b.getSubscriber().getSubscriberId(), b.getBuildingId(), null,
+					b.getBuildingLogoFileName());
+		}
+		return "";
 	}
 
 	@SuppressWarnings("rawtypes")

@@ -278,6 +278,15 @@ public class ManagementController {
 		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
 		return ResponseEntity.ok(subscriberService.getAllBuildings(subscriberId, request));
 	}
+	
+	@PostMapping("/search")
+    public ResponseEntity<?> searchBuildings(@CurrentSecurityContext(expression = "authentication") Authentication auth,
+			@RequestBody(required = false) BuildingSearchRequest request) throws Exception {
+		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
+		
+    
+        return ResponseEntity.ok(subscriberService.searchBuildings(subscriberId, request));
+    }
 
 	@PostMapping("/reserveUnit")
 	public ResponseEntity<?> reserveUnit(@CurrentSecurityContext(expression = "authentication") Authentication auth,

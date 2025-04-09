@@ -3,6 +3,7 @@ package com.sbmtech.mms.payload.request;
 public class BuildingSearchRequest {
 
 	private String search;
+	
 	private PaginationRequest paginationRequest;
 
 	public String getSearch() {

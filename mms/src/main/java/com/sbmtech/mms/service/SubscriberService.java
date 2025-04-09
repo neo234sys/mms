@@ -5,6 +5,7 @@ import java.util.Map;
 
 import javax.validation.Valid;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 
 import com.sbmtech.mms.models.ChannelMaster;
@@ -89,6 +90,10 @@ public interface SubscriberService {
 	public ApiResponse<Object> addDepartment(@Valid DepartmentRequest request);
 
 	public ApiResponse<Object> getAllBuildings(Integer subscriberId, BuildingSearchRequest request) throws Exception;
+	
+
+	
+	public ApiResponse<Object> searchBuildings(Integer subscriberId, BuildingSearchRequest request) throws Exception;
 
 	public ApiResponse<Object> reserveUnit(Integer subscriberId, ReserveUnitRequest reserveUnitRequest);
 
