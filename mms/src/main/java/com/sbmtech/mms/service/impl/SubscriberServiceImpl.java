@@ -1839,7 +1839,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 				dto.setUnitImages(unitImages);
 
 				Optional<TenantUnit> tenantUnit = tenantUnitRepository.findByUnitAndActiveTrue(u);
-				if (tenantUnit != null && tenantUnit.get().getTenant() != null
+				if (tenantUnit.isPresent() && tenantUnit.get().getTenant() != null
 						&& !tenantUnit.get().getTenant().getIsDeleted()) {
 					Tenant tenant = tenantUnit.get().getTenant();
 					TenantSimpleDTO tenantDto = new TenantSimpleDTO();
@@ -1909,89 +1909,82 @@ public class SubscriberServiceImpl implements SubscriberService {
 				pageBD.getTotalPages(), pageBD.getTotalElements(), pageBD.isFirst(), pageBD.isLast());
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, pgResp, null, null);
 	}
-	
-	
+
 	public ApiResponse<Object> searchBuildings(Integer subscriberId, BuildingSearchRequest request) {
-		
+
 		PaginationRequest paginationRequest = request.getPaginationRequest();
 		Sort sort = paginationRequest.getSortDirection().equalsIgnoreCase("desc")
 				? Sort.by(paginationRequest.getSortBy()).descending()
 				: Sort.by(paginationRequest.getSortBy()).ascending();
-		
-		
-        PageRequest pageable = PageRequest.of(paginationRequest.getPage(), paginationRequest.getSize(), Sort.by("buildingName").ascending());
-        Specification<Building> spec = BuildingSpecification.searchByKeyword(request.getSearch());
 
-        Page<Building> pageResult = buildingRepository.findAll(spec, pageable);
+		PageRequest pageable = PageRequest.of(paginationRequest.getPage(), paginationRequest.getSize(),
+				Sort.by("buildingName").ascending());
+		Specification<Building> spec = BuildingSpecification.searchByKeyword(request.getSearch());
 
-        List<BuildingSearchDto> dtos = pageResult.getContent().stream().map(building -> {
-            String areaName = building.getArea() != null ? building.getArea().getAreaName() : null;
-            String cityName = (building.getArea() != null && building.getArea().getCity() != null)
-                    ? building.getArea().getCity().getName()
-                    : null;
+		Page<Building> pageResult = buildingRepository.findAll(spec, pageable);
 
-            return new BuildingSearchDto(
-                building.getBuildingId(),
-                building.getBuildingName(),
-                areaName,
-                cityName,
-                building.getAddress(),
-                building.getHasGym(),
-                building.getHasSwimpool(),
-                building.getHasKidsPlayground(),
-                building.getHasPlaycourt(),
-                building.getNoOfFloors(),
-                building.getNoOfUnits(),
-                building.getLatitude(),
-                building.getLongitude(),
-                (building.getCommunity()!=null)?building.getCommunity().getCommunityId():0,
-                (building.getCommunity()!=null)?building.getCommunity().getCommunityName():"",
-                (building.getArea()!=null)?building.getArea().getAreaId():0,
-                (building.getArea()!=null)?(building.getArea().getCountry()!=null)?building.getArea().getCountry().getCountryId():0:0,
-                (building.getArea()!=null)?(building.getArea().getCountry()!=null)?building.getArea().getCountry().getName():"":"",		
-                (building.getArea()!=null)?(building.getArea().getState()!=null)?building.getArea().getState().getStateId():0:0,
-               	(building.getArea()!=null)?(building.getArea().getState()!=null)?building.getArea().getState().getName():"":"",
-               	(building.getArea()!=null)?(building.getArea().getCity()!=null)?building.getArea().getCity().getCityId():0:0,
-               	getBuildlingLogoLink(building),//logolink,
-               	getBuildlingFloors(building),//floor
-            	getBuildlingParking(building),//parking,
-            	getBuildlingParkingZone(building),//parkingzone,
-            	getBuildlingUnits(building)//units
-                
-            );
-        }).collect(Collectors.toList());
+		List<BuildingSearchDto> dtos = pageResult.getContent().stream().map(building -> {
+			String areaName = building.getArea() != null ? building.getArea().getAreaName() : null;
+			String cityName = (building.getArea() != null && building.getArea().getCity() != null)
+					? building.getArea().getCity().getName()
+					: null;
 
-        PaginationResponse pgResp= new PaginationResponse<>(
-            dtos,
-            pageResult.getNumber(),
-            pageResult.getTotalPages(),
-            pageResult.getTotalElements(),
-            pageResult.isFirst(),
-            pageResult.isLast()
-        );
-        
-        return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, pgResp, null, null);
-    }
-	
+			return new BuildingSearchDto(building.getBuildingId(), building.getBuildingName(), areaName, cityName,
+					building.getAddress(), building.getHasGym(), building.getHasSwimpool(),
+					building.getHasKidsPlayground(), building.getHasPlaycourt(), building.getNoOfFloors(),
+					building.getNoOfUnits(), building.getLatitude(), building.getLongitude(),
+					(building.getCommunity() != null) ? building.getCommunity().getCommunityId() : 0,
+					(building.getCommunity() != null) ? building.getCommunity().getCommunityName() : "",
+					(building.getArea() != null) ? building.getArea().getAreaId() : 0,
+					(building.getArea() != null)
+							? (building.getArea().getCountry() != null) ? building.getArea().getCountry().getCountryId()
+									: 0
+							: 0,
+					(building.getArea() != null)
+							? (building.getArea().getCountry() != null) ? building.getArea().getCountry().getName() : ""
+							: "",
+					(building.getArea() != null)
+							? (building.getArea().getState() != null) ? building.getArea().getState().getStateId() : 0
+							: 0,
+					(building.getArea() != null)
+							? (building.getArea().getState() != null) ? building.getArea().getState().getName() : ""
+							: "",
+					(building.getArea() != null)
+							? (building.getArea().getCity() != null) ? building.getArea().getCity().getCityId() : 0
+							: 0,
+					getBuildlingLogoLink(building), // logolink,
+					getBuildlingFloors(building), // floor
+					getBuildlingParking(building), // parking,
+					getBuildlingParkingZone(building), // parkingzone,
+					getBuildlingUnits(building)// units
+
+			);
+		}).collect(Collectors.toList());
+
+		PaginationResponse pgResp = new PaginationResponse<>(dtos, pageResult.getNumber(), pageResult.getTotalPages(),
+				pageResult.getTotalElements(), pageResult.isFirst(), pageResult.isLast());
+
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, pgResp, null, null);
+	}
+
 	private List<FloorDTO> getBuildlingFloors(Building b) {
-		
+
 		List<Floor> floorList = floorRepository.findByBuilding(b);
-		
+
 		DtoConverter<Floor, FloorDTO> floorToDto = floor -> {
-		    FloorDTO dto = new FloorDTO();
-		    dto.setFloorId(floor.getFloorId());
-		    dto.setFloorName(floor.getFloorName());
-		    return dto;
+			FloorDTO dto = new FloorDTO();
+			dto.setFloorId(floor.getFloorId());
+			dto.setFloorName(floor.getFloorName());
+			return dto;
 		};
 		List<FloorDTO> dtos = DtoMapperUtil.mapList(floorList, floorToDto);
 		return dtos;
 	}
 
-
 	private List<UnitDTO> getBuildlingUnits(Building b) {
 		List<Unit> units = unitRepository.findByBuildingAndIsDeletedFalse(b);
-		
-		List <UnitDTO> unitDtos=	units.stream().map(u -> {
+
+		List<UnitDTO> unitDtos = units.stream().map(u -> {
 			UnitDTO dto = new UnitDTO();
 			dto.setUnitId(u.getUnitId());
 			dto.setUnitName(u.getUnitName());
@@ -2017,8 +2010,8 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 			List<String> unitImages = new ArrayList<>();
 			if (StringUtils.isNotBlank(u.getUnitMainPic1Name())) {
-				unitImages.add(s3Service.generatePresignedUrl(b.getSubscriber().getSubscriberId(), b.getBuildingId(), u.getUnitId(),
-						u.getUnitMainPic1Name()));
+				unitImages.add(s3Service.generatePresignedUrl(b.getSubscriber().getSubscriberId(), b.getBuildingId(),
+						u.getUnitId(), u.getUnitMainPic1Name()));
 			}
 			dto.setUnitImages(unitImages);
 
@@ -2089,23 +2082,22 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	private List<ParkingZoneDTO> getBuildlingParkingZone(Building b) {
 		List<ParkingZone> parkingZonesList = parkingZoneRepository.findByBuilding(b);
-		
+
 		DtoConverter<ParkingZone, ParkingZoneDTO> parkToDto = park -> {
 			ParkingZoneDTO dto = new ParkingZoneDTO();
-		    dto.setParkZoneId (park.getParkZoneId());
-		    dto.setParkZoneName(park.getParkZoneName());
-		    return dto;
+			dto.setParkZoneId(park.getParkZoneId());
+			dto.setParkZoneName(park.getParkZoneName());
+			return dto;
 		};
 		List<ParkingZoneDTO> dtos = DtoMapperUtil.mapList(parkingZonesList, parkToDto);
 		return dtos;
-		
+
 	}
 
 	private List<ParkingDTO> getBuildlingParking(Building b) {
 		List<Parking> parkings = parkingRepository.findByBuilding(b);
-		
-		List<ParkingDTO> parkingsDtos=
-			parkings.stream().map(p -> {
+
+		List<ParkingDTO> parkingsDtos = parkings.stream().map(p -> {
 			ParkingDTO dto = new ParkingDTO();
 			dto.setParkingId(p.getParkingId());
 			dto.setParkingName(p.getParkingName());
