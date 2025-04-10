@@ -1909,64 +1909,70 @@ public class SubscriberServiceImpl implements SubscriberService {
 				pageBD.getTotalPages(), pageBD.getTotalElements(), pageBD.isFirst(), pageBD.isLast());
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, pgResp, null, null);
 	}
-
+	
+	
 	public ApiResponse<Object> searchBuildings(Integer subscriberId, BuildingSearchRequest request) {
-
+		
 		PaginationRequest paginationRequest = request.getPaginationRequest();
 		Sort sort = paginationRequest.getSortDirection().equalsIgnoreCase("desc")
 				? Sort.by(paginationRequest.getSortBy()).descending()
 				: Sort.by(paginationRequest.getSortBy()).ascending();
+		
+		
+        PageRequest pageable = PageRequest.of(paginationRequest.getPage(), paginationRequest.getSize(), Sort.by("buildingName").ascending());
+        Specification<Building> spec = BuildingSpecification.searchByKeyword(request.getSearch(),subscriberId);
 
-		PageRequest pageable = PageRequest.of(paginationRequest.getPage(), paginationRequest.getSize(),
-				Sort.by("buildingName").ascending());
-		Specification<Building> spec = BuildingSpecification.searchByKeyword(request.getSearch());
+        Page<Building> pageResult = buildingRepository.findAll(spec, pageable);
 
-		Page<Building> pageResult = buildingRepository.findAll(spec, pageable);
+        List<BuildingSearchDto> dtos = pageResult.getContent().stream().map(building -> {
+            String areaName = building.getArea() != null ? building.getArea().getAreaName() : null;
+            String cityName = (building.getArea() != null && building.getArea().getCity() != null)
+                    ? building.getArea().getCity().getName()
+                    : null;
 
-		List<BuildingSearchDto> dtos = pageResult.getContent().stream().map(building -> {
-			String areaName = building.getArea() != null ? building.getArea().getAreaName() : null;
-			String cityName = (building.getArea() != null && building.getArea().getCity() != null)
-					? building.getArea().getCity().getName()
-					: null;
+            return new BuildingSearchDto(
+                building.getBuildingId(),
+                building.getBuildingName(),
+                areaName,
+                cityName,
+                building.getAddress(),
+                building.getHasGym(),
+                building.getHasSwimpool(),
+                building.getHasKidsPlayground(),
+                building.getHasPlaycourt(),
+                building.getNoOfFloors(),
+                building.getNoOfUnits(),
+                building.getLatitude(),
+                building.getLongitude(),
+                (building.getCommunity()!=null)?building.getCommunity().getCommunityId():0,
+                (building.getCommunity()!=null)?building.getCommunity().getCommunityName():"",
+                (building.getArea()!=null)?building.getArea().getAreaId():0,
+                (building.getArea()!=null)?(building.getArea().getCountry()!=null)?building.getArea().getCountry().getCountryId():0:0,
+                (building.getArea()!=null)?(building.getArea().getCountry()!=null)?building.getArea().getCountry().getName():"":"",		
+                (building.getArea()!=null)?(building.getArea().getState()!=null)?building.getArea().getState().getStateId():0:0,
+               	(building.getArea()!=null)?(building.getArea().getState()!=null)?building.getArea().getState().getName():"":"",
+               	(building.getArea()!=null)?(building.getArea().getCity()!=null)?building.getArea().getCity().getCityId():0:0,
+               	getBuildlingLogoLink(building),//logolink,
+               	getBuildlingFloors(building),//floor
+            	getBuildlingParking(building),//parking,
+            	getBuildlingParkingZone(building),//parkingzone,
+            	getBuildlingUnits(building)//units
+                
+            );
+        }).collect(Collectors.toList());
 
-			return new BuildingSearchDto(building.getBuildingId(), building.getBuildingName(), areaName, cityName,
-					building.getAddress(), building.getHasGym(), building.getHasSwimpool(),
-					building.getHasKidsPlayground(), building.getHasPlaycourt(), building.getNoOfFloors(),
-					building.getNoOfUnits(), building.getLatitude(), building.getLongitude(),
-					(building.getCommunity() != null) ? building.getCommunity().getCommunityId() : 0,
-					(building.getCommunity() != null) ? building.getCommunity().getCommunityName() : "",
-					(building.getArea() != null) ? building.getArea().getAreaId() : 0,
-					(building.getArea() != null)
-							? (building.getArea().getCountry() != null) ? building.getArea().getCountry().getCountryId()
-									: 0
-							: 0,
-					(building.getArea() != null)
-							? (building.getArea().getCountry() != null) ? building.getArea().getCountry().getName() : ""
-							: "",
-					(building.getArea() != null)
-							? (building.getArea().getState() != null) ? building.getArea().getState().getStateId() : 0
-							: 0,
-					(building.getArea() != null)
-							? (building.getArea().getState() != null) ? building.getArea().getState().getName() : ""
-							: "",
-					(building.getArea() != null)
-							? (building.getArea().getCity() != null) ? building.getArea().getCity().getCityId() : 0
-							: 0,
-					getBuildlingLogoLink(building), // logolink,
-					getBuildlingFloors(building), // floor
-					getBuildlingParking(building), // parking,
-					getBuildlingParkingZone(building), // parkingzone,
-					getBuildlingUnits(building)// units
-
-			);
-		}).collect(Collectors.toList());
-
-		PaginationResponse pgResp = new PaginationResponse<>(dtos, pageResult.getNumber(), pageResult.getTotalPages(),
-				pageResult.getTotalElements(), pageResult.isFirst(), pageResult.isLast());
-
-		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, pgResp, null, null);
-	}
-
+        PaginationResponse pgResp= new PaginationResponse<>(
+            dtos,
+            pageResult.getNumber(),
+            pageResult.getTotalPages(),
+            pageResult.getTotalElements(),
+            pageResult.isFirst(),
+            pageResult.isLast()
+        );
+        
+        return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, pgResp, null, null);
+    }
+	
 	private List<FloorDTO> getBuildlingFloors(Building b) {
 
 		List<Floor> floorList = floorRepository.findByBuilding(b);

@@ -279,6 +279,11 @@ public class ManagementController {
 		return ResponseEntity.ok(subscriberService.getAllBuildings(subscriberId, request));
 	}
 	
+	
+	/*
+	 * alternate approach for getAllBuildings search
+	 * will be cosider later
+	 * */
 	@PostMapping("/search")
     public ResponseEntity<?> searchBuildings(@CurrentSecurityContext(expression = "authentication") Authentication auth,
 			@RequestBody(required = false) BuildingSearchRequest request) throws Exception {
