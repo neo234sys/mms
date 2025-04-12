@@ -2,6 +2,7 @@ package com.sbmtech.mms.payload.request;
 
 import javax.validation.constraints.NotEmpty;
 
+
 public class FloorRequest {
 
 	@NotEmpty(message = "floorName must not be empty and null")

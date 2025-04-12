@@ -132,12 +132,15 @@ public class ManagementController {
 		request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.addBuilding(request));
 	}
-
+/*
+ * Not used
 	@PostMapping("/addFloor")
 	public ResponseEntity<?> addFloor(@Valid @RequestBody FloorRequest request,
 			@CurrentSecurityContext(expression = "authentication") Authentication auth) throws Exception {
 		return ResponseEntity.ok(subscriberService.addFloor(request));
 	}
+	
+	*/
 
 	@PostMapping("/addUnit")
 	public ResponseEntity<?> addUnit(@Valid @RequestBody UnitRequest request,

@@ -59,7 +59,7 @@ public class SubscriptionPlanMaster {
     
     @Type(type = "json")
     @Column(columnDefinition = "json")
-    private Map<String, String> metadata;
+    private Map<String, Object> metadata;
     
     
     @Column(name = "active", nullable = false)

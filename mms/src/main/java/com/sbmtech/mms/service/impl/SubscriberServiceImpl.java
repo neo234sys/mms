@@ -69,7 +69,7 @@ import com.sbmtech.mms.models.City;
 import com.sbmtech.mms.models.Community;
 import com.sbmtech.mms.models.Countries;
 import com.sbmtech.mms.models.DepartmentMaster;
-import com.sbmtech.mms.models.Floor;
+//import com.sbmtech.mms.models.Floor;
 import com.sbmtech.mms.models.FloorMaster;
 import com.sbmtech.mms.models.KeyMaster;
 import com.sbmtech.mms.models.Order;
@@ -154,7 +154,7 @@ import com.sbmtech.mms.repository.CityRepository;
 import com.sbmtech.mms.repository.CommunityRepository;
 import com.sbmtech.mms.repository.CountriesRepository;
 import com.sbmtech.mms.repository.DepartmentMasRepository;
-import com.sbmtech.mms.repository.FloorRepository;
+//import com.sbmtech.mms.repository.FloorRepository;
 import com.sbmtech.mms.repository.FloorMasterRepository;
 import com.sbmtech.mms.repository.KeyMasterRepository;
 import com.sbmtech.mms.repository.OrderRepository;
@@ -251,8 +251,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 	@Autowired
 	private BuildingRepository buildingRepository;
 
-	@Autowired
-	private FloorRepository floorRepository;
+	
 
 	@Autowired
 	private FloorMasterRepository floorMasterRepository;
@@ -864,6 +863,12 @@ public class SubscriberServiceImpl implements SubscriberService {
 			}
 		}
 
+		if(!validSubscription(request)) {
+			throw new BusinessException("Can not create build", null);
+		}
+		
+		
+		
 		subscriber = subscriberOpt.get();
 
 		City city = new City();
@@ -950,24 +955,61 @@ public class SubscriberServiceImpl implements SubscriberService {
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, buildingResp, null, request.getSubscriberId());
 	}
 
-	public ApiResponse<Object> addFloor(FloorRequest request) {
-		Optional<Building> buildingOptional = buildingRepository.findById(request.getBuildingId());
-		if (!buildingOptional.isPresent()) {
-			throw new BusinessException("Building not found with id: " + request.getBuildingId(), null);
+	private boolean validSubscription(BuildingRequest request) {
+		boolean validSubscrption=true;
+		Integer subscriberId=request.getSubscriberId();
+		Long totalBuildings= getSubscriberTotalActiveBuilding(subscriberId);
+		Long totalUnits=getSubscriberTotalActiveUnits(subscriberId);
+		//Integer totalAdminUsers=getSubscriberTotalActiveAdminUsers(subscriberId);
+		Long totalTenants=getSubscriberTotalActiveTenants(subscriberId);
+		
+
+
+		Subscriptions subscription=this.getActiveSubscriptionDetails(subscriberId);
+		if(subscription!=null) {
+			Optional<SubscriptionPlanMaster> planMasterop = planMasterRepository.findById(subscription.getPlan().getPlanId());
+			if(planMasterop.isPresent()) {
+				SubscriptionPlanMaster planMaster=planMasterop.get();
+				Map<String, Object> planMetaData= planMaster.getMetadata();
+				
+				Long maxNoBuilding = Long.valueOf((String) planMetaData.get("maxNoBuilding"));
+				Long maxNoUnits = Long.valueOf((String) planMetaData.get("maxNoUnits"));
+				Long maxNoTenantUser = Long.valueOf((String) planMetaData.get("maxNoTenantUser"));
+				if(totalBuildings>maxNoBuilding) {
+					throw new BusinessException("No of building exceeded for subscriberId: " + subscriberId+" Choose other plan", null);
+				}
+				if(totalUnits>maxNoUnits) {
+					throw new BusinessException("No of units exceeded for subscriberId: " + subscriberId+" Choose other plan", null);
+				}
+				if(totalTenants>maxNoTenantUser) {
+					throw new BusinessException("No of tenant user exceeded for subscriberId: " + subscriberId+" Choose other plan", null);
+				}
+			}
 		}
-		Building building = buildingOptional.get();
-
-		Floor floor = new Floor();
-		floor.setFloorName(request.getFloorName());
-		floor.setBuilding(building);
-
-		floorRepository.save(floor);
-
-		FloorResponse floorResp = new FloorResponse();
-		BeanUtils.copyProperties(floor, floorResp);
-
-		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, floorResp, null, null);
+		
+		return validSubscrption;
 	}
+
+	
+
+	
+
+	
+
+	private Long getSubscriberTotalActiveTenants(Integer subscriberId) {
+		
+		return subscriberRepository.countActiveTenantUnitsBySubscriberId(subscriberId);
+	}
+
+	private Long getSubscriberTotalActiveBuilding(Integer subscriberId) {
+		return subscriberRepository.countActiveBuildingsBySubscriberId(subscriberId);
+	}
+	
+	private Long getSubscriberTotalActiveUnits(Integer subscriberId) {
+		return subscriberRepository.countActiveUnitsBySubscriberId(subscriberId);
+	}
+
+	
 
 	public ApiResponse<Object> addUnit(UnitRequest request) throws Exception {
 		S3UploadObjectDto s3MainPicDto = null;
@@ -1774,13 +1816,13 @@ public class SubscriberServiceImpl implements SubscriberService {
 				bt.setCityName(city.getName());
 			}
 
-			List<Floor> floors = floorRepository.findByBuilding(b);
-			bt.setFloors(floors.stream().map(f -> {
-				FloorDTO dto = new FloorDTO();
-				dto.setFloorId(f.getFloorId());
-				dto.setFloorName(f.getFloorName());
-				return dto;
-			}).collect(Collectors.toList()));
+//			List<Floor> floors = floorRepository.findByBuilding(b);
+//			bt.setFloors(floors.stream().map(f -> {
+//				FloorDTO dto = new FloorDTO();
+//				dto.setFloorId(f.getFloorId());
+//				dto.setFloorName(f.getFloorName());
+//				return dto;
+//			}).collect(Collectors.toList()));
 
 			List<Parking> parkings = parkingRepository.findByBuilding(b);
 			bt.setParkings(parkings.stream().map(p -> {
@@ -1975,16 +2017,17 @@ public class SubscriberServiceImpl implements SubscriberService {
 	
 	private List<FloorDTO> getBuildlingFloors(Building b) {
 
-		List<Floor> floorList = floorRepository.findByBuilding(b);
-
-		DtoConverter<Floor, FloorDTO> floorToDto = floor -> {
-			FloorDTO dto = new FloorDTO();
-			dto.setFloorId(floor.getFloorId());
-			dto.setFloorName(floor.getFloorName());
-			return dto;
-		};
-		List<FloorDTO> dtos = DtoMapperUtil.mapList(floorList, floorToDto);
-		return dtos;
+//		List<Floor> floorList = floorRepository.findByBuilding(b);
+//
+//		DtoConverter<Floor, FloorDTO> floorToDto = floor -> {
+//			FloorDTO dto = new FloorDTO();
+//			dto.setFloorId(floor.getFloorId());
+//			dto.setFloorName(floor.getFloorName());
+//			return dto;
+//		};
+//		List<FloorDTO> dtos = DtoMapperUtil.mapList(floorList, floorToDto);
+//		return dtos;
+		return null;
 	}
 
 	private List<UnitDTO> getBuildlingUnits(Building b) {
@@ -2264,12 +2307,12 @@ public class SubscriberServiceImpl implements SubscriberService {
 						null);
 			}
 
-			List<Floor> floors = floorRepository.findByBuildingBuildingId(request.getBuildingId());
-			if (!floors.isEmpty()) {
-				List<Integer> floorIds = floors.stream().map(Floor::getFloorId).collect(Collectors.toList());
-				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
-						"Cannot delete building because it has associated floors. Floor ids=" + floorIds, null, null);
-			}
+//			List<Floor> floors = floorRepository.findByBuildingBuildingId(request.getBuildingId());
+//			if (!floors.isEmpty()) {
+//				List<Integer> floorIds = floors.stream().map(Floor::getFloorId).collect(Collectors.toList());
+//				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
+//						"Cannot delete building because it has associated floors. Floor ids=" + floorIds, null, null);
+//			}
 
 			List<Parking> parkingList = parkingRepository.findByBuildingBuildingId(request.getBuildingId());
 			if (!parkingList.isEmpty()) {
@@ -2616,6 +2659,21 @@ public class SubscriberServiceImpl implements SubscriberService {
 			return dto;
 		}).collect(Collectors.toList());
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, pzDTOs, null, null);
+	}
+
+	@Override
+	public Subscriptions getActiveSubscriptionDetails(Integer subscriberId) {
+		Subscriptions existingSubscription = subscriptionRepository
+				.findTopBySubscriber_SubscriberIdOrderBySubscriptionIdDesc(subscriberId);
+		if (existingSubscription != null) {
+			if (CommonUtil.getCurrentLocalDate().isAfter(existingSubscription.getStartDate().minusDays(1))
+					&& CommonUtil.getCurrentLocalDate().isBefore(existingSubscription.getEndDate())) {
+
+				return existingSubscription;
+			}
+		}
+		return null;
+	
 	}
 
 }

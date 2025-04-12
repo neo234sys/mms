@@ -28,13 +28,13 @@ public class SubscriptionPlans {
 
 	private List<String> features;
 
-	private Map<String, String> metadata;
+	private Map<String, Object> metadata;
 
 
 
 	public SubscriptionPlans(Integer planId, String planName, Double priceMonth, Double priceYear, String currency,
 			Integer durationInDays, Integer trialDays, String description, List<String> features,
-			Map<String, String> metadata) {
+			Map<String, Object> metadata) {
 
 		this.planId = planId;
 		this.planName = planName;

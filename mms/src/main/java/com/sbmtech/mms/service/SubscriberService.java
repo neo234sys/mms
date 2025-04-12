@@ -10,6 +10,7 @@ import org.springframework.security.core.Authentication;
 
 import com.sbmtech.mms.models.ChannelMaster;
 import com.sbmtech.mms.models.Countries;
+import com.sbmtech.mms.models.Subscriptions;
 import com.sbmtech.mms.payload.request.AdditionalDetailsRequest;
 import com.sbmtech.mms.payload.request.ApiResponse;
 import com.sbmtech.mms.payload.request.AreaRequest;
@@ -71,7 +72,7 @@ public interface SubscriberService {
 
 	public ApiResponse<Object> addBuilding(BuildingRequest request);
 
-	public ApiResponse<Object> addFloor(FloorRequest request);
+	//public ApiResponse<Object> addFloor(FloorRequest request);
 
 	public ApiResponse<Object> addUnit(UnitRequest request) throws Exception;
 
@@ -120,5 +121,7 @@ public interface SubscriberService {
 	public ApiResponse<Object> getAllParkingZoneByBuilding(@Valid ParkingZoneRequest request);
 
 	public ApiResponse<Object> getAllParkingByBuilding(ParkingRequest request);
+	
+	public Subscriptions getActiveSubscriptionDetails(Integer subscriberId);
 
 }
