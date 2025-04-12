@@ -1055,6 +1055,9 @@ public class SubscriberServiceImpl implements SubscriberService {
 			throw new BusinessException("FloorName not found: " + request.getFloorName(), null);
 		}
 		FloorMaster floor = floorOptional.get();
+		
+		
+		validateNoOfFloorAndUnitsConfig(building);
 
 		if (!ObjectUtils.isEmpty(request.getUnitMainPic1())) {
 			String contentType = CommonUtil.validateAttachment(request.getUnitMainPic1());
@@ -1142,6 +1145,21 @@ public class SubscriberServiceImpl implements SubscriberService {
 		UnitResponse unitResp = new UnitResponse();
 		BeanUtils.copyProperties(unit, unitResp);
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, unitResp, null, null);
+	}
+
+	private void validateNoOfFloorAndUnitsConfig(Building building) {
+	//	Long currentFloorCount=subscriberRepository.countDistinctFloorsByBuildingId(building.getBuildingId());
+		Long currentUnitsCount=subscriberRepository.countUnitsByBuildingId(building.getBuildingId());
+	//	Integer noOfFloorsBuildingConfig=building.getNoOfFloors();
+		Integer noOfUnitsBuildingConfig=building.getNoOfUnits();
+//		if(currentFloorCount>noOfFloorsBuildingConfig) {
+//			throw new BusinessException("No of floor exceeded for buildingId: " + building.getBuildingId(), null);
+//		}
+		
+		if(currentUnitsCount>noOfUnitsBuildingConfig) {
+			throw new BusinessException("No of units exceeded for buildingId: " + building.getBuildingId(), null);
+		}
+		
 	}
 
 	@SuppressWarnings("unchecked")

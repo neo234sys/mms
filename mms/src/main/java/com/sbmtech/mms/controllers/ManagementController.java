@@ -133,7 +133,7 @@ public class ManagementController {
 		return ResponseEntity.ok(subscriberService.addBuilding(request));
 	}
 /*
- * Not used
+ * Not used, instead floor name is given in addunit directly from the lookup
 	@PostMapping("/addFloor")
 	public ResponseEntity<?> addFloor(@Valid @RequestBody FloorRequest request,
 			@CurrentSecurityContext(expression = "authentication") Authentication auth) throws Exception {
