@@ -13,7 +13,7 @@ public class ParkingRequest {
 	
 	private String parkingType;
 	
-	private Boolean isAvailable;
+	//private Boolean isAvailable;
 	
 	private Integer buildingId;
 	
@@ -44,13 +44,13 @@ public class ParkingRequest {
 		this.parkingType = parkingType;
 	}
 
-	public Boolean getIsAvailable() {
-		return isAvailable;
-	}
-
-	public void setIsAvailable(Boolean isAvailable) {
-		this.isAvailable = isAvailable;
-	}
+//	public Boolean getIsAvailable() {
+//		return isAvailable;
+//	}
+//
+//	public void setIsAvailable(Boolean isAvailable) {
+//		this.isAvailable = isAvailable;
+//	}
 
 	public Integer getBuildingId() {
 		return buildingId;

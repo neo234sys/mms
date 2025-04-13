@@ -4,6 +4,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import com.sbmtech.mms.validator.ValidCurrentAndFutureDate;
 import com.sbmtech.mms.validator.ValidDateDDMMYYYY;
 import com.sbmtech.mms.validator.ValidFutureDate;
 
@@ -34,7 +35,7 @@ public class TenantUnitRequest {
 
 	@NotEmpty(message = "tenancyStartDate cannot be null")
 	@ValidDateDDMMYYYY
-	@ValidFutureDate
+	@ValidCurrentAndFutureDate
 	private String tenancyStartDate;
 
 	private Integer subscriberId;

@@ -1390,11 +1390,14 @@ public class SubscriberServiceImpl implements SubscriberService {
 			throw new BusinessException("BuildingId not found with this subscriber", null);
 		}
 
-		ParkingZone parkZone = parkingZoneRepository.findByParkZoneIdAndSubscriberId(request.getParkZoneId(),
+		ParkingZone parkZone =null;
+		if(request.getParkZoneId()!=null) {
+			parkZone = parkingZoneRepository.findByParkZoneIdAndSubscriberId(request.getParkZoneId(),
 				request.getSubscriberId());
-		if (ObjectUtils.isEmpty(parkZone)) {
-			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Parking Zone not found with this subscriber", null,
-					null);
+			if (ObjectUtils.isEmpty(parkZone)) {
+				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Parking Zone not found with this subscriber", null,
+						null);
+			}
 		}
 
 		Optional<ParkingTypeEnum> ops = Arrays.stream(ParkingTypeEnum.values())
@@ -1408,7 +1411,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		parking.setParkingName(request.getParkingName());
 		parking.setParkZone(parkZone);
 		parking.setParkingType(request.getParkingType());
-		parking.setIsAvailable(request.getIsAvailable());
+		parking.setIsAvailable(true); //by default it is available
 		parking.setBuilding(building);
 		parking.setCreatedTime(new Date());
 
@@ -1514,14 +1517,25 @@ public class SubscriberServiceImpl implements SubscriberService {
 		}
 
 		if (request.getParkingId() != null) {
+			//checking corresponding parkingID with buildingID and with subscriberId
 			Parking parking = parkingRepository.findByParkingIdAndSubscriberId(request.getParkingId(),
-					request.getSubscriberId());
+					request.getSubscriberId(),unit.getBuilding().getBuildingId());
 
 			if (parking == null) {
 
 				throw new BusinessException("Parking not found with ID: " + request.getParkingId(), null);
 			}
+			
+			//to do check parking is available/is it assigned to another
+			Parking alreadyAssignedParking=parkingRepository.findParkingWithTenantUnit(request.getParkingId());
+			if (alreadyAssignedParking != null) {
+
+				throw new BusinessException("This Parking already alloted to someone" + request.getParkingId(), null);
+			}
+			
+			
 			tenantUnit.setParking(parking);
+			parking.setIsAvailable(false);
 		}
 
 		Optional<PaymentMode> paymentModeOp = paymentModeRepository.findById(request.getPaymentModeId());
