@@ -1,5 +1,7 @@
 package com.sbmtech.mms.payload.request;
 
+import javax.validation.constraints.NotNull;
+
 import com.sbmtech.mms.validator.ValidChannelId;
 import com.sbmtech.mms.validator.ValidSubscriberlId;
 
@@ -22,9 +24,12 @@ public class OrderRequest {
 	@ValidSubscriberlId
 	private Integer subscriberId;
 	
+	@NotNull(message = "paymentMode cannot be null")
+	private Integer paymentModeId;
+	
 	private Double amount;
 	
-	private String paymentMethod;
+	//private String paymentMethod;
 		
 	
 	@ValidChannelId

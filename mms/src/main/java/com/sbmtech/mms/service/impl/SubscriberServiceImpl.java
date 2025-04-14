@@ -1526,11 +1526,11 @@ public class SubscriberServiceImpl implements SubscriberService {
 				throw new BusinessException("Parking not found with ID: " + request.getParkingId(), null);
 			}
 			
-			//to do check parking is available/is it assigned to another
+			//Check parking is available/is it assigned to another
 			Parking alreadyAssignedParking=parkingRepository.findParkingWithTenantUnit(request.getParkingId());
 			if (alreadyAssignedParking != null) {
 
-				throw new BusinessException("This Parking already alloted to someone" + request.getParkingId(), null);
+				throw new BusinessException("This Parking already alloted to someone: " + request.getParkingId(), null);
 			}
 			
 			
@@ -1538,12 +1538,12 @@ public class SubscriberServiceImpl implements SubscriberService {
 			parking.setIsAvailable(false);
 		}
 
-		Optional<PaymentMode> paymentModeOp = paymentModeRepository.findById(request.getPaymentModeId());
-		if (!paymentModeOp.isPresent()) {
-			throw new BusinessException("paymentMode not found with id: " + request.getPaymentModeId(), null);
-		}
-
-		PaymentMode paymentMode = paymentModeOp.get();
+//		Optional<PaymentMode> paymentModeOp = paymentModeRepository.findById(request.getPaymentModeId());
+//		if (!paymentModeOp.isPresent()) {
+//			throw new BusinessException("paymentMode not found with id: " + request.getPaymentModeId(), null);
+//		}
+//
+//		PaymentMode paymentMode = paymentModeOp.get();
 
 		Optional<RentCycle> rentCycleOp = rentCycleRepository.findById(request.getRentCycleId());
 		if (!rentCycleOp.isPresent()) {
@@ -1552,7 +1552,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		RentCycle rentCycle = rentCycleOp.get();
 
-		Optional<UnitStatus> unitStatusop = unitStatusRepository.findById(UnitStatusEnum.OCCUPIED.getValue());
+		Optional<UnitStatus> unitStatusop = unitStatusRepository.findById(UnitStatusEnum.RESERVED.getValue());
 		if (!unitStatusop.isPresent()) {
 			throw new BusinessException("Invalid UnitStatus", null);
 		}
@@ -1565,7 +1565,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		tenantUnit.setRentCycle(rentCycle);
 		tenantUnit.setExpired(false);
 		tenantUnit.setActive(true);
-		tenantUnit.setPaymentMode(paymentMode);
+		//tenantUnit.setPaymentMode(paymentMode);
 		tenantUnit.setCreatedTime(new Date());
 		tenantUnit.setCreatedBy(request.getSubscriberId());
 

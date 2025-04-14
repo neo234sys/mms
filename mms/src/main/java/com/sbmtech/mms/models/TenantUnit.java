@@ -58,13 +58,14 @@ public class TenantUnit implements Serializable {
 //	@Column(name = "rent_payment_mode")
 //	private String rentPaymentMode;
 
-	@OneToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "payment_mode_id", referencedColumnName = "payment_mode_id")
-	private PaymentMode paymentMode;
-
+	
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "rent_cycle_id", referencedColumnName = "rent_cycle_id")
 	private RentCycle rentCycle;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "order_id", referencedColumnName = "order_id")
+	private Order order;
 
 	@Column(name = "created_time")
 	@CreationTimestamp
@@ -139,13 +140,13 @@ public class TenantUnit implements Serializable {
 		this.active = active;
 	}
 
-	public PaymentMode getPaymentMode() {
-		return paymentMode;
-	}
-
-	public void setPaymentMode(PaymentMode paymentMode) {
-		this.paymentMode = paymentMode;
-	}
+//	public PaymentMode getPaymentMode() {
+//		return paymentMode;
+//	}
+//
+//	public void setPaymentMode(PaymentMode paymentMode) {
+//		this.paymentMode = paymentMode;
+//	}
 
 	public RentCycle getRentCycle() {
 		return rentCycle;
@@ -195,15 +196,21 @@ public class TenantUnit implements Serializable {
 		this.tenureDetails = tenureDetails;
 	}
 
-	public static long getSerialversionuid() {
-		return serialVersionUID;
+	
+
+	public Order getOrder() {
+		return order;
+	}
+
+	public void setOrder(Order order) {
+		this.order = order;
 	}
 
 	@Override
 	public String toString() {
 		return "TenantUnit [tenantUnitId=" + tenantUnitId + ", tenant=" + tenant + ", unit=" + unit + ", parking="
 				+ parking + ", tenurePeriodMonth=" + tenurePeriodMonth + ", expired=" + expired + ", active=" + active
-				+ ", paymentMode=" + paymentMode + ", rentCycle=" + rentCycle + ", createdTime=" + createdTime
+				+ ", rentCycle=" + rentCycle + ", createdTime=" + createdTime
 				+ ", updatedTime=" + updatedTime + ", createdBy=" + createdBy + ", updatedBy=" + updatedBy
 				+ ", tenureDetails=" + tenureDetails + "]";
 	}

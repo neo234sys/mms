@@ -13,6 +13,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import lombok.Getter;
@@ -50,6 +51,11 @@ public class Order {
     @ManyToOne(fetch = FetchType.LAZY)
    	@JoinColumn(name = "purpose_id")
    	private PaymentPurpose paymentPurpose;
+    
+    @OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "payment_mode_id", referencedColumnName = "payment_mode_id")
+	private PaymentMode paymentMode;
+
 
 
     @Column(name = "order_date", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
