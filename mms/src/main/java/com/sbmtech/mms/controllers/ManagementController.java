@@ -28,7 +28,6 @@ import com.sbmtech.mms.payload.request.BuildingUnitPaginationRequest;
 import com.sbmtech.mms.payload.request.CommunityRequest;
 import com.sbmtech.mms.payload.request.CreateUserRequest;
 import com.sbmtech.mms.payload.request.DepartmentRequest;
-import com.sbmtech.mms.payload.request.FloorRequest;
 import com.sbmtech.mms.payload.request.KeyMasterRequest;
 import com.sbmtech.mms.payload.request.ParkingRequest;
 import com.sbmtech.mms.payload.request.ParkingZoneRequest;
@@ -39,6 +38,7 @@ import com.sbmtech.mms.payload.request.TenantIdRequest;
 import com.sbmtech.mms.payload.request.TenantUnitRequest;
 import com.sbmtech.mms.payload.request.TenantUpdateRequest;
 import com.sbmtech.mms.payload.request.UnitKeysRequest;
+import com.sbmtech.mms.payload.request.UnitPaginationRequest;
 import com.sbmtech.mms.payload.request.UnitRequest;
 import com.sbmtech.mms.payload.request.UnitUpdateRequest;
 import com.sbmtech.mms.service.ConstantLookupService;
@@ -132,15 +132,17 @@ public class ManagementController {
 		request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.addBuilding(request));
 	}
-/*
- * Not used, instead floor name is given in addunit directly from the lookup
-	@PostMapping("/addFloor")
-	public ResponseEntity<?> addFloor(@Valid @RequestBody FloorRequest request,
-			@CurrentSecurityContext(expression = "authentication") Authentication auth) throws Exception {
-		return ResponseEntity.ok(subscriberService.addFloor(request));
-	}
-	
-	*/
+	/*
+	 * Not used, instead floor name is given in addunit directly from the lookup
+	 * 
+	 * @PostMapping("/addFloor") public ResponseEntity<?>
+	 * addFloor(@Valid @RequestBody FloorRequest request,
+	 * 
+	 * @CurrentSecurityContext(expression = "authentication") Authentication auth)
+	 * throws Exception { return
+	 * ResponseEntity.ok(subscriberService.addFloor(request)); }
+	 * 
+	 */
 
 	@PostMapping("/addUnit")
 	public ResponseEntity<?> addUnit(@Valid @RequestBody UnitRequest request,
@@ -281,20 +283,17 @@ public class ManagementController {
 		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
 		return ResponseEntity.ok(subscriberService.getAllBuildings(subscriberId, request));
 	}
-	
-	
+
 	/*
-	 * alternate approach for getAllBuildings search
-	 * will be cosider later
-	 * */
+	 * alternate approach for getAllBuildings search will be cosider later
+	 */
 	@PostMapping("/search")
-    public ResponseEntity<?> searchBuildings(@CurrentSecurityContext(expression = "authentication") Authentication auth,
+	public ResponseEntity<?> searchBuildings(@CurrentSecurityContext(expression = "authentication") Authentication auth,
 			@RequestBody(required = false) BuildingSearchRequest request) throws Exception {
 		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
-		
-    
-        return ResponseEntity.ok(subscriberService.searchBuildings(subscriberId, request));
-    }
+
+		return ResponseEntity.ok(subscriberService.searchBuildings(subscriberId, request));
+	}
 
 	@PostMapping("/reserveUnit")
 	public ResponseEntity<?> reserveUnit(@CurrentSecurityContext(expression = "authentication") Authentication auth,
@@ -360,6 +359,11 @@ public class ManagementController {
 			@Valid @RequestBody TenantUpdateRequest request) throws Exception {
 		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
 		return ResponseEntity.ok(subscriberService.updateTenant(subscriberId, request));
+	}
+
+	@PostMapping("/getAllUnits")
+	public ResponseEntity<?> searchUnits(@RequestBody UnitPaginationRequest request) {
+		return ResponseEntity.ok(subscriberService.searchUnits(request));
 	}
 
 }

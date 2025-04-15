@@ -5,7 +5,6 @@ import java.util.Map;
 
 import javax.validation.Valid;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 
 import com.sbmtech.mms.models.ChannelMaster;
@@ -21,7 +20,6 @@ import com.sbmtech.mms.payload.request.CreateUserRequest;
 import com.sbmtech.mms.payload.request.DeleteBuildingRequest;
 import com.sbmtech.mms.payload.request.DeleteUnitRequest;
 import com.sbmtech.mms.payload.request.DepartmentRequest;
-import com.sbmtech.mms.payload.request.FloorRequest;
 import com.sbmtech.mms.payload.request.KeyMasterRequest;
 import com.sbmtech.mms.payload.request.PaginationRequest;
 import com.sbmtech.mms.payload.request.ParkingRequest;
@@ -35,6 +33,7 @@ import com.sbmtech.mms.payload.request.TenantIdRequest;
 import com.sbmtech.mms.payload.request.TenantUnitRequest;
 import com.sbmtech.mms.payload.request.TenantUpdateRequest;
 import com.sbmtech.mms.payload.request.UnitKeysRequest;
+import com.sbmtech.mms.payload.request.UnitPaginationRequest;
 import com.sbmtech.mms.payload.request.UnitRequest;
 import com.sbmtech.mms.payload.request.UnitUpdateRequest;
 import com.sbmtech.mms.payload.request.VerifyOtpRequest;
@@ -72,7 +71,7 @@ public interface SubscriberService {
 
 	public ApiResponse<Object> addBuilding(BuildingRequest request);
 
-	//public ApiResponse<Object> addFloor(FloorRequest request);
+	// public ApiResponse<Object> addFloor(FloorRequest request);
 
 	public ApiResponse<Object> addUnit(UnitRequest request) throws Exception;
 
@@ -91,9 +90,7 @@ public interface SubscriberService {
 	public ApiResponse<Object> addDepartment(@Valid DepartmentRequest request);
 
 	public ApiResponse<Object> getAllBuildings(Integer subscriberId, BuildingSearchRequest request) throws Exception;
-	
 
-	
 	public ApiResponse<Object> searchBuildings(Integer subscriberId, BuildingSearchRequest request) throws Exception;
 
 	public ApiResponse<Object> reserveUnit(Integer subscriberId, ReserveUnitRequest reserveUnitRequest);
@@ -121,7 +118,9 @@ public interface SubscriberService {
 	public ApiResponse<Object> getAllParkingZoneByBuilding(@Valid ParkingZoneRequest request);
 
 	public ApiResponse<Object> getAllParkingByBuilding(ParkingRequest request);
-	
+
 	public Subscriptions getActiveSubscriptionDetails(Integer subscriberId);
+
+	public ApiResponse<Object> searchUnits(UnitPaginationRequest request);
 
 }

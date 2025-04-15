@@ -78,7 +78,6 @@ import com.sbmtech.mms.models.Parking;
 import com.sbmtech.mms.models.ParkingTypeEnum;
 import com.sbmtech.mms.models.ParkingZone;
 import com.sbmtech.mms.models.PaymentMethod;
-import com.sbmtech.mms.models.PaymentMode;
 import com.sbmtech.mms.models.ProductConfig;
 import com.sbmtech.mms.models.RentCycle;
 import com.sbmtech.mms.models.Role;
@@ -111,7 +110,6 @@ import com.sbmtech.mms.payload.request.CreateUserRequest;
 import com.sbmtech.mms.payload.request.DeleteBuildingRequest;
 import com.sbmtech.mms.payload.request.DeleteUnitRequest;
 import com.sbmtech.mms.payload.request.DepartmentRequest;
-import com.sbmtech.mms.payload.request.FloorRequest;
 import com.sbmtech.mms.payload.request.KeyMasterRequest;
 import com.sbmtech.mms.payload.request.PaginationRequest;
 import com.sbmtech.mms.payload.request.ParkingRequest;
@@ -126,13 +124,13 @@ import com.sbmtech.mms.payload.request.TenantIdRequest;
 import com.sbmtech.mms.payload.request.TenantUnitRequest;
 import com.sbmtech.mms.payload.request.TenantUpdateRequest;
 import com.sbmtech.mms.payload.request.UnitKeysRequest;
+import com.sbmtech.mms.payload.request.UnitPaginationRequest;
 import com.sbmtech.mms.payload.request.UnitRequest;
 import com.sbmtech.mms.payload.request.UnitUpdateRequest;
 import com.sbmtech.mms.payload.request.VerifyOtpRequest;
 import com.sbmtech.mms.payload.response.BuildingResponse;
 import com.sbmtech.mms.payload.response.CommunityResponse;
 import com.sbmtech.mms.payload.response.DeptMasResponse;
-import com.sbmtech.mms.payload.response.FloorResponse;
 import com.sbmtech.mms.payload.response.GenericResponse;
 import com.sbmtech.mms.payload.response.KeyResponse;
 import com.sbmtech.mms.payload.response.PaginationResponse;
@@ -161,7 +159,6 @@ import com.sbmtech.mms.repository.OrderRepository;
 import com.sbmtech.mms.repository.OtpRepository;
 import com.sbmtech.mms.repository.ParkingRepository;
 import com.sbmtech.mms.repository.ParkingZoneRepository;
-import com.sbmtech.mms.repository.PaymentModeRepository;
 import com.sbmtech.mms.repository.ProductConfigRepository;
 import com.sbmtech.mms.repository.RentCycleRepository;
 import com.sbmtech.mms.repository.RoleRepository;
@@ -190,6 +187,10 @@ import com.sbmtech.mms.util.CommonUtil;
 import com.sbmtech.mms.util.DtoConverter;
 import com.sbmtech.mms.util.DtoMapperUtil;
 import com.sbmtech.mms.util.PaginationUtils;
+import org.springframework.data.domain.Pageable;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import javax.persistence.criteria.Subquery;
 
 @Service
 @Transactional
@@ -251,8 +252,6 @@ public class SubscriberServiceImpl implements SubscriberService {
 	@Autowired
 	private BuildingRepository buildingRepository;
 
-	
-
 	@Autowired
 	private FloorMasterRepository floorMasterRepository;
 
@@ -294,9 +293,6 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	@Autowired
 	private UnitStatusRepository unitStatusRepository;
-
-	@Autowired
-	private PaymentModeRepository paymentModeRepository;
 
 	@Autowired
 	private RentCycleRepository rentCycleRepository;
@@ -863,12 +859,10 @@ public class SubscriberServiceImpl implements SubscriberService {
 			}
 		}
 
-		if(!validSubscription(request)) {
+		if (!validSubscription(request)) {
 			throw new BusinessException("Can not create build", null);
 		}
-		
-		
-		
+
 		subscriber = subscriberOpt.get();
 
 		City city = new City();
@@ -956,60 +950,55 @@ public class SubscriberServiceImpl implements SubscriberService {
 	}
 
 	private boolean validSubscription(BuildingRequest request) {
-		boolean validSubscrption=true;
-		Integer subscriberId=request.getSubscriberId();
-		Long totalBuildings= getSubscriberTotalActiveBuilding(subscriberId);
-		Long totalUnits=getSubscriberTotalActiveUnits(subscriberId);
-		//Integer totalAdminUsers=getSubscriberTotalActiveAdminUsers(subscriberId);
-		Long totalTenants=getSubscriberTotalActiveTenants(subscriberId);
-		
+		boolean validSubscrption = true;
+		Integer subscriberId = request.getSubscriberId();
+		Long totalBuildings = getSubscriberTotalActiveBuilding(subscriberId);
+		Long totalUnits = getSubscriberTotalActiveUnits(subscriberId);
+		// Integer totalAdminUsers=getSubscriberTotalActiveAdminUsers(subscriberId);
+		Long totalTenants = getSubscriberTotalActiveTenants(subscriberId);
 
+		Subscriptions subscription = this.getActiveSubscriptionDetails(subscriberId);
+		if (subscription != null) {
+			Optional<SubscriptionPlanMaster> planMasterop = planMasterRepository
+					.findById(subscription.getPlan().getPlanId());
+			if (planMasterop.isPresent()) {
+				SubscriptionPlanMaster planMaster = planMasterop.get();
+				Map<String, Object> planMetaData = planMaster.getMetadata();
 
-		Subscriptions subscription=this.getActiveSubscriptionDetails(subscriberId);
-		if(subscription!=null) {
-			Optional<SubscriptionPlanMaster> planMasterop = planMasterRepository.findById(subscription.getPlan().getPlanId());
-			if(planMasterop.isPresent()) {
-				SubscriptionPlanMaster planMaster=planMasterop.get();
-				Map<String, Object> planMetaData= planMaster.getMetadata();
-				
 				Long maxNoBuilding = Long.valueOf((String) planMetaData.get("maxNoBuilding"));
 				Long maxNoUnits = Long.valueOf((String) planMetaData.get("maxNoUnits"));
 				Long maxNoTenantUser = Long.valueOf((String) planMetaData.get("maxNoTenantUser"));
-				if(totalBuildings>maxNoBuilding) {
-					throw new BusinessException("No of building exceeded for subscriberId: " + subscriberId+" Choose other plan", null);
+				if (totalBuildings > maxNoBuilding) {
+					throw new BusinessException(
+							"No of building exceeded for subscriberId: " + subscriberId + " Choose other plan", null);
 				}
-				if(totalUnits>maxNoUnits) {
-					throw new BusinessException("No of units exceeded for subscriberId: " + subscriberId+" Choose other plan", null);
+				if (totalUnits > maxNoUnits) {
+					throw new BusinessException(
+							"No of units exceeded for subscriberId: " + subscriberId + " Choose other plan", null);
 				}
-				if(totalTenants>maxNoTenantUser) {
-					throw new BusinessException("No of tenant user exceeded for subscriberId: " + subscriberId+" Choose other plan", null);
+				if (totalTenants > maxNoTenantUser) {
+					throw new BusinessException(
+							"No of tenant user exceeded for subscriberId: " + subscriberId + " Choose other plan",
+							null);
 				}
 			}
 		}
-		
+
 		return validSubscrption;
 	}
 
-	
-
-	
-
-	
-
 	private Long getSubscriberTotalActiveTenants(Integer subscriberId) {
-		
+
 		return subscriberRepository.countActiveTenantUnitsBySubscriberId(subscriberId);
 	}
 
 	private Long getSubscriberTotalActiveBuilding(Integer subscriberId) {
 		return subscriberRepository.countActiveBuildingsBySubscriberId(subscriberId);
 	}
-	
+
 	private Long getSubscriberTotalActiveUnits(Integer subscriberId) {
 		return subscriberRepository.countActiveUnitsBySubscriberId(subscriberId);
 	}
-
-	
 
 	public ApiResponse<Object> addUnit(UnitRequest request) throws Exception {
 		S3UploadObjectDto s3MainPicDto = null;
@@ -1055,8 +1044,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			throw new BusinessException("FloorName not found: " + request.getFloorName(), null);
 		}
 		FloorMaster floor = floorOptional.get();
-		
-		
+
 		validateNoOfFloorAndUnitsConfig(building);
 
 		if (!ObjectUtils.isEmpty(request.getUnitMainPic1())) {
@@ -1148,18 +1136,19 @@ public class SubscriberServiceImpl implements SubscriberService {
 	}
 
 	private void validateNoOfFloorAndUnitsConfig(Building building) {
-	//	Long currentFloorCount=subscriberRepository.countDistinctFloorsByBuildingId(building.getBuildingId());
-		Long currentUnitsCount=subscriberRepository.countUnitsByBuildingId(building.getBuildingId());
-	//	Integer noOfFloorsBuildingConfig=building.getNoOfFloors();
-		Integer noOfUnitsBuildingConfig=building.getNoOfUnits();
+		// Long
+		// currentFloorCount=subscriberRepository.countDistinctFloorsByBuildingId(building.getBuildingId());
+		Long currentUnitsCount = subscriberRepository.countUnitsByBuildingId(building.getBuildingId());
+		// Integer noOfFloorsBuildingConfig=building.getNoOfFloors();
+		Integer noOfUnitsBuildingConfig = building.getNoOfUnits();
 //		if(currentFloorCount>noOfFloorsBuildingConfig) {
 //			throw new BusinessException("No of floor exceeded for buildingId: " + building.getBuildingId(), null);
 //		}
-		
-		if(currentUnitsCount>noOfUnitsBuildingConfig) {
+
+		if (currentUnitsCount > noOfUnitsBuildingConfig) {
 			throw new BusinessException("No of units exceeded for buildingId: " + building.getBuildingId(), null);
 		}
-		
+
 	}
 
 	@SuppressWarnings("unchecked")
@@ -1390,13 +1379,13 @@ public class SubscriberServiceImpl implements SubscriberService {
 			throw new BusinessException("BuildingId not found with this subscriber", null);
 		}
 
-		ParkingZone parkZone =null;
-		if(request.getParkZoneId()!=null) {
+		ParkingZone parkZone = null;
+		if (request.getParkZoneId() != null) {
 			parkZone = parkingZoneRepository.findByParkZoneIdAndSubscriberId(request.getParkZoneId(),
-				request.getSubscriberId());
+					request.getSubscriberId());
 			if (ObjectUtils.isEmpty(parkZone)) {
-				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Parking Zone not found with this subscriber", null,
-						null);
+				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Parking Zone not found with this subscriber",
+						null, null);
 			}
 		}
 
@@ -1411,7 +1400,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		parking.setParkingName(request.getParkingName());
 		parking.setParkZone(parkZone);
 		parking.setParkingType(request.getParkingType());
-		parking.setIsAvailable(true); //by default it is available
+		parking.setIsAvailable(true); // by default it is available
 		parking.setBuilding(building);
 		parking.setCreatedTime(new Date());
 
@@ -1517,23 +1506,22 @@ public class SubscriberServiceImpl implements SubscriberService {
 		}
 
 		if (request.getParkingId() != null) {
-			//checking corresponding parkingID with buildingID and with subscriberId
+			// checking corresponding parkingID with buildingID and with subscriberId
 			Parking parking = parkingRepository.findByParkingIdAndSubscriberId(request.getParkingId(),
-					request.getSubscriberId(),unit.getBuilding().getBuildingId());
+					request.getSubscriberId(), unit.getBuilding().getBuildingId());
 
 			if (parking == null) {
 
 				throw new BusinessException("Parking not found with ID: " + request.getParkingId(), null);
 			}
-			
-			//Check parking is available/is it assigned to another
-			Parking alreadyAssignedParking=parkingRepository.findParkingWithTenantUnit(request.getParkingId());
+
+			// Check parking is available/is it assigned to another
+			Parking alreadyAssignedParking = parkingRepository.findParkingWithTenantUnit(request.getParkingId());
 			if (alreadyAssignedParking != null) {
 
 				throw new BusinessException("This Parking already alloted to someone: " + request.getParkingId(), null);
 			}
-			
-			
+
 			tenantUnit.setParking(parking);
 			parking.setIsAvailable(false);
 		}
@@ -1565,7 +1553,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		tenantUnit.setRentCycle(rentCycle);
 		tenantUnit.setExpired(false);
 		tenantUnit.setActive(true);
-		//tenantUnit.setPaymentMode(paymentMode);
+		// tenantUnit.setPaymentMode(paymentMode);
 		tenantUnit.setCreatedTime(new Date());
 		tenantUnit.setCreatedBy(request.getSubscriberId());
 
@@ -1983,70 +1971,66 @@ public class SubscriberServiceImpl implements SubscriberService {
 				pageBD.getTotalPages(), pageBD.getTotalElements(), pageBD.isFirst(), pageBD.isLast());
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, pgResp, null, null);
 	}
-	
-	
+
 	public ApiResponse<Object> searchBuildings(Integer subscriberId, BuildingSearchRequest request) {
-		
+
 		PaginationRequest paginationRequest = request.getPaginationRequest();
+		@SuppressWarnings("unused")
 		Sort sort = paginationRequest.getSortDirection().equalsIgnoreCase("desc")
 				? Sort.by(paginationRequest.getSortBy()).descending()
 				: Sort.by(paginationRequest.getSortBy()).ascending();
-		
-		
-        PageRequest pageable = PageRequest.of(paginationRequest.getPage(), paginationRequest.getSize(), Sort.by("buildingName").ascending());
-        Specification<Building> spec = BuildingSpecification.searchByKeyword(request.getSearch(),subscriberId);
 
-        Page<Building> pageResult = buildingRepository.findAll(spec, pageable);
+		PageRequest pageable = PageRequest.of(paginationRequest.getPage(), paginationRequest.getSize(),
+				Sort.by("buildingName").ascending());
+		Specification<Building> spec = BuildingSpecification.searchByKeyword(request.getSearch(), subscriberId);
 
-        List<BuildingSearchDto> dtos = pageResult.getContent().stream().map(building -> {
-            String areaName = building.getArea() != null ? building.getArea().getAreaName() : null;
-            String cityName = (building.getArea() != null && building.getArea().getCity() != null)
-                    ? building.getArea().getCity().getName()
-                    : null;
+		Page<Building> pageResult = buildingRepository.findAll(spec, pageable);
 
-            return new BuildingSearchDto(
-                building.getBuildingId(),
-                building.getBuildingName(),
-                areaName,
-                cityName,
-                building.getAddress(),
-                building.getHasGym(),
-                building.getHasSwimpool(),
-                building.getHasKidsPlayground(),
-                building.getHasPlaycourt(),
-                building.getNoOfFloors(),
-                building.getNoOfUnits(),
-                building.getLatitude(),
-                building.getLongitude(),
-                (building.getCommunity()!=null)?building.getCommunity().getCommunityId():0,
-                (building.getCommunity()!=null)?building.getCommunity().getCommunityName():"",
-                (building.getArea()!=null)?building.getArea().getAreaId():0,
-                (building.getArea()!=null)?(building.getArea().getCountry()!=null)?building.getArea().getCountry().getCountryId():0:0,
-                (building.getArea()!=null)?(building.getArea().getCountry()!=null)?building.getArea().getCountry().getName():"":"",		
-                (building.getArea()!=null)?(building.getArea().getState()!=null)?building.getArea().getState().getStateId():0:0,
-               	(building.getArea()!=null)?(building.getArea().getState()!=null)?building.getArea().getState().getName():"":"",
-               	(building.getArea()!=null)?(building.getArea().getCity()!=null)?building.getArea().getCity().getCityId():0:0,
-               	getBuildlingLogoLink(building),//logolink,
-               	getBuildlingFloors(building),//floor
-            	getBuildlingParking(building),//parking,
-            	getBuildlingParkingZone(building),//parkingzone,
-            	getBuildlingUnits(building)//units
-                
-            );
-        }).collect(Collectors.toList());
+		List<BuildingSearchDto> dtos = pageResult.getContent().stream().map(building -> {
+			String areaName = building.getArea() != null ? building.getArea().getAreaName() : null;
+			String cityName = (building.getArea() != null && building.getArea().getCity() != null)
+					? building.getArea().getCity().getName()
+					: null;
 
-        PaginationResponse pgResp= new PaginationResponse<>(
-            dtos,
-            pageResult.getNumber(),
-            pageResult.getTotalPages(),
-            pageResult.getTotalElements(),
-            pageResult.isFirst(),
-            pageResult.isLast()
-        );
-        
-        return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, pgResp, null, null);
-    }
-	
+			return new BuildingSearchDto(building.getBuildingId(), building.getBuildingName(), areaName, cityName,
+					building.getAddress(), building.getHasGym(), building.getHasSwimpool(),
+					building.getHasKidsPlayground(), building.getHasPlaycourt(), building.getNoOfFloors(),
+					building.getNoOfUnits(), building.getLatitude(), building.getLongitude(),
+					(building.getCommunity() != null) ? building.getCommunity().getCommunityId() : 0,
+					(building.getCommunity() != null) ? building.getCommunity().getCommunityName() : "",
+					(building.getArea() != null) ? building.getArea().getAreaId() : 0,
+					(building.getArea() != null)
+							? (building.getArea().getCountry() != null) ? building.getArea().getCountry().getCountryId()
+									: 0
+							: 0,
+					(building.getArea() != null)
+							? (building.getArea().getCountry() != null) ? building.getArea().getCountry().getName() : ""
+							: "",
+					(building.getArea() != null)
+							? (building.getArea().getState() != null) ? building.getArea().getState().getStateId() : 0
+							: 0,
+					(building.getArea() != null)
+							? (building.getArea().getState() != null) ? building.getArea().getState().getName() : ""
+							: "",
+					(building.getArea() != null)
+							? (building.getArea().getCity() != null) ? building.getArea().getCity().getCityId() : 0
+							: 0,
+					getBuildlingLogoLink(building), // logolink,
+					getBuildlingFloors(building), // floor
+					getBuildlingParking(building), // parking,
+					getBuildlingParkingZone(building), // parkingzone,
+					getBuildlingUnits(building)// units
+
+			);
+		}).collect(Collectors.toList());
+
+		@SuppressWarnings("rawtypes")
+		PaginationResponse pgResp = new PaginationResponse<>(dtos, pageResult.getNumber(), pageResult.getTotalPages(),
+				pageResult.getTotalElements(), pageResult.isFirst(), pageResult.isLast());
+
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, pgResp, null, null);
+	}
+
 	private List<FloorDTO> getBuildlingFloors(Building b) {
 
 //		List<Floor> floorList = floorRepository.findByBuilding(b);
@@ -2705,7 +2689,41 @@ public class SubscriberServiceImpl implements SubscriberService {
 			}
 		}
 		return null;
-	
+
+	}
+
+	public ApiResponse<Object> searchUnits(UnitPaginationRequest request) {
+		Pageable pageable = PageRequest.of(request.getPaginationRequest().getPage(),
+				request.getPaginationRequest().getSize(),
+				Sort.by(Sort.Direction.fromString(request.getPaginationRequest().getSortDirection()),
+						request.getPaginationRequest().getSortBy()));
+
+		@SuppressWarnings("unchecked")
+		Page<Unit> unitsPage = unitRepository.findAll((root, query, cb) -> {
+			List<Predicate> predicates = new ArrayList<>();
+			String keyword = request.getSearch();
+
+			if ("vacant".equalsIgnoreCase(keyword)) {
+				predicates.add(cb.equal(root.get("unitStatus").get("unitStatusName"), "Vacant"));
+			} else if ("occupied".equalsIgnoreCase(keyword)) {
+				// Join with TenantUnit and check active=true
+				Subquery<Long> subQuery = query.subquery(Long.class);
+				Root<TenantUnit> tenantUnit = subQuery.from(TenantUnit.class);
+				subQuery.select(tenantUnit.get("unit").get("unitId")).where(cb.equal(tenantUnit.get("active"), true));
+				predicates.add(root.get("unitId").in(subQuery));
+			} else {
+				// Search by unitType or unitSubType
+				Predicate byType = cb.like(cb.lower(root.get("unitType").get("unitTypeName")),
+						"%" + keyword.toLowerCase() + "%");
+				Predicate bySubType = cb.like(cb.lower(root.get("unitSubType").get("unitSubtypeName")),
+						"%" + keyword.toLowerCase() + "%");
+				predicates.add(cb.or(byType, bySubType));
+			}
+
+			return cb.and(predicates.toArray(new Predicate[0]));
+		}, pageable);
+
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, unitsPage, null, null);
 	}
 
 }
