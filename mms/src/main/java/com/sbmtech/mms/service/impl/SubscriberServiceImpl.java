@@ -57,6 +57,7 @@ import com.sbmtech.mms.dto.S3UploadDto;
 import com.sbmtech.mms.dto.S3UploadObjectDto;
 import com.sbmtech.mms.dto.TenantSimpleDTO;
 import com.sbmtech.mms.dto.TenureDetailsDTO;
+import com.sbmtech.mms.dto.UnitAllDTO;
 import com.sbmtech.mms.dto.UnitDTO;
 import com.sbmtech.mms.dto.UnitKeyDTO;
 import com.sbmtech.mms.dto.UnitReserveDetailsDTO;
@@ -69,7 +70,6 @@ import com.sbmtech.mms.models.City;
 import com.sbmtech.mms.models.Community;
 import com.sbmtech.mms.models.Countries;
 import com.sbmtech.mms.models.DepartmentMaster;
-//import com.sbmtech.mms.models.Floor;
 import com.sbmtech.mms.models.FloorMaster;
 import com.sbmtech.mms.models.KeyMaster;
 import com.sbmtech.mms.models.Order;
@@ -2692,27 +2692,26 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	}
 
+	@SuppressWarnings("unchecked")
 	public ApiResponse<Object> searchUnits(UnitPaginationRequest request) {
 		Pageable pageable = PageRequest.of(request.getPaginationRequest().getPage(),
 				request.getPaginationRequest().getSize(),
 				Sort.by(Sort.Direction.fromString(request.getPaginationRequest().getSortDirection()),
 						request.getPaginationRequest().getSortBy()));
 
-		@SuppressWarnings("unchecked")
 		Page<Unit> unitsPage = unitRepository.findAll((root, query, cb) -> {
 			List<Predicate> predicates = new ArrayList<>();
+			predicates.add(cb.equal(root.get("isDeleted"), false));
 			String keyword = request.getSearch();
 
 			if ("vacant".equalsIgnoreCase(keyword)) {
 				predicates.add(cb.equal(root.get("unitStatus").get("unitStatusName"), "Vacant"));
 			} else if ("occupied".equalsIgnoreCase(keyword)) {
-				// Join with TenantUnit and check active=true
 				Subquery<Long> subQuery = query.subquery(Long.class);
 				Root<TenantUnit> tenantUnit = subQuery.from(TenantUnit.class);
 				subQuery.select(tenantUnit.get("unit").get("unitId")).where(cb.equal(tenantUnit.get("active"), true));
 				predicates.add(root.get("unitId").in(subQuery));
-			} else {
-				// Search by unitType or unitSubType
+			} else if (keyword != null && !keyword.isEmpty()) {
 				Predicate byType = cb.like(cb.lower(root.get("unitType").get("unitTypeName")),
 						"%" + keyword.toLowerCase() + "%");
 				Predicate bySubType = cb.like(cb.lower(root.get("unitSubType").get("unitSubtypeName")),
@@ -2723,7 +2722,51 @@ public class SubscriberServiceImpl implements SubscriberService {
 			return cb.and(predicates.toArray(new Predicate[0]));
 		}, pageable);
 
-		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, unitsPage, null, null);
+		Page<UnitAllDTO> dtoPage = unitsPage.map(this::convertToDto);
+
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, dtoPage, null, null);
+	}
+
+	private UnitAllDTO convertToDto(Unit unit) {
+		UnitAllDTO dto = new UnitAllDTO();
+		dto.setUnitId(unit.getUnitId());
+		dto.setUnitName(unit.getUnitName());
+		dto.setFloorName(unit.getFloor() != null ? unit.getFloor().getFloorName() : null);
+		dto.setUnitTypeName(unit.getUnitType() != null ? unit.getUnitType().getUnitTypeName() : null);
+		dto.setUnitSubtypeName(unit.getUnitSubType() != null ? unit.getUnitSubType().getUnitSubtypeName() : null);
+		dto.setSize(unit.getSize());
+		dto.setHasBalcony(unit.getHasBalcony());
+		dto.setUnitStatusName(unit.getUnitStatus() != null ? unit.getUnitStatus().getUnitStatusName() : null);
+		dto.setRentMonth(unit.getRentMonth());
+		dto.setRentYear(unit.getRentYear());
+		dto.setSecurityDeposit(unit.getSecurityDeposit());
+
+		if (unit.getBuilding() != null) {
+			dto.setBuildingName(unit.getBuilding().getBuildingName());
+			dto.setAddress(unit.getBuilding().getAddress());
+
+			if (unit.getBuilding().getCommunity() != null) {
+				dto.setCommunityName(unit.getBuilding().getCommunity().getCommunityName());
+
+				if (unit.getBuilding().getCommunity().getArea() != null) {
+					dto.setAreaName(unit.getBuilding().getCommunity().getArea().getAreaName());
+
+					if (unit.getBuilding().getCommunity().getArea().getCity() != null) {
+						dto.setCityName(unit.getBuilding().getCommunity().getArea().getCity().getName());
+					}
+
+					if (unit.getBuilding().getCommunity().getArea().getState() != null) {
+						dto.setStateName(unit.getBuilding().getCommunity().getArea().getState().getName());
+					}
+
+					if (unit.getBuilding().getCommunity().getArea().getCountry() != null) {
+						dto.setCountryName(unit.getBuilding().getCommunity().getArea().getCountry().getName());
+					}
+				}
+			}
+		}
+
+		return dto;
 	}
 
 }
