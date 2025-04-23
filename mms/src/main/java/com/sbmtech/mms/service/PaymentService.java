@@ -13,5 +13,5 @@ public interface PaymentService {
 	
 	public ApiResponse<List<PaymentPurpose>>  getAllPaymentPurposes()throws Exception;
 
-	 public void savePaymentDetails(SavePaymentDetailsRequest request) ;
+	 public ApiResponse<Object> savePaymentDetails(SavePaymentDetailsRequest request) ;
 }

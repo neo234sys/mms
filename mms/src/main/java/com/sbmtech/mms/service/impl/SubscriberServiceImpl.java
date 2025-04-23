@@ -1540,7 +1540,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		RentCycle rentCycle = rentCycleOp.get();
 
-		//Initially Unit is reserved, until the payment is success
+		// Initially Unit is reserved, until the payment is success
 		Optional<UnitStatus> unitStatusop = unitStatusRepository.findById(UnitStatusEnum.RESERVED.getValue());
 		if (!unitStatusop.isPresent()) {
 			throw new BusinessException("Invalid UnitStatus", null);
@@ -1559,21 +1559,21 @@ public class SubscriberServiceImpl implements SubscriberService {
 		tenantUnit.setCreatedBy(request.getSubscriberId());
 
 		tenantUnitRepository.save(tenantUnit);
-/*
-		TenureDetails tenureDetails = new TenureDetails();
-		tenureDetails.setTenancyStartDate(CommonUtil.getDatefromString(request.getTenancyStartDate(), DATE_ddMMyyyy));
-		tenureDetails.setTenantUnit(tenantUnit);
-		tenureDetails.setTenancyEndDate(calculateTenancyEndDate(request));
-		tenureDetails.setCreatedBy(request.getSubscriberId());
-
-		tenureDetailsRepository.save(tenureDetails);
-
-		if (tenureDetails != null && tenureDetails.getTenantTenureId() != null) {
-			TenantUnitResponse tenantUnitResp = new TenantUnitResponse();
-			BeanUtils.copyProperties(tenantUnit, tenantUnitResp);
-			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, tenantUnitResp, null, null);
-		}
-		*/
+		/*
+		 * TenureDetails tenureDetails = new TenureDetails();
+		 * tenureDetails.setTenancyStartDate(CommonUtil.getDatefromString(request.
+		 * getTenancyStartDate(), DATE_ddMMyyyy));
+		 * tenureDetails.setTenantUnit(tenantUnit);
+		 * tenureDetails.setTenancyEndDate(calculateTenancyEndDate(request));
+		 * tenureDetails.setCreatedBy(request.getSubscriberId());
+		 * 
+		 * tenureDetailsRepository.save(tenureDetails);
+		 * 
+		 * if (tenureDetails != null && tenureDetails.getTenantTenureId() != null) {
+		 * TenantUnitResponse tenantUnitResp = new TenantUnitResponse();
+		 * BeanUtils.copyProperties(tenantUnit, tenantUnitResp); return new
+		 * ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, tenantUnitResp, null, null); }
+		 */
 		if (tenantUnit != null && tenantUnit.getTenantUnitId() != null) {
 			TenantUnitResponse tenantUnitResp = new TenantUnitResponse();
 			BeanUtils.copyProperties(tenantUnit, tenantUnitResp);
@@ -1582,8 +1582,8 @@ public class SubscriberServiceImpl implements SubscriberService {
 		return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
 	}
 
+	@SuppressWarnings("unused")
 	private Date calculateTenancyEndDate(TenantUnitRequest request) {
-
 		LocalDate tenStartDate = CommonUtil.getLocalDatefromString(request.getTenancyStartDate(),
 				CommonConstants.DATE_ddMMyyyy);
 		LocalDate tenEndDate = tenStartDate.plusMonths(request.getTenurePeriodMonth());

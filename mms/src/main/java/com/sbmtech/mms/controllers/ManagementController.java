@@ -61,7 +61,7 @@ public class ManagementController {
 
 	@Autowired
 	private ProductConfigService productConfigService;
-	
+
 	@Autowired
 	PaymentService paymentService;
 
@@ -220,9 +220,9 @@ public class ManagementController {
 		request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.addTenantUnit(request));
 	}
-	
+
 	@PostMapping("/savePaymentDetails")
-	public ResponseEntity<?> savePaymentDetails(@Valid @RequestBody SavePaymentDetailsRequest  request,
+	public ResponseEntity<?> savePaymentDetails(@Valid @RequestBody SavePaymentDetailsRequest request,
 			@CurrentSecurityContext(expression = "authentication") Authentication auth) throws Exception {
 		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
 		request.setSubscriberId(subscriberId);
