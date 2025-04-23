@@ -72,6 +72,8 @@ public class Order {
 
     @Column(name = "payment_method", length = 50)
     private String paymentMethod;
+    
+    
 
     @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime createdAt;

@@ -70,6 +70,7 @@ import com.sbmtech.mms.models.City;
 import com.sbmtech.mms.models.Community;
 import com.sbmtech.mms.models.Countries;
 import com.sbmtech.mms.models.DepartmentMaster;
+//import com.sbmtech.mms.models.Floor;
 import com.sbmtech.mms.models.FloorMaster;
 import com.sbmtech.mms.models.KeyMaster;
 import com.sbmtech.mms.models.Order;
@@ -1539,6 +1540,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		RentCycle rentCycle = rentCycleOp.get();
 
+		//Initially Unit is reserved, until the payment is success
 		Optional<UnitStatus> unitStatusop = unitStatusRepository.findById(UnitStatusEnum.RESERVED.getValue());
 		if (!unitStatusop.isPresent()) {
 			throw new BusinessException("Invalid UnitStatus", null);
@@ -1551,13 +1553,13 @@ public class SubscriberServiceImpl implements SubscriberService {
 		tenantUnit.setTenurePeriodMonth(request.getTenurePeriodMonth());
 		tenantUnit.setRentCycle(rentCycle);
 		tenantUnit.setExpired(false);
-		tenantUnit.setActive(true);
+		tenantUnit.setActive(false);
 		// tenantUnit.setPaymentMode(paymentMode);
 		tenantUnit.setCreatedTime(new Date());
 		tenantUnit.setCreatedBy(request.getSubscriberId());
 
 		tenantUnitRepository.save(tenantUnit);
-
+/*
 		TenureDetails tenureDetails = new TenureDetails();
 		tenureDetails.setTenancyStartDate(CommonUtil.getDatefromString(request.getTenancyStartDate(), DATE_ddMMyyyy));
 		tenureDetails.setTenantUnit(tenantUnit);
@@ -1567,6 +1569,12 @@ public class SubscriberServiceImpl implements SubscriberService {
 		tenureDetailsRepository.save(tenureDetails);
 
 		if (tenureDetails != null && tenureDetails.getTenantTenureId() != null) {
+			TenantUnitResponse tenantUnitResp = new TenantUnitResponse();
+			BeanUtils.copyProperties(tenantUnit, tenantUnitResp);
+			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, tenantUnitResp, null, null);
+		}
+		*/
+		if (tenantUnit != null && tenantUnit.getTenantUnitId() != null) {
 			TenantUnitResponse tenantUnitResp = new TenantUnitResponse();
 			BeanUtils.copyProperties(tenantUnit, tenantUnitResp);
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, tenantUnitResp, null, null);

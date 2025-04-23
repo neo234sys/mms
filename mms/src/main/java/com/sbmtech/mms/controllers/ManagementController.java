@@ -32,6 +32,7 @@ import com.sbmtech.mms.payload.request.KeyMasterRequest;
 import com.sbmtech.mms.payload.request.ParkingRequest;
 import com.sbmtech.mms.payload.request.ParkingZoneRequest;
 import com.sbmtech.mms.payload.request.ReserveUnitRequest;
+import com.sbmtech.mms.payload.request.SavePaymentDetailsRequest;
 import com.sbmtech.mms.payload.request.SubscriptionPaymentRequest;
 import com.sbmtech.mms.payload.request.SubscriptionRequest;
 import com.sbmtech.mms.payload.request.TenantIdRequest;
@@ -42,6 +43,7 @@ import com.sbmtech.mms.payload.request.UnitPaginationRequest;
 import com.sbmtech.mms.payload.request.UnitRequest;
 import com.sbmtech.mms.payload.request.UnitUpdateRequest;
 import com.sbmtech.mms.service.ConstantLookupService;
+import com.sbmtech.mms.service.PaymentService;
 import com.sbmtech.mms.service.ProductConfigService;
 import com.sbmtech.mms.service.SubscriberService;
 
@@ -59,6 +61,9 @@ public class ManagementController {
 
 	@Autowired
 	private ProductConfigService productConfigService;
+	
+	@Autowired
+	PaymentService paymentService;
 
 	@PostMapping("/addAdditionalDetails")
 	public ResponseEntity<?> addAdditionalDetails(@Valid @RequestBody AdditionalDetailsRequest request,
@@ -214,6 +219,14 @@ public class ManagementController {
 		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
 		request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.addTenantUnit(request));
+	}
+	
+	@PostMapping("/savePaymentDetails")
+	public ResponseEntity<?> savePaymentDetails(@Valid @RequestBody SavePaymentDetailsRequest  request,
+			@CurrentSecurityContext(expression = "authentication") Authentication auth) throws Exception {
+		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
+		request.setSubscriberId(subscriberId);
+		return ResponseEntity.ok(paymentService.savePaymentDetails(request));
 	}
 
 	@PostMapping("/addDepartment")
