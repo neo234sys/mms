@@ -187,7 +187,6 @@ import com.sbmtech.mms.util.CommonUtil;
 import com.sbmtech.mms.util.DtoConverter;
 import com.sbmtech.mms.util.DtoMapperUtil;
 import com.sbmtech.mms.util.PaginationUtils;
-import org.springframework.data.domain.Pageable;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Subquery;
@@ -2694,12 +2693,12 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	@SuppressWarnings("unchecked")
 	public ApiResponse<Object> searchUnits(UnitPaginationRequest request) {
-		Pageable pageable = PageRequest.of(request.getPaginationRequest().getPage(),
-				request.getPaginationRequest().getSize(),
-				Sort.by(Sort.Direction.fromString(request.getPaginationRequest().getSortDirection()),
-						request.getPaginationRequest().getSortBy()));
+		PaginationRequest paginationRequest = request.getPaginationRequest();
+		PageRequest pageable = PageRequest.of(paginationRequest.getPage(), paginationRequest.getSize(),
+				Sort.by(paginationRequest.getSortDirection().equalsIgnoreCase("desc") ? Sort.Direction.DESC
+						: Sort.Direction.ASC, paginationRequest.getSortBy()));
 
-		Page<Unit> unitsPage = unitRepository.findAll((root, query, cb) -> {
+		Specification<Unit> spec = (root, query, cb) -> {
 			List<Predicate> predicates = new ArrayList<>();
 			predicates.add(cb.equal(root.get("isDeleted"), false));
 			String keyword = request.getSearch();
@@ -2720,53 +2719,56 @@ public class SubscriberServiceImpl implements SubscriberService {
 			}
 
 			return cb.and(predicates.toArray(new Predicate[0]));
-		}, pageable);
+		};
 
-		Page<UnitAllDTO> dtoPage = unitsPage.map(this::convertToDto);
+		Page<Unit> pageResult = unitRepository.findAll(spec, pageable);
 
-		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, dtoPage, null, null);
-	}
+		List<UnitAllDTO> dtos = pageResult.getContent().stream().map(unit -> {
+			UnitAllDTO dto = new UnitAllDTO();
+			dto.setUnitId(unit.getUnitId());
+			dto.setUnitName(unit.getUnitName());
+			dto.setFloorName(unit.getFloor() != null ? unit.getFloor().getFloorName() : null);
+			dto.setUnitTypeName(unit.getUnitType() != null ? unit.getUnitType().getUnitTypeName() : null);
+			dto.setUnitSubtypeName(unit.getUnitSubType() != null ? unit.getUnitSubType().getUnitSubtypeName() : null);
+			dto.setSize(unit.getSize());
+			dto.setHasBalcony(unit.getHasBalcony());
+			dto.setUnitStatusName(unit.getUnitStatus() != null ? unit.getUnitStatus().getUnitStatusName() : null);
+			dto.setRentMonth(unit.getRentMonth());
+			dto.setRentYear(unit.getRentYear());
+			dto.setSecurityDeposit(unit.getSecurityDeposit());
 
-	private UnitAllDTO convertToDto(Unit unit) {
-		UnitAllDTO dto = new UnitAllDTO();
-		dto.setUnitId(unit.getUnitId());
-		dto.setUnitName(unit.getUnitName());
-		dto.setFloorName(unit.getFloor() != null ? unit.getFloor().getFloorName() : null);
-		dto.setUnitTypeName(unit.getUnitType() != null ? unit.getUnitType().getUnitTypeName() : null);
-		dto.setUnitSubtypeName(unit.getUnitSubType() != null ? unit.getUnitSubType().getUnitSubtypeName() : null);
-		dto.setSize(unit.getSize());
-		dto.setHasBalcony(unit.getHasBalcony());
-		dto.setUnitStatusName(unit.getUnitStatus() != null ? unit.getUnitStatus().getUnitStatusName() : null);
-		dto.setRentMonth(unit.getRentMonth());
-		dto.setRentYear(unit.getRentYear());
-		dto.setSecurityDeposit(unit.getSecurityDeposit());
+			if (unit.getBuilding() != null) {
+				dto.setBuildingName(unit.getBuilding().getBuildingName());
+				dto.setAddress(unit.getBuilding().getAddress());
 
-		if (unit.getBuilding() != null) {
-			dto.setBuildingName(unit.getBuilding().getBuildingName());
-			dto.setAddress(unit.getBuilding().getAddress());
+				if (unit.getBuilding().getCommunity() != null) {
+					dto.setCommunityName(unit.getBuilding().getCommunity().getCommunityName());
 
-			if (unit.getBuilding().getCommunity() != null) {
-				dto.setCommunityName(unit.getBuilding().getCommunity().getCommunityName());
+					if (unit.getBuilding().getCommunity().getArea() != null) {
+						dto.setAreaName(unit.getBuilding().getCommunity().getArea().getAreaName());
 
-				if (unit.getBuilding().getCommunity().getArea() != null) {
-					dto.setAreaName(unit.getBuilding().getCommunity().getArea().getAreaName());
+						if (unit.getBuilding().getCommunity().getArea().getCity() != null) {
+							dto.setCityName(unit.getBuilding().getCommunity().getArea().getCity().getName());
+						}
 
-					if (unit.getBuilding().getCommunity().getArea().getCity() != null) {
-						dto.setCityName(unit.getBuilding().getCommunity().getArea().getCity().getName());
-					}
+						if (unit.getBuilding().getCommunity().getArea().getState() != null) {
+							dto.setStateName(unit.getBuilding().getCommunity().getArea().getState().getName());
+						}
 
-					if (unit.getBuilding().getCommunity().getArea().getState() != null) {
-						dto.setStateName(unit.getBuilding().getCommunity().getArea().getState().getName());
-					}
-
-					if (unit.getBuilding().getCommunity().getArea().getCountry() != null) {
-						dto.setCountryName(unit.getBuilding().getCommunity().getArea().getCountry().getName());
+						if (unit.getBuilding().getCommunity().getArea().getCountry() != null) {
+							dto.setCountryName(unit.getBuilding().getCommunity().getArea().getCountry().getName());
+						}
 					}
 				}
 			}
-		}
+			return dto;
+		}).collect(Collectors.toList());
 
-		return dto;
+		@SuppressWarnings("rawtypes")
+		PaginationResponse pgResp = new PaginationResponse<>(dtos, pageResult.getNumber(), pageResult.getTotalPages(),
+				pageResult.getTotalElements(), pageResult.isFirst(), pageResult.isLast());
+
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, pgResp, null, null);
 	}
 
 }
