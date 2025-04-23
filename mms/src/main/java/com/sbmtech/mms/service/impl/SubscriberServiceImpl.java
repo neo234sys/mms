@@ -311,37 +311,31 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	@Override
 	public Integer getSubscriberIdfromAuth(Authentication auth) throws Exception {
-		User user = null;
-		Integer subscriberId = null;
 		UserDetailsImpl userPrincipal = (UserDetailsImpl) auth.getPrincipal();
 		Optional<User> userOp = userRepository.findByEmail(userPrincipal.getUsername());
+
 		if (userOp.isPresent()) {
-			user = userOp.get();
-			if (user != null && user.getRoles() != null) {
-				Set<Role> roles = user.getRoles();
-				for (Role role : roles) {
-					if (role.getName().toString().equals(RoleEnum.ROLE_MGT_ADMIN.getName())) {
-						subscriberId = user.getSubscriber().getSubscriberId();
-						logger.info("getSubscriberIdfromAuth subscriber->= {}", user.getSubscriber());
-						break;
+			User user = userOp.get();
+			if (user.getRoles() != null) {
+				for (Role role : user.getRoles()) {
+					if (RoleEnum.ROLE_MGT_ADMIN.getName().equals(role.getName().toString())) {
+						if (user.getSubscriber() != null) {
+							Integer subscriberId = user.getSubscriber().getSubscriberId();
+							logger.info("getSubscriberIdfromAuth subscriber->= {}", user.getSubscriber());
+
+							boolean exists = subscriberRepository.existsBySubscriberIdAndActive(subscriberId, 1);
+							if (!exists) {
+								logger.info("Subscription suspended for subscriberId ->:{} ", subscriberId);
+								throw new BusinessException("Subscription suspended", null);
+							}
+
+							return subscriberId;
+						}
 					}
 				}
-
 			}
 		}
-		if (subscriberId != null && subscriberId.intValue() != 0) {
-			boolean subscriberlIdExists = false;
-			subscriberlIdExists = subscriberRepository.existsBySubscriberIdAndActive(subscriberId, 1);
-			if (!subscriberlIdExists) {
-				logger.info("Subscribtion subspended for subscriberId ->:{} ", subscriberId);
-
-				throw new BusinessException("Subscribtion subspended", null);
-			}
-
-		} else {
-			subscriberId = 0;
-		}
-		return subscriberId;
+		return 0;
 	}
 
 	@Override
@@ -1485,68 +1479,65 @@ public class SubscriberServiceImpl implements SubscriberService {
 	}
 
 	public ApiResponse<Object> addTenantUnit(TenantUnitRequest request) {
+		logger.info("Starting process to add tenant unit for tenantId: {}, unitId: {}", request.getTenantId(),
+				request.getUnitId());
+
 		TenantUnit tenantUnit = new TenantUnit();
 		Tenant tenant = tenantRepository.findByTenantIdAndSubscriberId(request.getTenantId(),
 				request.getSubscriberId());
 
 		if (ObjectUtils.isEmpty(tenant)) {
+			logger.error("Tenant not found with ID: {}", request.getTenantId());
 			throw new BusinessException("Tenant not found with ID: " + request.getTenantId(), null);
 		}
 
 		Unit unit = unitRepository.findByUnitIdAndSubscriberId(request.getUnitId(), request.getSubscriberId());
 		if (unit == null) {
+			logger.error("Unit not found with ID: {}", request.getUnitId());
 			throw new BusinessException("Unit not found with ID: " + request.getUnitId(), null);
 		}
 
 		UnitStatus unitStatus = unit.getUnitStatus();
-		if (unitStatus != null && unitStatus.getUnitStatusId() == UnitStatusEnum.OCCUPIED.getValue()
-				|| unitStatus.getUnitStatusId() == UnitStatusEnum.RESERVED.getValue()) { // Occupied or Reserved
-			logger.info("Already this Unit registered/reserved for another tenant,unit id->{}", unit.getUnitId());
+		if (unitStatus != null && (unitStatus.getUnitStatusId() == UnitStatusEnum.OCCUPIED.getValue()
+				|| unitStatus.getUnitStatusId() == UnitStatusEnum.RESERVED.getValue())) {
+			logger.warn("Unit already registered or reserved, unitId: {}", unit.getUnitId());
 			throw new BusinessException("Already this Unit registered / reserved for another tenant", null);
 		}
 
 		if (request.getParkingId() != null) {
-			// checking corresponding parkingID with buildingID and with subscriberId
+			logger.info("Checking parking availability for parkingId: {}", request.getParkingId());
 			Parking parking = parkingRepository.findByParkingIdAndSubscriberId(request.getParkingId(),
-					request.getSubscriberId(), unit.getBuilding().getBuildingId());
+					request.getSubscriberId());
 
 			if (parking == null) {
-
+				logger.error("Parking not found with ID: {}", request.getParkingId());
 				throw new BusinessException("Parking not found with ID: " + request.getParkingId(), null);
 			}
 
-			// Check parking is available/is it assigned to another
 			Parking alreadyAssignedParking = parkingRepository.findParkingWithTenantUnit(request.getParkingId());
 			if (alreadyAssignedParking != null) {
-
-				throw new BusinessException("This Parking already alloted to someone: " + request.getParkingId(), null);
+				logger.warn("Parking already assigned, parkingId: {}", request.getParkingId());
+				throw new BusinessException("This Parking already allotted to someone: " + request.getParkingId(),
+						null);
 			}
 
 			tenantUnit.setParking(parking);
 			parking.setIsAvailable(false);
 		}
 
-//		Optional<PaymentMode> paymentModeOp = paymentModeRepository.findById(request.getPaymentModeId());
-//		if (!paymentModeOp.isPresent()) {
-//			throw new BusinessException("paymentMode not found with id: " + request.getPaymentModeId(), null);
-//		}
-//
-//		PaymentMode paymentMode = paymentModeOp.get();
-
 		Optional<RentCycle> rentCycleOp = rentCycleRepository.findById(request.getRentCycleId());
 		if (!rentCycleOp.isPresent()) {
+			logger.error("RentCycle not found with id: {}", request.getRentCycleId());
 			throw new BusinessException("rentCycle not found with id: " + request.getRentCycleId(), null);
 		}
-
 		RentCycle rentCycle = rentCycleOp.get();
 
-		// Initially Unit is reserved, until the payment is success
-		Optional<UnitStatus> unitStatusop = unitStatusRepository.findById(UnitStatusEnum.RESERVED.getValue());
-		if (!unitStatusop.isPresent()) {
+		Optional<UnitStatus> unitStatusOp = unitStatusRepository.findById(UnitStatusEnum.RESERVED.getValue());
+		if (!unitStatusOp.isPresent()) {
+			logger.error("Reserved UnitStatus not found in repository");
 			throw new BusinessException("Invalid UnitStatus", null);
 		}
-
-		unit.setUnitStatus(unitStatusop.get());
+		unit.setUnitStatus(unitStatusOp.get());
 
 		tenantUnit.setTenant(tenant);
 		tenantUnit.setUnit(unit);
@@ -1554,35 +1545,35 @@ public class SubscriberServiceImpl implements SubscriberService {
 		tenantUnit.setRentCycle(rentCycle);
 		tenantUnit.setExpired(false);
 		tenantUnit.setActive(false);
-		// tenantUnit.setPaymentMode(paymentMode);
 		tenantUnit.setCreatedTime(new Date());
 		tenantUnit.setCreatedBy(request.getSubscriberId());
 
 		tenantUnitRepository.save(tenantUnit);
-		/*
-		 * TenureDetails tenureDetails = new TenureDetails();
-		 * tenureDetails.setTenancyStartDate(CommonUtil.getDatefromString(request.
-		 * getTenancyStartDate(), DATE_ddMMyyyy));
-		 * tenureDetails.setTenantUnit(tenantUnit);
-		 * tenureDetails.setTenancyEndDate(calculateTenancyEndDate(request));
-		 * tenureDetails.setCreatedBy(request.getSubscriberId());
-		 * 
-		 * tenureDetailsRepository.save(tenureDetails);
-		 * 
-		 * if (tenureDetails != null && tenureDetails.getTenantTenureId() != null) {
-		 * TenantUnitResponse tenantUnitResp = new TenantUnitResponse();
-		 * BeanUtils.copyProperties(tenantUnit, tenantUnitResp); return new
-		 * ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, tenantUnitResp, null, null); }
-		 */
+		logger.info("TenantUnit saved successfully with ID: {}", tenantUnit.getTenantUnitId());
+
 		if (tenantUnit != null && tenantUnit.getTenantUnitId() != null) {
-			TenantUnitResponse tenantUnitResp = new TenantUnitResponse();
-			BeanUtils.copyProperties(tenantUnit, tenantUnitResp);
-			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, tenantUnitResp, null, null);
+			TenureDetails tenureDetails = new TenureDetails();
+			tenureDetails
+					.setTenancyStartDate(CommonUtil.getDatefromString(request.getTenancyStartDate(), DATE_ddMMyyyy));
+			tenureDetails.setTenancyEndDate(calculateTenancyEndDate(request));
+			tenureDetails.setTenantUnit(tenantUnit);
+			tenureDetails.setCreatedBy(request.getSubscriberId());
+			tenureDetailsRepository.save(tenureDetails);
+
+			logger.info("TenureDetails saved successfully for tenantUnitId: {}", tenantUnit.getTenantUnitId());
+
+			if (tenureDetails.getTenantTenureId() != null) {
+				TenantUnitResponse tenantUnitResp = new TenantUnitResponse();
+				BeanUtils.copyProperties(tenantUnit, tenantUnitResp);
+				logger.info("TenantUnit added successfully, returning response");
+				return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, tenantUnitResp, null, null);
+			}
 		}
+
+		logger.warn("Failed to create TenantUnit or TenureDetails properly");
 		return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
 	}
 
-	@SuppressWarnings("unused")
 	private Date calculateTenancyEndDate(TenantUnitRequest request) {
 		LocalDate tenStartDate = CommonUtil.getLocalDatefromString(request.getTenancyStartDate(),
 				CommonConstants.DATE_ddMMyyyy);

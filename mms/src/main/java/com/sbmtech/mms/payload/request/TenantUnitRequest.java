@@ -6,7 +6,6 @@ import javax.validation.constraints.NotNull;
 
 import com.sbmtech.mms.validator.ValidCurrentAndFutureDate;
 import com.sbmtech.mms.validator.ValidDateDDMMYYYY;
-import com.sbmtech.mms.validator.ValidFutureDate;
 
 public class TenantUnitRequest {
 
@@ -29,9 +28,6 @@ public class TenantUnitRequest {
 
 	@NotNull(message = "rentPaymentMode cannot be null")
 	private Integer rentCycleId;
-
-//	@NotNull(message = "rentPaymentMode cannot be null")
-//	private Integer paymentModeId;
 
 	@NotEmpty(message = "tenancyStartDate cannot be null")
 	@ValidDateDDMMYYYY
@@ -96,14 +92,6 @@ public class TenantUnitRequest {
 		this.rentCycleId = rentCycleId;
 	}
 
-//	public Integer getPaymentModeId() {
-//		return paymentModeId;
-//	}
-//
-//	public void setPaymentModeId(Integer paymentModeId) {
-//		this.paymentModeId = paymentModeId;
-//	}
-
 	public String getTenancyStartDate() {
 		return tenancyStartDate;
 	}
@@ -124,8 +112,8 @@ public class TenantUnitRequest {
 	public String toString() {
 		return "TenantUnitRequest [tenantId=" + tenantId + ", unitId=" + unitId + ", parkingId=" + parkingId
 				+ ", securityDeposit=" + securityDeposit + ", rent=" + rent + ", tenurePeriodMonth=" + tenurePeriodMonth
-				+ ", rentCycleId=" + rentCycleId +  ", tenancyStartDate="
-				+ tenancyStartDate + ", subscriberId=" + subscriberId + "]";
+				+ ", rentCycleId=" + rentCycleId + ", tenancyStartDate=" + tenancyStartDate + ", subscriberId="
+				+ subscriberId + "]";
 	}
 
 }

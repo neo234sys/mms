@@ -1,6 +1,5 @@
 package com.sbmtech.mms.models;
 
-import java.util.Arrays;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -10,7 +9,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -51,7 +49,7 @@ public class Tenant {
 	@Temporal(TemporalType.DATE)
 	private Date eidaExpiryDate;
 
-	//@Lob
+	// @Lob
 	@Column(name = "eida_copy_filename")
 	private String eidaCopyFilename;
 
@@ -62,11 +60,11 @@ public class Tenant {
 	@Temporal(TemporalType.DATE)
 	private Date passportExpiryDate;
 
-	//@Lob
+	// @Lob
 	@Column(name = "passport_copy_filename")
 	private String passportCopyFilename;
 
-	//@Lob
+	// @Lob
 	@Column(name = "photo_filename")
 	private String photoFilename;
 
@@ -160,8 +158,6 @@ public class Tenant {
 		this.eidaExpiryDate = eidaExpiryDate;
 	}
 
-	
-
 	public String getPassportNo() {
 		return passportNo;
 	}
@@ -177,8 +173,6 @@ public class Tenant {
 	public void setPassportExpiryDate(Date passportExpiryDate) {
 		this.passportExpiryDate = passportExpiryDate;
 	}
-
-	
 
 	public String getEidaCopyFilename() {
 		return eidaCopyFilename;
@@ -264,12 +258,10 @@ public class Tenant {
 	public String toString() {
 		return "Tenant [tenantId=" + tenantId + ", firstName=" + firstName + ", lastName=" + lastName + ", email="
 				+ email + ", phoneNumber=" + phoneNumber + ", dateOfBirth=" + dateOfBirth + ", emiratesId=" + emiratesId
-				+ ", eidaExpiryDate=" + eidaExpiryDate +  ", passportNo="
-				+ passportNo + ", passportExpiryDate=" + passportExpiryDate + ", passportCopy="
-				+ ", nationalityId="
-				+ nationalityId + ", nationality=" + nationality + ", createdTime=" + createdTime + ", updatedTime="
-				+ updatedTime + ", createdBy=" + createdBy + ", updatedBy=" + updatedBy + ", isDeleted=" + isDeleted
-				+ "]";
+				+ ", eidaExpiryDate=" + eidaExpiryDate + ", passportNo=" + passportNo + ", passportExpiryDate="
+				+ passportExpiryDate + ", passportCopy=" + ", nationalityId=" + nationalityId + ", nationality="
+				+ nationality + ", createdTime=" + createdTime + ", updatedTime=" + updatedTime + ", createdBy="
+				+ createdBy + ", updatedBy=" + updatedBy + ", isDeleted=" + isDeleted + "]";
 	}
 
 }
