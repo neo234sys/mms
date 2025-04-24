@@ -18,7 +18,7 @@ import lombok.Getter;
 @Component("AppSystemProp")
 @Order(1)
 @Getter
-public class AppSystemPropImpl  {
+public class AppSystemPropImpl {
 
 	public static Map<String, String> props = new HashMap<String, String>();
 
@@ -27,7 +27,6 @@ public class AppSystemPropImpl  {
 
 	@PostConstruct
 	public void loadProperties() {
-		System.out.println("<<<<<<<<<<<<<DB prop Loaded >>>>>>>>>>>>");
 		List<AppProperties> list = dao.findAll();
 		if (list != null && list.size() > 0) {
 			for (int i = 0; i < list.size(); i++) {

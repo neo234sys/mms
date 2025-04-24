@@ -1,7 +1,6 @@
 package com.sbmtech.mms.service.impl;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -11,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.sbmtech.mms.constant.SubscriptionStatus;
-import com.sbmtech.mms.controllers.CronJobController;
 import com.sbmtech.mms.models.Subscriber;
 import com.sbmtech.mms.models.Subscriptions;
 import com.sbmtech.mms.models.Unit;
@@ -26,9 +24,10 @@ import com.sbmtech.mms.service.CronJobService;
 
 @Service
 public class CronJobServiceImpl implements CronJobService {
-	
+
+	@SuppressWarnings("unused")
 	private static final Logger logger = LogManager.getLogger(CronJobServiceImpl.class);
-	
+
 	@Autowired
 	private SubscriptionRepository subscriptionRepository;
 
@@ -77,9 +76,7 @@ public class CronJobServiceImpl implements CronJobService {
 				}
 			}
 
-			System.out.println("Checked and released reserved units.");
 		} catch (Exception e) {
-			System.err.println("Error while releasing reserved units: " + e.getMessage());
 		}
 
 	}

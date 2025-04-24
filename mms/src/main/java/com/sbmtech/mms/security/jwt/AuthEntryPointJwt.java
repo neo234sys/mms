@@ -1,7 +1,6 @@
 package com.sbmtech.mms.security.jwt;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,27 +21,26 @@ import com.sbmtech.mms.constant.CommonConstants;
 @Component
 public class AuthEntryPointJwt implements AuthenticationEntryPoint {
 
-  private static final Logger logger = LoggerFactory.getLogger(AuthEntryPointJwt.class);
+	private static final Logger logger = LoggerFactory.getLogger(AuthEntryPointJwt.class);
 
-  @Override
-  public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
-      throws IOException, ServletException {
-    logger.error("Unauthorized error: {}", authException.getMessage());
-    
+	@Override
+	public void commence(HttpServletRequest request, HttpServletResponse response,
+			AuthenticationException authException) throws IOException, ServletException {
+		logger.error("Unauthorized error: {}", authException.getMessage());
 
-    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
-    final Map<String, Object> body = new HashMap<>();
-    body.put("status", HttpServletResponse.SC_UNAUTHORIZED);
-    body.put("error", "Unauthorized");
-    body.put("path", request.getServletPath());
-    body.put("responseCode", CommonConstants.FAILURE_CODE);
-    body.put("responseDesc", CommonConstants.FAILURE_DESC);
-    body.put("data", authException.getMessage());
+		final Map<String, Object> body = new HashMap<>();
+		body.put("status", HttpServletResponse.SC_UNAUTHORIZED);
+		body.put("error", "Unauthorized");
+		body.put("path", request.getServletPath());
+		body.put("responseCode", CommonConstants.FAILURE_CODE);
+		body.put("responseDesc", CommonConstants.FAILURE_DESC);
+		body.put("data", authException.getMessage());
 
-    final ObjectMapper mapper = new ObjectMapper();
-    mapper.writeValue(response.getOutputStream(), body);
-  }
+		final ObjectMapper mapper = new ObjectMapper();
+		mapper.writeValue(response.getOutputStream(), body);
+	}
 
 }

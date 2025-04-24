@@ -21,7 +21,6 @@ import com.sbmtech.mms.models.UnitStatus;
 import com.sbmtech.mms.models.UnitSubType;
 import com.sbmtech.mms.models.UnitType;
 import com.sbmtech.mms.payload.request.ApiResponse;
-import com.sbmtech.mms.payload.response.UnitSubTypeResponse;
 import com.sbmtech.mms.repository.ParkingTypeMasterRepository;
 import com.sbmtech.mms.repository.PaymentModeRepository;
 import com.sbmtech.mms.repository.RentCycleRepository;
@@ -32,46 +31,40 @@ import com.sbmtech.mms.service.ConstantLookupService;
 
 @Service
 public class ConstantLookupServiceImpl implements ConstantLookupService {
-	
-	
-	
-	
+
 	@Autowired
 	UnitTypeRepository unitTypeRepository;
-	
+
 	@Autowired
 	UnitSubTypeRepository UnitSubTypeRepository;
-	
+
 	@Autowired
 	UnitStatusRepository unitStatusRepository;
-	
+
 	@Autowired
 	PaymentModeRepository paymentModeRepository;
-	
+
 	@Autowired
 	RentCycleRepository rentCycleRepository;
-	
+
 	@Autowired
-	ParkingTypeMasterRepository  parkingTypeMasterRepository;
-	
-	
-	
+	ParkingTypeMasterRepository parkingTypeMasterRepository;
+
 	@Override
-	public  ApiResponse<Object>  getUnitTypeLookup()throws Exception {
-	
-		List <UnitType> result= unitTypeRepository.findAll();
+	public ApiResponse<Object> getUnitTypeLookup() throws Exception {
+
+		List<UnitType> result = unitTypeRepository.findAll();
 
 		if (result.isEmpty()) {
 			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
 		}
-		List<KeyValuePairDTO> listDto = result.stream()
-                .map(p->{
-                	KeyValuePairDTO kv=new KeyValuePairDTO();
-                	kv.setKey(p.getUnitTypeId());
-                	kv.setValue(p.getUnitTypeName());
-                	return kv;
-                }).collect(Collectors.toList());
-		
+		List<KeyValuePairDTO> listDto = result.stream().map(p -> {
+			KeyValuePairDTO kv = new KeyValuePairDTO();
+			kv.setKey(p.getUnitTypeId());
+			kv.setValue(p.getUnitTypeName());
+			return kv;
+		}).collect(Collectors.toList());
+
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, listDto, null, null);
 	}
 
@@ -94,68 +87,63 @@ public class ConstantLookupServiceImpl implements ConstantLookupService {
 		}
 
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, responses, null, null);
-		
+
 	}
-	
-	
 
 	@Override
 	public ApiResponse<Object> getUnitStatusLookup() throws Exception {
-		List <UnitStatus> result= unitStatusRepository.findAll();
+		List<UnitStatus> result = unitStatusRepository.findAll();
 
 		if (result.isEmpty()) {
 			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
 		}
-		List<KeyValuePairDTO> listDto = result.stream()
-                .map(p->{
-                	KeyValuePairDTO kv=new KeyValuePairDTO();
-                	kv.setKey(p.getUnitStatusId());
-                	kv.setValue(p.getUnitStatusName());
-                	return kv;
-                }).collect(Collectors.toList());
-		
+		List<KeyValuePairDTO> listDto = result.stream().map(p -> {
+			KeyValuePairDTO kv = new KeyValuePairDTO();
+			kv.setKey(p.getUnitStatusId());
+			kv.setValue(p.getUnitStatusName());
+			return kv;
+		}).collect(Collectors.toList());
+
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, listDto, null, null);
 	}
 
 	@Override
 	public ApiResponse<Object> getPaymentModeLookup() throws Exception {
-		List <PaymentMode> result= paymentModeRepository.findAll();
+		List<PaymentMode> result = paymentModeRepository.findAll();
 
 		if (result.isEmpty()) {
 			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
 		}
-		List<KeyValuePairDTO> listDto = result.stream()
-                .map(p->{
-                	KeyValuePairDTO kv=new KeyValuePairDTO();
-                	kv.setKey(p.getPaymentModeId());
-                	kv.setValue(p.getPaymentModeName());
-                	return kv;
-                }).collect(Collectors.toList());
-		
+		List<KeyValuePairDTO> listDto = result.stream().map(p -> {
+			KeyValuePairDTO kv = new KeyValuePairDTO();
+			kv.setKey(p.getPaymentModeId());
+			kv.setValue(p.getPaymentModeName());
+			return kv;
+		}).collect(Collectors.toList());
+
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, listDto, null, null);
 	}
 
 	@Override
 	public ApiResponse<Object> getRentCycleLookup() throws Exception {
-		List <RentCycle> result= rentCycleRepository.findAll();
+		List<RentCycle> result = rentCycleRepository.findAll();
 
 		if (result.isEmpty()) {
 			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
 		}
-		List<KeyValuePairDTO> listDto = result.stream()
-                .map(p->{
-                	KeyValuePairDTO kv=new KeyValuePairDTO();
-                	kv.setKey(p.getRentCycleId());
-                	kv.setValue(p.getRentCycleName());
-                	return kv;
-                }).collect(Collectors.toList());
-		
+		List<KeyValuePairDTO> listDto = result.stream().map(p -> {
+			KeyValuePairDTO kv = new KeyValuePairDTO();
+			kv.setKey(p.getRentCycleId());
+			kv.setValue(p.getRentCycleName());
+			return kv;
+		}).collect(Collectors.toList());
+
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, listDto, null, null);
 	}
-	
+
 	@Override
 	public ApiResponse<Object> getParkingTypeLookup() throws Exception {
-		List <ParkingTypeMaster> result= parkingTypeMasterRepository.findAll();
+		List<ParkingTypeMaster> result = parkingTypeMasterRepository.findAll();
 
 		if (result.isEmpty()) {
 			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
@@ -167,7 +155,7 @@ public class ConstantLookupServiceImpl implements ConstantLookupService {
 //                	kv.setValue(p.getRentCycleName());
 //                	return kv;
 //                }).collect(Collectors.toList());
-		
+
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, result, null, null);
 	}
 }

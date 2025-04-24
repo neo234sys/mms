@@ -47,9 +47,11 @@ public class EmailServiceImpl implements EmailService {
 
 	// static Properties properties=new Properties();
 
+	@SuppressWarnings("unused")
 	@Autowired
 	private Environment env;
 
+	@SuppressWarnings("unused")
 	@Autowired
 	private MailProperties mailProperties;
 
@@ -59,6 +61,7 @@ public class EmailServiceImpl implements EmailService {
 	private String gMailAuth = "";
 	private String gMailHost = "";
 	private String gMailPort = "";
+	@SuppressWarnings("unused")
 	private String gMailStartTls = "";
 	private String gEmailUsername = "";
 	private String gEmailPwd = "";
@@ -91,12 +94,6 @@ public class EmailServiceImpl implements EmailService {
 		gEmailUsername = AppSystemPropImpl.props.get("gemail.username");
 		gEmailPwd = AppSystemPropImpl.props.get("gemail.password");
 	}
-	/*
-	 * @PostConstruct public void init() throws Exception {
-	 * System.out.println("mailProperties="+mailProperties.getUsername());
-	 * properties= CommonBeanUtil.toProperties(mailProperties);
-	 * System.out.println("properties="+properties); }
-	 */
 
 	private void sendEmail(NotifEmailDTO dto) throws Exception {
 		Boolean gmailOrDomain = (gmail_OR_domain.equalsIgnoreCase("gmail")) ? true : false;
@@ -128,7 +125,8 @@ public class EmailServiceImpl implements EmailService {
 		}
 		if (attachments != null && !attachments.isEmpty()) {
 
-			for (Iterator iterator = attachments.iterator(); iterator.hasNext();) {
+			for (@SuppressWarnings("rawtypes")
+			Iterator iterator = attachments.iterator(); iterator.hasNext();) {
 				EmailAttachmentDTO emailAttachmentDTO = (EmailAttachmentDTO) iterator.next();
 
 				String attachmentFileName = emailAttachmentDTO.getAttachmentFileName();

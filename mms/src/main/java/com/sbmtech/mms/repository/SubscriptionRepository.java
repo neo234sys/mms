@@ -1,7 +1,6 @@
 package com.sbmtech.mms.repository;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,9 +12,9 @@ import com.sbmtech.mms.models.Subscriptions;
 public interface SubscriptionRepository extends JpaRepository<Subscriptions, Integer> {
 
 	Subscriptions findTopBySubscriber_SubscriberIdAndStatusOrderByStartDateDesc(Integer subscriberId, String status);
-	
+
 	Subscriptions findTopBySubscriber_SubscriberIdOrderByStartDateDesc(Integer subscriberId);
-	
+
 	Subscriptions findTopBySubscriber_SubscriberIdOrderBySubscriptionIdDesc(Integer subscriberId);
 
 	List<Subscriptions> findByStatusInAndEndDateBefore(List<String> statuses, LocalDate endDate);

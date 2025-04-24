@@ -11,42 +11,20 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import javax.xml.bind.Element;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.Tika;
-import org.apache.tomcat.util.json.JSONParser;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Component;
-import org.w3c.dom.NodeList;
 
 import com.sbmtech.mms.constant.CommonConstants;
 import com.sbmtech.mms.exception.BusinessException;
-import com.sbmtech.mms.models.Role;
-import com.sbmtech.mms.models.RoleEnum;
-import com.sbmtech.mms.models.User;
-import com.sbmtech.mms.repository.UserRepository;
-import com.sbmtech.mms.security.services.UserDetailsImpl;
 
 public class CommonUtil {
 
@@ -209,13 +187,11 @@ public class CommonUtil {
 		calNow.add(Calendar.DAY_OF_MONTH, daysToAdd);
 		return calNow.getTime();
 	}
-	
+
 	public static LocalDate getCurrentLocalDate() {
 		LocalDate currentDate = LocalDate.now(ZONE_DUBAI);
 		return currentDate;
 	}
-	
-	
 
 	public static Integer getIntegerFromString(String text) {
 		Integer intText = null;
@@ -491,7 +467,6 @@ public class CommonUtil {
 		try {
 			data = Files.readAllBytes(path);
 		} catch (IOException ex) {
-			ex.printStackTrace();
 		}
 		return data;
 	}
@@ -533,31 +508,30 @@ public class CommonUtil {
 		errorResponse.put("subscriberId", integer);
 		return ResponseEntity.status(HttpStatus.OK).body(errorResponse);
 	}
-	
-	
-	public static String validateAttachment(byte[] attachment) throws Exception{
-			
+
+	public static String validateAttachment(byte[] attachment) throws Exception {
+
 		String contentType = new Tika().detect(attachment);
 
-		if(!Arrays.asList(CommonConstants.ATTACHMENT_IMAGE_TYPES).contains(contentType.toLowerCase())) {
-			throw new BusinessException("Invalid File Type, Only jpg, png, pdf Allowed",null);
+		if (!Arrays.asList(CommonConstants.ATTACHMENT_IMAGE_TYPES).contains(contentType.toLowerCase())) {
+			throw new BusinessException("Invalid File Type, Only jpg, png, pdf Allowed", null);
 		}
-		
+
 		long size = attachment.length;
-		size = size/1024;
-		if(size> CommonConstants.MAX_IMAGE_SIZE*1024) {
-			throw new BusinessException("Max 5 MB Allowed",null);
+		size = size / 1024;
+		if (size > CommonConstants.MAX_IMAGE_SIZE * 1024) {
+			throw new BusinessException("Max 5 MB Allowed", null);
 		}
-		
+
 		return contentType;
 	}
-	
-	public static String getContentTypeOfAttachment(byte[] byteVal){
-		String contType=null;
-		
-		contType=new Tika().detect(byteVal);
-		
+
+	public static String getContentTypeOfAttachment(byte[] byteVal) {
+		String contType = null;
+
+		contType = new Tika().detect(byteVal);
+
 		return contType;
-	} 
+	}
 
 }

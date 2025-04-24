@@ -2,17 +2,13 @@ package com.sbmtech.mms.payload.request;
 
 import javax.validation.constraints.NotEmpty;
 
-import com.sbmtech.mms.validator.ValidSubscriberlId;
-
-
 public class ParkingZoneRequest {
 
 	@NotEmpty(message = "parkZoneName cannot be null")
 	private String parkZoneName;
-	
-	//@ValidSubscriberlId
+
+	// @ValidSubscriberlId
 	private Integer subscriberId;
-	
 
 	private Integer buildingId;
 

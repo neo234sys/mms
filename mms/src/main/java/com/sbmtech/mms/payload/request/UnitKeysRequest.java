@@ -4,20 +4,17 @@ import java.util.List;
 
 import javax.validation.constraints.Min;
 
-import com.sbmtech.mms.validator.ValidSubscriberlId;
-
 public class UnitKeysRequest {
 
-	@Min(value=1, message="min value 1")
+	@Min(value = 1, message = "min value 1")
 	private Integer unitId;
-	
-	@Min(value=1, message="min value 1")
+
+	@Min(value = 1, message = "min value 1")
 	private Integer keyId;
-	
-	//@ValidSubscriberlId
+
+	// @ValidSubscriberlId
 	private Integer subscriberId;
-	
-	
+
 	private List<Integer> keyIds;
 
 	public Integer getUnitId() {
@@ -55,7 +52,5 @@ public class UnitKeysRequest {
 	public Integer getSubscriberId() {
 		return subscriberId;
 	}
-	
-	
 
 }

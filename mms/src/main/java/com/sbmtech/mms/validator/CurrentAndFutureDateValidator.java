@@ -30,7 +30,8 @@ public class CurrentAndFutureDateValidator implements ConstraintValidator<ValidC
     }
 
     private static boolean isFutureDate(String format, String value) {
-        Date date = null;
+		@SuppressWarnings("unused")
+		Date date = null;
         try {
             SimpleDateFormat sdf = new SimpleDateFormat(format);
             if (value != null){

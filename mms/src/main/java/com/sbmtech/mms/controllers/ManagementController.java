@@ -36,6 +36,7 @@ import com.sbmtech.mms.payload.request.SavePaymentDetailsRequest;
 import com.sbmtech.mms.payload.request.SubscriptionPaymentRequest;
 import com.sbmtech.mms.payload.request.SubscriptionRequest;
 import com.sbmtech.mms.payload.request.TenantIdRequest;
+import com.sbmtech.mms.payload.request.TenantSearchRequest;
 import com.sbmtech.mms.payload.request.TenantUnitRequest;
 import com.sbmtech.mms.payload.request.TenantUpdateRequest;
 import com.sbmtech.mms.payload.request.UnitKeysRequest;
@@ -375,8 +376,16 @@ public class ManagementController {
 	}
 
 	@PostMapping("/getAllUnits")
-	public ResponseEntity<?> searchUnits(@RequestBody UnitPaginationRequest request) {
-		return ResponseEntity.ok(subscriberService.searchUnits(request));
+	public ResponseEntity<?> searchUnits(@CurrentSecurityContext(expression = "authentication") Authentication auth,
+			@RequestBody UnitPaginationRequest request) throws Exception {
+		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
+		return ResponseEntity.ok(subscriberService.searchUnits(subscriberId, request));
 	}
 
+	@PostMapping("/getAllTenants")
+	public ResponseEntity<?> getAllTenants(@CurrentSecurityContext(expression = "authentication") Authentication auth,
+			@RequestBody TenantSearchRequest request) throws Exception {
+		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
+		return ResponseEntity.ok(subscriberService.getAllTenants(subscriberId, request));
+	}
 }

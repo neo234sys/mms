@@ -2,8 +2,6 @@ package com.sbmtech.mms.models;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -16,15 +14,11 @@ import lombok.Setter;
 @Getter
 public class ParkingTypeMaster {
 
-    @Id
-    @Column(name = "parking_type_name", nullable = true, length = 50)
-    private String parkingTypeName;
+	@Id
+	@Column(name = "parking_type_name", nullable = true, length = 50)
+	private String parkingTypeName;
 
+	public ParkingTypeMaster() {
+	}
 
-    public ParkingTypeMaster() {}
-
-
-  
-
-    
 }

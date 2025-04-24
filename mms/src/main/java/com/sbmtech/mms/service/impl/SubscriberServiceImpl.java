@@ -55,6 +55,7 @@ import com.sbmtech.mms.dto.ParkingZoneSimpleDTO;
 import com.sbmtech.mms.dto.S3DownloadDto;
 import com.sbmtech.mms.dto.S3UploadDto;
 import com.sbmtech.mms.dto.S3UploadObjectDto;
+import com.sbmtech.mms.dto.TenantDTO;
 import com.sbmtech.mms.dto.TenantSimpleDTO;
 import com.sbmtech.mms.dto.TenureDetailsDTO;
 import com.sbmtech.mms.dto.UnitAllDTO;
@@ -122,6 +123,7 @@ import com.sbmtech.mms.payload.request.SubscriberRequest;
 import com.sbmtech.mms.payload.request.SubscriptionPaymentRequest;
 import com.sbmtech.mms.payload.request.SubscriptionRequest;
 import com.sbmtech.mms.payload.request.TenantIdRequest;
+import com.sbmtech.mms.payload.request.TenantSearchRequest;
 import com.sbmtech.mms.payload.request.TenantUnitRequest;
 import com.sbmtech.mms.payload.request.TenantUpdateRequest;
 import com.sbmtech.mms.payload.request.UnitKeysRequest;
@@ -188,6 +190,9 @@ import com.sbmtech.mms.util.CommonUtil;
 import com.sbmtech.mms.util.DtoConverter;
 import com.sbmtech.mms.util.DtoMapperUtil;
 import com.sbmtech.mms.util.PaginationUtils;
+
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Subquery;
@@ -2691,7 +2696,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 	}
 
 	@SuppressWarnings("unchecked")
-	public ApiResponse<Object> searchUnits(UnitPaginationRequest request) {
+	public ApiResponse<Object> searchUnits(Integer subscriberId, UnitPaginationRequest request) {
 		PaginationRequest paginationRequest = request.getPaginationRequest();
 		PageRequest pageable = PageRequest.of(paginationRequest.getPage(), paginationRequest.getSize(),
 				Sort.by(paginationRequest.getSortDirection().equalsIgnoreCase("desc") ? Sort.Direction.DESC
@@ -2700,6 +2705,11 @@ public class SubscriberServiceImpl implements SubscriberService {
 		Specification<Unit> spec = (root, query, cb) -> {
 			List<Predicate> predicates = new ArrayList<>();
 			predicates.add(cb.equal(root.get("isDeleted"), false));
+
+			if (subscriberId != null) {
+				predicates.add(cb.equal(root.get("subscriber").get("subscriberId"), subscriberId));
+			}
+
 			String keyword = request.getSearch();
 
 			if ("vacant".equalsIgnoreCase(keyword)) {
@@ -2760,6 +2770,84 @@ public class SubscriberServiceImpl implements SubscriberService {
 					}
 				}
 			}
+
+			return dto;
+		}).collect(Collectors.toList());
+
+		@SuppressWarnings("rawtypes")
+		PaginationResponse pgResp = new PaginationResponse<>(dtos, pageResult.getNumber(), pageResult.getTotalPages(),
+				pageResult.getTotalElements(), pageResult.isFirst(), pageResult.isLast());
+
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, pgResp, null, null);
+	}
+
+	public ApiResponse<Object> getAllTenants(Integer subscriberId, TenantSearchRequest request) {
+		PaginationRequest paginationRequest = request.getPaginationRequest();
+		PageRequest pageable = PageRequest.of(paginationRequest.getPage(), paginationRequest.getSize(),
+				Sort.by(paginationRequest.getSortDirection().equalsIgnoreCase("desc") ? Sort.Direction.DESC
+						: Sort.Direction.ASC, paginationRequest.getSortBy()));
+
+		Specification<Tenant> spec = (root, query, cb) -> {
+			root.fetch("nationality", JoinType.LEFT);
+			query.distinct(true);
+
+			List<Predicate> predicates = new ArrayList<>();
+			predicates.add(cb.isFalse(root.get("isDeleted")));
+
+			String searchTerm = request.getSearch();
+			if (searchTerm != null && !searchTerm.isEmpty()) {
+				searchTerm = searchTerm.trim().toLowerCase();
+				Predicate byFirstName = cb.like(cb.lower(root.get("firstName")), "%" + searchTerm + "%");
+				Predicate byLastName = cb.like(cb.lower(root.get("lastName")), "%" + searchTerm + "%");
+				Predicate byEmail = cb.like(cb.lower(root.get("email")), "%" + searchTerm + "%");
+				Predicate byPhone = cb.like(root.get("phoneNumber"), "%" + searchTerm + "%");
+				Predicate byEmiratesId = cb.like(root.get("emiratesId").as(String.class), "%" + searchTerm + "%");
+				predicates.add(cb.or(byFirstName, byLastName, byEmail, byPhone, byEmiratesId));
+			}
+
+			if (subscriberId != null) {
+				Subquery<Long> subquery = query.subquery(Long.class);
+				Root<TenantUnit> tenantUnitRoot = subquery.from(TenantUnit.class);
+				Join<TenantUnit, Unit> unitJoin = tenantUnitRoot.join("unit");
+				Join<Unit, Building> buildingJoin = unitJoin.join("building");
+				Join<Building, Subscriber> subscriberJoin = buildingJoin.join("subscriber");
+
+				subquery.select(cb.literal(1L)).where(
+						cb.equal(tenantUnitRoot.get("tenant").get("tenantId"), root.get("tenantId")),
+						cb.equal(tenantUnitRoot.get("active"), true),
+						cb.equal(subscriberJoin.get("subscriberId"), subscriberId));
+
+				predicates.add(cb.exists(subquery));
+			}
+
+			return cb.and(predicates.toArray(new Predicate[0]));
+		};
+
+		Page<Tenant> pageResult = tenantRepository.findAll(spec, pageable);
+
+		List<TenantDTO> dtos = pageResult.getContent().stream().map(tenant -> {
+			TenantDTO dto = new TenantDTO();
+			dto.setTenantId(tenant.getTenantId());
+			dto.setFirstName(tenant.getFirstName());
+			dto.setLastName(tenant.getLastName());
+			dto.setEmail(tenant.getEmail());
+			dto.setPhoneNumber(tenant.getPhoneNumber());
+			dto.setDateOfBirth(tenant.getDateOfBirth());
+			dto.setEmiratesId(tenant.getEmiratesId());
+			dto.setEidaExpiryDate(tenant.getEidaExpiryDate());
+			dto.setEidaCopyFilename(tenant.getEidaCopyFilename());
+			dto.setPassportNo(tenant.getPassportNo());
+			dto.setPassportExpiryDate(tenant.getPassportExpiryDate());
+			dto.setPassportCopyFilename(tenant.getPassportCopyFilename());
+			dto.setPhotoFilename(tenant.getPhotoFilename());
+			dto.setNationalityId(tenant.getNationalityId());
+			if (tenant.getNationality() != null) {
+				dto.setNationality(tenant.getNationality().getName());
+			}
+			dto.setCreatedTime(tenant.getCreatedTime());
+			dto.setUpdatedTime(tenant.getUpdatedTime());
+			dto.setCreatedBy(tenant.getCreatedBy());
+			dto.setUpdatedBy(tenant.getUpdatedBy());
 			return dto;
 		}).collect(Collectors.toList());
 

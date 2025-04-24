@@ -1,5 +1,7 @@
 package com.sbmtech.mms.payload.request;
 
+import java.util.Arrays;
+
 public class BuildingUpdateRequest {
 
 	private Integer buildingId;
@@ -103,12 +105,21 @@ public class BuildingUpdateRequest {
 		this.longitude = longitude;
 	}
 
+	public byte[] getBuildingLogo() {
+		return buildingLogo;
+	}
+
+	public void setBuildingLogo(byte[] buildingLogo) {
+		this.buildingLogo = buildingLogo;
+	}
+
 	@Override
 	public String toString() {
 		return "BuildingUpdateRequest [buildingId=" + buildingId + ", buildingName=" + buildingName + ", address="
 				+ address + ", hasGym=" + hasGym + ", hasSwimpool=" + hasSwimpool + ", hasKidsPlayground="
 				+ hasKidsPlayground + ", hasPlaycourt=" + hasPlaycourt + ", noOfFloors=" + noOfFloors + ", noOfUnits="
-				+ noOfUnits + ", latitude=" + latitude + ", longitude=" + longitude + "]";
+				+ noOfUnits + ", latitude=" + latitude + ", longitude=" + longitude + ", buildingLogo="
+				+ Arrays.toString(buildingLogo) + "]";
 	}
 
 }

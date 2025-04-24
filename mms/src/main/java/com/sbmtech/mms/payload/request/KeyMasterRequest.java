@@ -2,14 +2,12 @@ package com.sbmtech.mms.payload.request;
 
 import javax.validation.constraints.NotEmpty;
 
-import com.sbmtech.mms.validator.ValidSubscriberlId;
-
 public class KeyMasterRequest {
 
 	@NotEmpty(message = "keyName cannot be null")
 	private String keyName;
-	
-	//@ValidSubscriberlId
+
+	// @ValidSubscriberlId
 	private Integer subscriberId;
 
 	public String getKeyName() {

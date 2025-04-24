@@ -9,7 +9,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -50,11 +49,9 @@ public class Subscriber implements Serializable {
 	@Column(name = "company_tradelicense")
 	private String companyTradeLicense;
 
-	//@Lob
 	@Column(name = "company_tradelicense_copy_filename")
 	private String companyTradeLicenseCopyFilename;
 
-	//@Lob
 	@Column(name = "company_logo_filename")
 	private String companyLogoFilename;
 
@@ -154,8 +151,6 @@ public class Subscriber implements Serializable {
 		this.companyTradeLicense = companyTradeLicense;
 	}
 
-	
-
 	public String getCompanyTradeLicenseCopyFilename() {
 		return companyTradeLicenseCopyFilename;
 	}
@@ -164,7 +159,6 @@ public class Subscriber implements Serializable {
 		this.companyTradeLicenseCopyFilename = companyTradeLicenseCopyFilename;
 	}
 
-	
 	public String getCompanyLogoFilename() {
 		return companyLogoFilename;
 	}
@@ -235,9 +229,5 @@ public class Subscriber implements Serializable {
 				+ otpVerified + ", createdDate=" + createdDate + ", active=" + active + ", channelMaster="
 				+ channelMaster + "]";
 	}
-
-	
-	
-	
 
 }

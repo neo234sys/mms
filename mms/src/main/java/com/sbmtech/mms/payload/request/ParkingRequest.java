@@ -2,22 +2,20 @@ package com.sbmtech.mms.payload.request;
 
 import javax.validation.constraints.NotEmpty;
 
-import com.sbmtech.mms.validator.ValidSubscriberlId;
-
 public class ParkingRequest {
 
 	@NotEmpty(message = "parkingName cannot be null")
 	private String parkingName;
-	
+
 	private Integer parkZoneId;
-	
+
 	private String parkingType;
-	
-	//private Boolean isAvailable;
-	
+
+	// private Boolean isAvailable;
+
 	private Integer buildingId;
-	
-	//@ValidSubscriberlId
+
+	// @ValidSubscriberlId
 	private Integer subscriberId;
 
 	public String getParkingName() {
@@ -67,6 +65,5 @@ public class ParkingRequest {
 	public void setSubscriberId(Integer subscriberId) {
 		this.subscriberId = subscriberId;
 	}
-	
 
 }

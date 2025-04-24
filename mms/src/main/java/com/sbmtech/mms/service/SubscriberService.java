@@ -30,6 +30,7 @@ import com.sbmtech.mms.payload.request.SubscriberRequest;
 import com.sbmtech.mms.payload.request.SubscriptionPaymentRequest;
 import com.sbmtech.mms.payload.request.SubscriptionRequest;
 import com.sbmtech.mms.payload.request.TenantIdRequest;
+import com.sbmtech.mms.payload.request.TenantSearchRequest;
 import com.sbmtech.mms.payload.request.TenantUnitRequest;
 import com.sbmtech.mms.payload.request.TenantUpdateRequest;
 import com.sbmtech.mms.payload.request.UnitKeysRequest;
@@ -121,6 +122,8 @@ public interface SubscriberService {
 
 	public Subscriptions getActiveSubscriptionDetails(Integer subscriberId);
 
-	public ApiResponse<Object> searchUnits(UnitPaginationRequest request);
+	public ApiResponse<Object> searchUnits(Integer subscriberId, UnitPaginationRequest request);
+
+	public ApiResponse<Object> getAllTenants(Integer subscriberId, TenantSearchRequest request);
 
 }
