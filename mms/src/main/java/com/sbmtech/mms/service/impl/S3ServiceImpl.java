@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -43,8 +44,12 @@ public class S3ServiceImpl implements S3Service {
 
 	@Autowired
 	private S3Presigner s3Presigner;
+	
+	@Value("${mms.app.s3Bucket}")
+	private String bucketName;
 
-	private final String bucketName = "mms-dev-bucket-19032025";
+	//private final String bucketName = "mms-dev-bucket-19032025";
+	//private final String bucketName = "mms-local-bucket-29042025";
 
 //    public String uploadFile(MultipartFile file) throws IOException {
 //        String fileName = file.getOriginalFilename();
