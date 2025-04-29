@@ -3,11 +3,15 @@ package com.sbmtech.mms.service.impl;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.sbmtech.mms.constant.SubscriptionStatus;
 import com.sbmtech.mms.models.Subscriber;
@@ -15,6 +19,7 @@ import com.sbmtech.mms.models.Subscriptions;
 import com.sbmtech.mms.models.Unit;
 import com.sbmtech.mms.models.UnitReserveDetails;
 import com.sbmtech.mms.models.UnitStatusEnum;
+import com.sbmtech.mms.repository.BuildingRepository;
 import com.sbmtech.mms.repository.SubscriberRepository;
 import com.sbmtech.mms.repository.SubscriptionRepository;
 import com.sbmtech.mms.repository.UnitRepository;
@@ -22,7 +27,15 @@ import com.sbmtech.mms.repository.UnitReserveDetailsRepository;
 import com.sbmtech.mms.repository.UnitStatusRepository;
 import com.sbmtech.mms.service.CronJobService;
 
+import software.amazon.awssdk.services.s3.model.Delete;
+import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
+import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
+import software.amazon.awssdk.services.s3.model.S3Object;
+
 @Service
+@Transactional
 public class CronJobServiceImpl implements CronJobService {
 
 	@SuppressWarnings("unused")
@@ -42,6 +55,18 @@ public class CronJobServiceImpl implements CronJobService {
 
 	@Autowired
 	private UnitRepository unitRepository;
+	
+	//@Autowired
+	//private S3Client s3Client;
+	
+	@Autowired
+	private BuildingRepository buildingRepository;
+	
+	@Autowired
+	private S3DeletionService s3DeletionService;
+	
+	@Autowired
+	private Environment environment;
 
 	@Override
 	public void expireSubscriptions() throws Exception {
@@ -83,8 +108,20 @@ public class CronJobServiceImpl implements CronJobService {
 
 	@Override
 	public void deleteUnusedS3Images() throws Exception {
-		// TODO Auto-generated method stub
-
+		String tempprofile="devremote";
+		String[] activeProfiles = environment.getActiveProfiles();
+        for (String profile : activeProfiles) {
+            if (tempprofile.equals(profile)) {
+            	System.out.println("I am "+tempprofile);
+            	 List<String> fileNames = buildingRepository.findAllFileNames();
+            	 System.out.println("DB deleing fileList="+fileNames);
+            	 s3DeletionService.deleteFilesNotInList(fileNames);
+            }
+        }
+		
+		
 	}
+	
+	
 
 }
