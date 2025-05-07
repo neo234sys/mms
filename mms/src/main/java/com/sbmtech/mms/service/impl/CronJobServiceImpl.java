@@ -108,13 +108,13 @@ public class CronJobServiceImpl implements CronJobService {
 
 	@Override
 	public void deleteUnusedS3Images() throws Exception {
-		String tempprofile="devremote";
+		String prodProfile="prod"; // To void delete s3 files on prod env
 		String[] activeProfiles = environment.getActiveProfiles();
         for (String profile : activeProfiles) {
-            if (tempprofile.equals(profile)) {
-            	System.out.println("I am "+tempprofile);
+            if (!prodProfile.equals(profile)) {
+            	logger.info("I am "+profile);
             	 List<String> fileNames = buildingRepository.findAllFileNames();
-            	 System.out.println("DB deleing fileList="+fileNames);
+            	 logger.info("DB deleing fileList="+fileNames);
             	 s3DeletionService.deleteFilesNotInList(fileNames);
             }
         }

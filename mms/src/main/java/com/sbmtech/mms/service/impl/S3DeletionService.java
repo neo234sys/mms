@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +22,8 @@ import software.amazon.awssdk.services.s3.model.S3Object;
 @Service
 public class S3DeletionService {
 	
+	
+	private static final Logger logger = LogManager.getLogger(S3DeletionService.class);
 	
 	@Value("${mms.app.s3Bucket}")
 	private String BUCKET_NAME;
@@ -89,8 +93,8 @@ public class S3DeletionService {
         List<String> availableFiles = listResponse.contents().stream()
                 .map(S3Object::key)
                 .collect(Collectors.toList());
-        System.out.println("s3 availableFiles="+availableFiles);
-        System.out.println("s3 availableFiles size="+availableFiles.size());
+        logger.info("s3 availableFiles="+availableFiles);
+        logger.info("s3 availableFiles size="+availableFiles.size());
         
 
         List<String> deletingFiles = listResponse.contents().stream()
@@ -98,8 +102,8 @@ public class S3DeletionService {
             .filter(key -> !validSet.contains(key)) // Exclude valid keys
           //  .map(key -> ObjectIdentifier.builder().key(key).build())
             .collect(Collectors.toList());
-        System.out.println("s3 deletingFiles="+deletingFiles);
-        System.out.println("s3 deletingFiles size="+deletingFiles.size());
+        logger.info("s3 deletingFiles="+deletingFiles);
+        logger.info("s3 deletingFiles size="+deletingFiles.size());
         
 
         List<String> okFiles = listResponse.contents().stream()
@@ -107,29 +111,10 @@ public class S3DeletionService {
             .filter(key -> validSet.contains(key)) // Exclude valid keys
           //  .map(key -> ObjectIdentifier.builder().key(key).build())
             .collect(Collectors.toList());
-        System.out.println("s3 okFiles="+okFiles);
-        System.out.println("s3 okFiles size="+okFiles.size());
+        logger.info("s3 retainedFiles="+okFiles);
+        logger.info("s3 retainedFiles size="+okFiles.size());
 
-       /*
-        List<ObjectIdentifier> objectsToDelete = listResponse.contents().stream()
-            .map(S3Object::key)
-            .filter(key -> !validSet.contains(key)) // Exclude valid keys
-            .map(key -> ObjectIdentifier.builder().key(key).build())
-            .collect(Collectors.toList());
-
-        if (!objectsToDelete.isEmpty()) {
-            DeleteObjectsRequest deleteRequest = DeleteObjectsRequest.builder()
-                .bucket(BUCKET_NAME)
-                .delete(Delete.builder().objects(objectsToDelete).build())
-                .build();
-
-            //s3Client.deleteObjects(deleteRequest);
-            
-            System.out.println("Deleted " + objectsToDelete.size() + " unused files.");
-        } else {
-            System.out.println("No unused files found to delete.");
-        }
-        */
+     
         
         List<ObjectIdentifier> objectIdentifiers = new ArrayList<>();
 
@@ -150,12 +135,12 @@ public class S3DeletionService {
                     .delete(Delete.builder().objects(batch).build())
                     .build();
 
-           // s3Client.deleteObjects(deleteRequest);
-            System.out.println("Deleted i="+i);
+            s3Client.deleteObjects(deleteRequest);
+            logger.info("Deleted i="+i);
         }
     	}catch(Exception ex) {
-    		System.out.println(ex.getMessage());
-    		ex.printStackTrace();
+    		logger.error(ex);
+    		
     	}
     }
 }
