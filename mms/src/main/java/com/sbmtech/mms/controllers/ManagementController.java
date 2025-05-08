@@ -388,4 +388,7 @@ public class ManagementController {
 		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
 		return ResponseEntity.ok(subscriberService.getAllTenants(subscriberId, request));
 	}
+	
+	
+	
 }

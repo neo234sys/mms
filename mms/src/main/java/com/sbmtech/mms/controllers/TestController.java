@@ -3,16 +3,23 @@ package com.sbmtech.mms.controllers;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.CurrentSecurityContext;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sbmtech.mms.dto.NotifEmailDTO;
 import com.sbmtech.mms.dto.NotificationEmailResponseDTO;
+import com.sbmtech.mms.payload.request.TenantSearchRequest;
 import com.sbmtech.mms.service.EmailService;
 import com.sbmtech.mms.service.NotificationService;
+import com.sbmtech.mms.service.impl.InvoiceService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -27,6 +34,9 @@ public class TestController {
 
 	@Autowired
 	NotificationService notificationService;
+	
+	@Autowired
+	InvoiceService invoiceService;
 
 	private static final Logger logger = LogManager.getLogger(TestController.class);
 
@@ -69,5 +79,15 @@ public class TestController {
 		// emailService.sendEmailWithMultiAttachments(dto);
 		NotificationEmailResponseDTO resp = notificationService.sendOTPEmail(dto);
 		return "email send successfully " + resp.isEmailSent();
+	}
+	
+	
+	@PostMapping("/testSequence")
+	public ResponseEntity<?> testSequence() throws Exception {
+		
+		
+		invoiceService.createCustomer("test custname");
+		invoiceService.createBuilding("test custname");
+		return ResponseEntity.ok(invoiceService.createInvoice("test custname"));
 	}
 }
