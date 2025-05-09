@@ -44,6 +44,6 @@ public class CustomIdGenerator {
             .setParameter("prefix", fullPrefix)
             .executeUpdate();
 
-        return fullPrefix + "-" + String.format("%03d", newNumber); // e.g. INV225-001
+        return fullPrefix  + String.format("%08d", newNumber); // e.g. INV22500000001
     }
 }

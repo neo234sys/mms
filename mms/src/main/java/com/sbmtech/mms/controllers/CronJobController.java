@@ -54,6 +54,7 @@ public class CronJobController {
 	 */
 	@Scheduled(cron = "0 0 1 * * *") // This runs every day at 1:00 AM
 	public void deleteUnusedImages() throws Exception {
+		logger.info("deleteUnusedImages invoked at=" + new Date());
 		cronJobService.deleteUnusedS3Images();
 	}
 	
