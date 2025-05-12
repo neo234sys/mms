@@ -28,7 +28,7 @@ public class TenantChequeDetails {
     private String chequeNo;
     private String chequeBank;
     private Double chequeAmount;
-    private String chequePic;
+    private String chequePicName;
     private LocalDate chequeDate;
 
     private Integer paymentPurposeId;

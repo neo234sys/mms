@@ -7,7 +7,8 @@ public enum S3UploadObjTypeEnum {
 	COMPANYTRADELICENSE("COMPANYTRADELICENSE"),
 	EID("EID"),
 	PHOTO("PHOTO"),
-	PASSPORT("PASSPORT");
+	PASSPORT("PASSPORT"),
+	CHEQUE("CHEQUE");
 
 	private String value;
 

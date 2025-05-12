@@ -35,5 +35,20 @@ public interface TenantUnitRepository extends JpaRepository<TenantUnit, Integer>
 	List<TenantUnit> findByTenantTenantId(Integer tenantId);
 
 	List<TenantUnit> findByUnitUnitId(Integer unitId);
+	
+	
+	@Query(" SELECT CASE WHEN COUNT(tu) > 0 THEN 1 ELSE 0 END\r\n"
+			+ "    FROM TenantUnit tu\r\n"
+			+ "    JOIN Unit u ON tu.unit.unitId = u.unitId\r\n"
+			+ "    JOIN Building b ON u.building.buildingId = b.buildingId\r\n"
+			+ "    JOIN Subscriber s ON b.subscriber.subscriberId = s.subscriberId\r\n"
+			+ "    WHERE tu.tenantUnitId = :tenantUnitId\r\n"
+			+ "      AND s.subscriberId = :subscriberId\r\n"
+			+ "      AND s.active = 1 "
+			)
+	Integer isValidTenantUnitIdWithActiveSubscriber(@Param("tenantUnitId") Integer tenantUnitId, @Param("subscriberId") Integer subscriberId);
+
+	@Query("SELECT tu FROM TenantUnit tu WHERE tu.tenantUnitId = :tenantUnitId AND tu.subscriber.subscriberId = :subscriberId")
+	TenantUnit findByTenantUnitIdIdAndSubscriberId(Integer tenantUnitId, Integer subscriberId);
 
 }

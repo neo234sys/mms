@@ -17,11 +17,11 @@ public class TenantUnitRequest {
 
 	private Integer parkingId;
 
-	@Min(value = 1, message = "min value 1")
-	private Double securityDeposit;
+	//@Min(value = 1, message = "min value 1")
+	private Double discount=0.0d;
 
-	@Min(value = 1, message = "min value 1")
-	private Double rent;
+	//@Min(value = 1, message = "min value 1")
+	//private Double rent;
 
 	@Min(value = 1, message = "min value 1")
 	private Integer tenurePeriodMonth;
@@ -60,21 +60,7 @@ public class TenantUnitRequest {
 		this.parkingId = parkingId;
 	}
 
-	public Double getSecurityDeposit() {
-		return securityDeposit;
-	}
-
-	public void setSecurityDeposit(Double securityDeposit) {
-		this.securityDeposit = securityDeposit;
-	}
-
-	public Double getRent() {
-		return rent;
-	}
-
-	public void setRent(Double rent) {
-		this.rent = rent;
-	}
+	
 
 	public Integer getTenurePeriodMonth() {
 		return tenurePeriodMonth;
@@ -108,10 +94,18 @@ public class TenantUnitRequest {
 		this.subscriberId = subscriberId;
 	}
 
+	public Double getDiscount() {
+		return discount;
+	}
+
+	public void setDiscount(Double discount) {
+		this.discount = discount;
+	}
+
 	@Override
 	public String toString() {
 		return "TenantUnitRequest [tenantId=" + tenantId + ", unitId=" + unitId + ", parkingId=" + parkingId
-				+ ", securityDeposit=" + securityDeposit + ", rent=" + rent + ", tenurePeriodMonth=" + tenurePeriodMonth
+				+ ", tenurePeriodMonth=" + tenurePeriodMonth
 				+ ", rentCycleId=" + rentCycleId + ", tenancyStartDate=" + tenancyStartDate + ", subscriberId="
 				+ subscriberId + "]";
 	}

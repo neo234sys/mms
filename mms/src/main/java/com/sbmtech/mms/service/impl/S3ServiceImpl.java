@@ -154,6 +154,7 @@ public class S3ServiceImpl implements S3Service {
 						base64Image = base64Image.split(",")[1];
 					}
 					byte[] imageBytes = Base64.getDecoder().decode(base64Image);
+					
 					String fileName = "S_" + s3UploadDto.getSubscriberId() + "#" + UUID.randomUUID() + "#B_"
 							+ s3UploadDto.getBuildingId() + "#U_" + s3UploadDto.getUnitId() + "."
 							+ s3UploadObjectDto.getFileExt();

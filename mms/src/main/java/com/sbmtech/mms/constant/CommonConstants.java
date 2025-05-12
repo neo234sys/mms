@@ -71,6 +71,7 @@ public class CommonConstants {
 	public static final String EID_PIC="eid";
 	public static final String PASSPORT_PIC="passport";
 	public static final String PHOTO_PIC="photo";
+	public static final String CHEQUE_PIC="cheque";
 	
 		
 }

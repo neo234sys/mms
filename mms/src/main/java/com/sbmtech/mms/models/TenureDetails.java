@@ -17,8 +17,13 @@ import javax.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import lombok.Getter;
+import lombok.Setter;
+
 @Entity
 @Table(name = "tenure_details")
+@Setter
+@Getter
 public class TenureDetails implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -37,6 +42,18 @@ public class TenureDetails implements Serializable {
 
 	@Column(name = "tenancy_end_date")
 	private Date tenancyEndDate;
+	
+	@Column(name = "total_rent_per_year")
+	private Double totalRentPerYear;
+	
+	@Column(name = "discount")
+	private Double discount;
+	
+	@Column(name = "total_rent_af_discount")
+	private Double totalRentAfDiscount;
+	
+	@Column(name = "security_deposit")
+	private Double securityDeposit;
 
 	@Lob
 	@Column(name = "tenancy_copy")
@@ -56,76 +73,6 @@ public class TenureDetails implements Serializable {
 	@Column(name = "updated_by")
 	private Integer updatedBy;
 
-	public Integer getTenantTenureId() {
-		return tenantTenureId;
-	}
-
-	public void setTenantTenureId(Integer tenantTenureId) {
-		this.tenantTenureId = tenantTenureId;
-	}
-
-	public TenantUnit getTenantUnit() {
-		return tenantUnit;
-	}
-
-	public void setTenantUnit(TenantUnit tenantUnit) {
-		this.tenantUnit = tenantUnit;
-	}
-
-	public Date getTenancyStartDate() {
-		return tenancyStartDate;
-	}
-
-	public void setTenancyStartDate(Date tenancyStartDate) {
-		this.tenancyStartDate = tenancyStartDate;
-	}
-
-	public Date getTenancyEndDate() {
-		return tenancyEndDate;
-	}
-
-	public void setTenancyEndDate(Date tenancyEndDate) {
-		this.tenancyEndDate = tenancyEndDate;
-	}
-
-	public byte[] getTenancyCopy() {
-		return tenancyCopy;
-	}
-
-	public void setTenancyCopy(byte[] tenancyCopy) {
-		this.tenancyCopy = tenancyCopy;
-	}
-
-	public Date getCreatedTime() {
-		return createdTime;
-	}
-
-	public void setCreatedTime(Date createdTime) {
-		this.createdTime = createdTime;
-	}
-
-	public Date getUpdatedTime() {
-		return updatedTime;
-	}
-
-	public void setUpdatedTime(Date updatedTime) {
-		this.updatedTime = updatedTime;
-	}
-
-	public Integer getCreatedBy() {
-		return createdBy;
-	}
-
-	public void setCreatedBy(Integer createdBy) {
-		this.createdBy = createdBy;
-	}
-
-	public Integer getUpdatedBy() {
-		return updatedBy;
-	}
-
-	public void setUpdatedBy(Integer updatedBy) {
-		this.updatedBy = updatedBy;
-	}
+	
 
 }

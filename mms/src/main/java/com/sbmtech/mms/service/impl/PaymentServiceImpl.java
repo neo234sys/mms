@@ -1,5 +1,6 @@
 package com.sbmtech.mms.service.impl;
 
+import static com.sbmtech.mms.constant.CommonConstants.DATE_ddMMyyyy;
 import static com.sbmtech.mms.constant.CommonConstants.FAILURE_CODE;
 import static com.sbmtech.mms.constant.CommonConstants.FAILURE_DESC;
 import static com.sbmtech.mms.constant.CommonConstants.SUCCESS_CODE;
@@ -7,18 +8,30 @@ import static com.sbmtech.mms.constant.CommonConstants.SUCCESS_DESC;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
+import javax.validation.Valid;
+
 import org.springframework.transaction.annotation.Transactional;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.sbmtech.mms.constant.CommonConstants;
 import com.sbmtech.mms.dto.ChequeDetailsDTO;
+import com.sbmtech.mms.dto.S3UploadDto;
+import com.sbmtech.mms.dto.S3UploadObjectDto;
 import com.sbmtech.mms.exception.BusinessException;
+import com.sbmtech.mms.models.ParkingZone;
 import com.sbmtech.mms.models.PaymentPurpose;
+import com.sbmtech.mms.models.S3UploadObjTypeEnum;
+import com.sbmtech.mms.models.Subscriber;
 import com.sbmtech.mms.models.Tenant;
 import com.sbmtech.mms.models.TenantCCDetails;
 import com.sbmtech.mms.models.TenantChequeDetails;
@@ -26,14 +39,18 @@ import com.sbmtech.mms.models.TenantUnit;
 import com.sbmtech.mms.models.Unit;
 import com.sbmtech.mms.models.UnitStatus;
 import com.sbmtech.mms.payload.request.ApiResponse;
+import com.sbmtech.mms.payload.request.PaymentScheduleRequest;
 import com.sbmtech.mms.payload.request.SavePaymentDetailsRequest;
 import com.sbmtech.mms.repository.PaymentPurposeRepository;
+import com.sbmtech.mms.repository.SubscriberRepository;
 import com.sbmtech.mms.repository.TenantCCDetailsRepository;
 import com.sbmtech.mms.repository.TenantChequeDetailsRepository;
 import com.sbmtech.mms.repository.TenantUnitRepository;
 import com.sbmtech.mms.repository.UnitRepository;
 import com.sbmtech.mms.repository.UnitStatusRepository;
 import com.sbmtech.mms.service.PaymentService;
+import com.sbmtech.mms.service.S3Service;
+import com.sbmtech.mms.util.CommonUtil;
 
 @Service
 @Transactional
@@ -43,6 +60,9 @@ public class PaymentServiceImpl implements PaymentService {
 
 	@Autowired
 	private PaymentPurposeRepository paymentPurposeRepository;
+	
+	@Autowired
+	private SubscriberRepository subscriberRepository;
 
 	@Autowired
 	private TenantCCDetailsRepository tenantCCDetailsRepository;
@@ -58,7 +78,11 @@ public class PaymentServiceImpl implements PaymentService {
 
 	@Autowired
 	private UnitRepository unitRepository;
-
+	
+	@Autowired
+	private S3Service s3Service;
+	
+	
 	@Override
 	public ApiResponse<List<PaymentPurpose>> getAllPaymentPurposes() throws Exception {
 		List<PaymentPurpose> result = paymentPurposeRepository.findAll();
@@ -70,11 +94,18 @@ public class PaymentServiceImpl implements PaymentService {
 	}
 
 	@Override
-	public ApiResponse<Object> savePaymentDetails(SavePaymentDetailsRequest request) {
+	public ApiResponse<Object> savePaymentDetails(SavePaymentDetailsRequest request)throws Exception {
+		List<S3UploadObjectDto> s3UploadObjectDtoList = new ArrayList<>();
+		S3UploadObjectDto s3BuildingLogoDto = null;
 		logger.info("Received request to save payment details for tenantId: {}, tenantUnitId: {}, paymentModeId: {}",
 				request.getTenantId(), request.getTenantUnitId(), request.getPaymentModeId());
-
+		Integer  validTenantUnitId= tenantUnitRepository.isValidTenantUnitIdWithActiveSubscriber(request.getTenantUnitId(),request.getSubscriberId());
+		if (validTenantUnitId==null || (validTenantUnitId==0)) {
+			logger.error("Tenant unit not found for tenantUnitId: {}", request.getTenantUnitId());
+			throw new BusinessException("Tenant unit not found", null);
+		}
 		Optional<TenantUnit> tenantUnitOpt = tenantUnitRepository.findById(request.getTenantUnitId());
+		//
 		if (tenantUnitOpt.isEmpty()) {
 			logger.error("Tenant unit not found for tenantUnitId: {}", request.getTenantUnitId());
 			throw new BusinessException("Tenant unit not found", null);
@@ -114,23 +145,50 @@ public class PaymentServiceImpl implements PaymentService {
 				tenantCCDetailsRepository.save(cc);
 				logger.info("Credit card details saved successfully for tenantId: {}", request.getTenantId());
 
-			} else if (mode == 2) { // Cheque
+			} else if (mode == 4) { // Cheque
 				if (request.getChequeDetails() == null || request.getChequeDetails().isEmpty()) {
 					logger.error("Cheque details are missing for tenantId: {}", request.getTenantId());
 					throw new BusinessException("Cheque details are missing", null);
 				}
 
 				for (ChequeDetailsDTO detail : request.getChequeDetails()) {
+					
+					
 					TenantChequeDetails cheque = new TenantChequeDetails();
 					cheque.setTenantId(request.getTenantId());
 					cheque.setTenantUnitId(request.getTenantUnitId());
 					cheque.setChequeNo(detail.getChequeNo());
 					cheque.setChequeBank(detail.getChequeBank());
 					cheque.setChequeAmount(detail.getChequeAmount());
-					cheque.setChequePic(detail.getChequePic());
-					cheque.setChequeDate(
-							LocalDate.parse(detail.getChequeDate(), DateTimeFormatter.ofPattern("MM/dd/yyyy")));
+					
+					cheque.setChequeDate(CommonUtil.getLocalDatefromString(detail.getChequeDate(), DATE_ddMMyyyy));
 					cheque.setPaymentPurposeId(detail.getPaymentPurposeId());
+					
+					if (!ObjectUtils.isEmpty(detail.getChequePic())) {
+						String contentType = CommonUtil.validateAttachment(detail.getChequePic());
+						String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+						s3BuildingLogoDto = new S3UploadObjectDto(CommonConstants.CHEQUE_PIC, contentType, fileExt,
+								Base64.getEncoder().encodeToString(detail.getChequePic()), null);
+						s3UploadObjectDtoList.add(s3BuildingLogoDto);
+
+						S3UploadDto s3UploadDto = new S3UploadDto();
+						s3UploadDto.setSubscriberId(request.getSubscriberId());
+						s3UploadDto.setObjectType(S3UploadObjTypeEnum.CHEQUE.toString());
+						s3UploadDto.setBuildingId(unit.getBuilding().getBuildingId());
+						s3UploadDto.setUnitId(unit.getUnitId());
+						s3UploadDto.setS3UploadObjectDtoList(s3UploadObjectDtoList);
+						List<S3UploadObjectDto> s3UploadObjectDtoListRet = s3Service.upload(s3UploadDto);
+						for (S3UploadObjectDto s3UploadObjectDto : s3UploadObjectDtoListRet) {
+							if (s3UploadObjectDto != null && StringUtils.isNotBlank(s3UploadObjectDto.getS3FileName())) {
+								if (s3UploadObjectDto.getObjectName().equals(CommonConstants.CHEQUE_PIC)) {
+									
+									cheque.setChequePicName(s3UploadObjectDto.getS3FileName());
+								}
+
+							}
+						}
+
+					}
 
 					tenantChequeDetailsRepository.save(cheque);
 					logger.info("Cheque details saved for chequeNo: {} and tenantId: {}", detail.getChequeNo(),
@@ -154,6 +212,18 @@ public class PaymentServiceImpl implements PaymentService {
 			logger.error("Exception while saving payment details: {}", e.getMessage(), e);
 			throw e;
 		}
+	}
+
+	@Override
+	public ApiResponse<Object> calculatePaymentSchedule(@Valid PaymentScheduleRequest request) {
+
+		
+		TenantUnit tu = tenantUnitRepository.findByTenantUnitIdIdAndSubscriberId(request.getTenantUnitId(),
+				 request.getSubscriberId());
+		if (tu == null) {
+			throw new BusinessException("TenantUnit or subscriber not associated", null);
+		}
+		return null;
 	}
 
 }

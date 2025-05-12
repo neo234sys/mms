@@ -1484,6 +1484,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 	}
 
 	public ApiResponse<Object> addTenantUnit(TenantUnitRequest request) {
+		Optional <Subscriber> subscriber= subscriberRepository.findById(request.getSubscriberId());
 		logger.info("Starting process to add tenant unit for tenantId: {}, unitId: {}", request.getTenantId(),
 				request.getUnitId());
 
@@ -1552,6 +1553,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		tenantUnit.setActive(false);
 		tenantUnit.setCreatedTime(new Date());
 		tenantUnit.setCreatedBy(request.getSubscriberId());
+		tenantUnit.setSubscriber(subscriber.get());
 
 		tenantUnitRepository.save(tenantUnit);
 		logger.info("TenantUnit saved successfully with ID: {}", tenantUnit.getTenantUnitId());
@@ -1562,6 +1564,10 @@ public class SubscriberServiceImpl implements SubscriberService {
 					.setTenancyStartDate(CommonUtil.getDatefromString(request.getTenancyStartDate(), DATE_ddMMyyyy));
 			tenureDetails.setTenancyEndDate(calculateTenancyEndDate(request));
 			tenureDetails.setTenantUnit(tenantUnit);
+			tenureDetails.setTotalRentPerYear(unit.getRentYear());
+			tenureDetails.setDiscount(request.getDiscount());
+			tenureDetails.setTotalRentAfDiscount((unit.getRentYear()-(unit.getRentYear()*(request.getDiscount()/100))));
+			tenureDetails.setSecurityDeposit(unit.getSecurityDeposit());
 			tenureDetails.setCreatedBy(request.getSubscriberId());
 			tenureDetailsRepository.save(tenureDetails);
 
