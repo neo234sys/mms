@@ -79,6 +79,14 @@ public class CommonUtil {
 	public static Date getDatefromLocalDate(LocalDate localDate) {
 		return Date.from(localDate.atStartOfDay(ZONE_DUBAI).toInstant());
 	}
+	public static LocalDate getLocalDatefromDate(Date date) {
+		LocalDate localDate = date.toInstant()
+	            .atZone(ZONE_DUBAI)
+	            .toLocalDate();
+		return localDate;
+	}
+	
+	
 //	public static LocalDate getLocalDatefromDate(Date date,String datePattern) {
 //		if(StringUtils.isBlank(datePattern)) {
 //			datePattern=CommonConstants.DATE_ddMMyyyy;

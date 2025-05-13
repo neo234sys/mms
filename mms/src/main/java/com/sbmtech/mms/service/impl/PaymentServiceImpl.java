@@ -7,6 +7,7 @@ import static com.sbmtech.mms.constant.CommonConstants.SUCCESS_CODE;
 import static com.sbmtech.mms.constant.CommonConstants.SUCCESS_DESC;
 
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -30,6 +31,7 @@ import com.sbmtech.mms.dto.S3UploadObjectDto;
 import com.sbmtech.mms.exception.BusinessException;
 import com.sbmtech.mms.models.ParkingZone;
 import com.sbmtech.mms.models.PaymentPurpose;
+import com.sbmtech.mms.models.RentCycle;
 import com.sbmtech.mms.models.S3UploadObjTypeEnum;
 import com.sbmtech.mms.models.Subscriber;
 import com.sbmtech.mms.models.Tenant;
@@ -42,6 +44,7 @@ import com.sbmtech.mms.payload.request.ApiResponse;
 import com.sbmtech.mms.payload.request.PaymentScheduleRequest;
 import com.sbmtech.mms.payload.request.SavePaymentDetailsRequest;
 import com.sbmtech.mms.repository.PaymentPurposeRepository;
+import com.sbmtech.mms.repository.RentCycleRepository;
 import com.sbmtech.mms.repository.SubscriberRepository;
 import com.sbmtech.mms.repository.TenantCCDetailsRepository;
 import com.sbmtech.mms.repository.TenantChequeDetailsRepository;
@@ -78,6 +81,9 @@ public class PaymentServiceImpl implements PaymentService {
 
 	@Autowired
 	private UnitRepository unitRepository;
+	
+	@Autowired
+	private RentCycleRepository rentCycleRepository;
 	
 	@Autowired
 	private S3Service s3Service;
@@ -223,7 +229,37 @@ public class PaymentServiceImpl implements PaymentService {
 		if (tu == null) {
 			throw new BusinessException("TenantUnit or subscriber not associated", null);
 		}
+		this.calculateDueDates(CommonUtil.getLocalDatefromDate(tu.getTenureDetails().get(0).getTenancyStartDate()),
+				tu.getTenurePeriodMonth(),tu.getRentCycle().getRentCycleId());
 		return null;
 	}
+	
+	public List<LocalDate> calculateDueDates(LocalDate startDate, int tenureMonths, int rentCycleId) {
+		Optional <RentCycle> rentCycleOp=rentCycleRepository.findById(rentCycleId);
+		  Period interval =Period.ofMonths(0);
+		if(rentCycleOp.isPresent()) {
+	        RentCycle rentCycle = rentCycleOp.get();
+	        System.out.println(rentCycle.getRentCycleName().toLowerCase());
+	        if(rentCycle.getRentCycleName().toLowerCase().contains("year")) {
+	        	interval=Period.ofMonths(12);
+	        }else if(rentCycle.getRentCycleName().toLowerCase().contains("half")) {
+	        	interval= Period.ofMonths(6);
+	        }else if(rentCycle.getRentCycleName().toLowerCase().contains("quar")) {
+	        	interval= Period.ofMonths(3);
+	        }else if(rentCycle.getRentCycleName().toLowerCase().contains("month")) {
+	        	interval=Period.ofMonths(1);;
+	        }
+		}
+        
+        long totalCycles = tenureMonths / interval.toTotalMonths();
+        List<LocalDate> dueDates = new ArrayList<>();
+        for (int i = 0; i < totalCycles; i++) {
+            dueDates.add(startDate.plus(interval.multipliedBy(i)));
+        }
+
+      System.out.println("dueDates="+ dueDates);
+        
+        return null;
+    }
 
 }

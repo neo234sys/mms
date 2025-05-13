@@ -93,6 +93,9 @@ public class TenantUnit implements Serializable {
 	@OneToMany(mappedBy = "tenantUnit", fetch = FetchType.LAZY)
 	private List<TenureDetails> tenureDetails = new ArrayList<>();
 
+//	@OneToOne(fetch = FetchType.LAZY)
+//	@JoinColumn(name = "tenant_unit_id", referencedColumnName = "tenant_unit_id")
+//	private TenureDetails tenureDetails;
 	
 
 }

@@ -1570,7 +1570,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			tenureDetails.setSecurityDeposit(unit.getSecurityDeposit());
 			tenureDetails.setCreatedBy(request.getSubscriberId());
 			tenureDetailsRepository.save(tenureDetails);
-
+			//tenantUnit.setTenureDetails(tenureDetails);
 			logger.info("TenureDetails saved successfully for tenantUnitId: {}", tenantUnit.getTenantUnitId());
 
 			if (tenureDetails.getTenantTenureId() != null) {
