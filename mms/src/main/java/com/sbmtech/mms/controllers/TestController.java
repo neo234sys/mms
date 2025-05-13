@@ -86,8 +86,8 @@ public class TestController {
 	public ResponseEntity<?> testSequence() throws Exception {
 		
 		
-		invoiceService.createUnit("test custname");
-		invoiceService.createTenant("test custname");
+		//invoiceService.createUnit("test custname");
+		//invoiceService.createTenant("test custname");
 		return ResponseEntity.ok(invoiceService.createBuilding("test custname"));
 	}
 }
