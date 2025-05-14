@@ -16,6 +16,7 @@ import com.sbmtech.mms.dto.KeyValuePairDTO;
 import com.sbmtech.mms.exception.BusinessException;
 import com.sbmtech.mms.models.ParkingTypeMaster;
 import com.sbmtech.mms.models.PaymentMode;
+import com.sbmtech.mms.models.PaymentPurpose;
 import com.sbmtech.mms.models.RentCycle;
 import com.sbmtech.mms.models.UnitStatus;
 import com.sbmtech.mms.models.UnitSubType;
@@ -23,6 +24,7 @@ import com.sbmtech.mms.models.UnitType;
 import com.sbmtech.mms.payload.request.ApiResponse;
 import com.sbmtech.mms.repository.ParkingTypeMasterRepository;
 import com.sbmtech.mms.repository.PaymentModeRepository;
+import com.sbmtech.mms.repository.PaymentPurposeRepository;
 import com.sbmtech.mms.repository.RentCycleRepository;
 import com.sbmtech.mms.repository.UnitStatusRepository;
 import com.sbmtech.mms.repository.UnitSubTypeRepository;
@@ -49,6 +51,9 @@ public class ConstantLookupServiceImpl implements ConstantLookupService {
 
 	@Autowired
 	ParkingTypeMasterRepository parkingTypeMasterRepository;
+	
+	@Autowired
+	PaymentPurposeRepository paymentPurposeRepository;
 
 	@Override
 	public ApiResponse<Object> getUnitTypeLookup() throws Exception {
@@ -157,5 +162,23 @@ public class ConstantLookupServiceImpl implements ConstantLookupService {
 //                }).collect(Collectors.toList());
 
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, result, null, null);
+	}
+	
+	@Override
+	public ApiResponse<Object> getPaymentPurposeLookup() throws Exception {
+
+		List<PaymentPurpose> result = paymentPurposeRepository.findAll();
+
+		if (result.isEmpty()) {
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
+		}
+		List<KeyValuePairDTO> listDto = result.stream().map(p -> {
+			KeyValuePairDTO kv = new KeyValuePairDTO();
+			kv.setKey(p.getPurposeId());
+			kv.setValue(p.getPurposeName());
+			return kv;
+		}).collect(Collectors.toList());
+
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, listDto, null, null);
 	}
 }

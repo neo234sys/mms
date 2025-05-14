@@ -8,22 +8,22 @@ import static com.sbmtech.mms.constant.CommonConstants.SUCCESS_DESC;
 
 import java.time.LocalDate;
 import java.time.Period;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
 
-import org.springframework.transaction.annotation.Transactional;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.sbmtech.mms.constant.CommonConstants;
 import com.sbmtech.mms.dto.ChequeDetailsDTO;
@@ -31,15 +31,16 @@ import com.sbmtech.mms.dto.RentDue;
 import com.sbmtech.mms.dto.S3UploadDto;
 import com.sbmtech.mms.dto.S3UploadObjectDto;
 import com.sbmtech.mms.exception.BusinessException;
-import com.sbmtech.mms.models.ParkingZone;
 import com.sbmtech.mms.models.PaymentPurpose;
+import com.sbmtech.mms.models.PaymentPurposeEnum;
 import com.sbmtech.mms.models.RentCycle;
+import com.sbmtech.mms.models.RentDueEntity;
 import com.sbmtech.mms.models.S3UploadObjTypeEnum;
-import com.sbmtech.mms.models.Subscriber;
 import com.sbmtech.mms.models.Tenant;
 import com.sbmtech.mms.models.TenantCCDetails;
 import com.sbmtech.mms.models.TenantChequeDetails;
 import com.sbmtech.mms.models.TenantUnit;
+import com.sbmtech.mms.models.TenureDetails;
 import com.sbmtech.mms.models.Unit;
 import com.sbmtech.mms.models.UnitStatus;
 import com.sbmtech.mms.payload.request.ApiResponse;
@@ -47,10 +48,12 @@ import com.sbmtech.mms.payload.request.PaymentScheduleRequest;
 import com.sbmtech.mms.payload.request.SavePaymentDetailsRequest;
 import com.sbmtech.mms.repository.PaymentPurposeRepository;
 import com.sbmtech.mms.repository.RentCycleRepository;
+import com.sbmtech.mms.repository.RentDueRepository;
 import com.sbmtech.mms.repository.SubscriberRepository;
 import com.sbmtech.mms.repository.TenantCCDetailsRepository;
 import com.sbmtech.mms.repository.TenantChequeDetailsRepository;
 import com.sbmtech.mms.repository.TenantUnitRepository;
+import com.sbmtech.mms.repository.TenureDetailsRepository;
 import com.sbmtech.mms.repository.UnitRepository;
 import com.sbmtech.mms.repository.UnitStatusRepository;
 import com.sbmtech.mms.service.PaymentService;
@@ -63,8 +66,7 @@ public class PaymentServiceImpl implements PaymentService {
 
 	private static final Logger logger = LogManager.getLogger(PaymentServiceImpl.class);
 
-	@Autowired
-	private PaymentPurposeRepository paymentPurposeRepository;
+	
 	
 	@Autowired
 	private SubscriberRepository subscriberRepository;
@@ -89,6 +91,16 @@ public class PaymentServiceImpl implements PaymentService {
 	
 	@Autowired
 	private S3Service s3Service;
+	
+	
+	@Autowired
+	private TenureDetailsRepository tenureDetailsRepository;
+
+	@Autowired
+	private RentDueRepository rentDueRepository;
+	
+	@Autowired
+	PaymentPurposeRepository paymentPurposeRepository;
 	
 	
 	@Override
@@ -231,15 +243,18 @@ public class PaymentServiceImpl implements PaymentService {
 		if (tu == null) {
 			throw new BusinessException("TenantUnit or subscriber not associated", null);
 		}
-		  List<RentDue> dues = this.calculateDueDates(CommonUtil.getLocalDatefromDate(tu.getTenureDetails().get(0).getTenancyStartDate()),
+		  List<RentDue> dues = this.calculateDueDates(tu.getTenureDetails().get(0),
 				tu.getTenurePeriodMonth(),tu.getRentCycle().getRentCycleId(),tu.getTenureDetails().get(0).getTotalRentPerYear());
-		//return null;
+		  
+		  this.saveRentDues(tu.getTenureDetails().get(0).getTenantTenureId(),dues);
 		  return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, dues, null, null);
 	}
 	
-	public List<RentDue> calculateDueDates(LocalDate startDate, int tenureMonths, int rentCycleId,double totalRentPerYear) {
+	public List<RentDue> calculateDueDates(TenureDetails tenureDetails, int tenureMonths, int rentCycleId,double totalRentPerYear) {
+		List<PaymentPurpose> paymentPurpose = paymentPurposeRepository.findAll();
+		LocalDate startDate=CommonUtil.getLocalDatefromDate(tenureDetails.getTenancyStartDate());
 		Optional <RentCycle> rentCycleOp=rentCycleRepository.findById(rentCycleId);
-		  Period interval =Period.ofMonths(0);
+		Period interval =Period.ofMonths(0);
 		if(rentCycleOp.isPresent()) {
 	        RentCycle rentCycle = rentCycleOp.get();
 	        System.out.println(rentCycle.getRentCycleName().toLowerCase());
@@ -262,12 +277,23 @@ public class PaymentServiceImpl implements PaymentService {
         for (int i = 0; i < totalCycles; i++) {
            // dueDates.add(startDate.plus(interval.multipliedBy(i)));
         	 LocalDate dueDate = startDate.plus(interval.multipliedBy(i));
-             rentDues.add(new RentDue(dueDate, rentPerCycle));
+             rentDues.add(new RentDue(dueDate, rentPerCycle,PaymentPurposeEnum.RENT.getValue(),PaymentPurposeEnum.RENT.getName()));
         }
+        rentDues.add(new RentDue(startDate, tenureDetails.getSecurityDeposit(),PaymentPurposeEnum.SECURITY_DEPOSIT.getValue(),PaymentPurposeEnum.SECURITY_DEPOSIT.getName()));
 
       System.out.println("dueDates="+ rentDues);
         
         return rentDues;
     }
 
+	public void saveRentDues(int tenureId, List<RentDue> rentDues) {
+	    TenureDetails tenure = tenureDetailsRepository.findById(tenureId)
+	            .orElseThrow(() -> new EntityNotFoundException("Tenure not found"));
+
+	    List<RentDueEntity> entities = rentDues.stream()
+	            .map(due -> new RentDueEntity(due.getDueDate(), due.getAmount(), tenure,new PaymentPurpose(due.getPaymentPurposeId(),due.getPaymentPurpose())))
+	            .collect(Collectors.toList());
+
+	    rentDueRepository.saveAll(entities);
+	}
 }

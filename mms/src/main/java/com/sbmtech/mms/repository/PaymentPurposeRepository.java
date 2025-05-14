@@ -7,5 +7,8 @@ import com.sbmtech.mms.models.PaymentPurpose;
 
 @Repository
 public interface PaymentPurposeRepository extends JpaRepository<PaymentPurpose, Integer> {
+	
+	
+		
    
 }

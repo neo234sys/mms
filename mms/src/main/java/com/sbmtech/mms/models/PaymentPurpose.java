@@ -2,13 +2,17 @@ package com.sbmtech.mms.models;
 
 import javax.persistence.*;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Table(name = "payment_purpose")
 @Setter
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class PaymentPurpose {
 
     @Id

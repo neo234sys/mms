@@ -31,22 +31,22 @@ public class InvoiceService {
     }
     
     @Transactional
-    public Invoice createCustomer(String customerName) {
+    public Invoice createTenant(String customerName) {
     	Invoice invoice = new Invoice();
         invoice.setCustomerName(customerName);
 
-        String generatedId = idGenerator.generate("CUS"); // Reusable generator
+        String generatedId = idGenerator.generate("TEN"); // Reusable generator
         invoice.setId(generatedId);
 
         return invoiceRepository.save(invoice);
     }
 
     @Transactional
-    public Invoice createInvoice(String customerName) {
+    public Invoice createUnit(String customerName) {
     	Invoice invoice = new Invoice();
         invoice.setCustomerName(customerName);
 
-        String generatedId = idGenerator.generate("INV"); // Reusable generator
+        String generatedId = idGenerator.generate("UNT"); // Reusable generator
         invoice.setId(generatedId);
 
         return invoiceRepository.save(invoice);

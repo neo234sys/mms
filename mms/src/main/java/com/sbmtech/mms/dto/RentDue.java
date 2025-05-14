@@ -2,9 +2,18 @@ package com.sbmtech.mms.dto;
 
 import java.time.LocalDate;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
+@Setter
+@Getter
+@AllArgsConstructor
 public class RentDue {
     private LocalDate dueDate;
     private double amount;
+    private Integer paymentPurposeId;
+    private String paymentPurpose;
 
     public RentDue(LocalDate dueDate, double amount) {
         this.dueDate = dueDate;
