@@ -80,6 +80,10 @@ public class TenureDetails implements Serializable {
 	
 	@OneToMany(mappedBy = "tenure", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<RentDueEntity> rentDues = new ArrayList<>();
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "subscriber_id")
+	private Subscriber subscriber;
 
 	
 

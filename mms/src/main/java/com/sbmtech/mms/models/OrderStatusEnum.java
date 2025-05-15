@@ -1,7 +1,7 @@
 package com.sbmtech.mms.models;
 
 public enum OrderStatusEnum {
-	PENDING("PENDING"), PROCESSED("PROCESSED"), CANCELLED("CANCELLED");
+	INITIATED("INITIATED"),PENDING("PENDING"), PROCESSED("PROCESSED"), CANCELLED("CANCELLED"), FAILED("FAILED");
 
 	private String value;
 

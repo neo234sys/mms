@@ -1,7 +1,9 @@
 package com.sbmtech.mms.models;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -34,7 +36,8 @@ public class RentDueEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "rent_due_id")
+    private Long rentDueId;
 
     @Column(name = "due_date", nullable = false)
     private LocalDate dueDate;
@@ -46,10 +49,20 @@ public class RentDueEntity {
     @JoinColumn(name = "tenant_tenure_id", nullable = false)
     private TenureDetails tenure;
     
+    @ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "subscriber_id")
+	private Subscriber subscriber;
+    
     
     @OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "purpose_id", referencedColumnName = "purpose_id")
 	private PaymentPurpose paymentPurpose;
+    
+    @OneToOne(mappedBy = "rentDue", cascade = CascadeType.ALL)
+    private PaymentOrderEntity order;
+    
+    @Column(name = "payment_date")
+    private LocalDateTime paymentDate;
     
     @Column(name = "payment_status")
     private String paymentStatus;

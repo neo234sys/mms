@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sbmtech.mms.payload.request.OrderRequest;
 import com.sbmtech.mms.payload.request.PaymentScheduleRequest;
 import com.sbmtech.mms.payload.request.SavePaymentDetailsRequest;
 import com.sbmtech.mms.service.PaymentService;
@@ -47,13 +48,13 @@ public class PaymentController {
 		return ResponseEntity.ok(paymentService.calculatePaymentSchedule(request));
 	}
 
-//	@PostMapping("/createOrder")
-//	public ResponseEntity<?> createOrder(@Valid @RequestBody OrderRequest request,
-//			@CurrentSecurityContext(expression = "authentication")  Authentication auth)throws Exception {
-//		
-//		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
-//		request.setSubscriberId(subscriberId);
-//		return ResponseEntity.ok(paymentService.createOrder(request));
-//	}
+	@PostMapping("/createOrder")
+	public ResponseEntity<?> createOrder(@Valid @RequestBody OrderRequest request,
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth)throws Exception {
+		
+		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
+		request.setSubscriberId(subscriberId);
+		return ResponseEntity.ok(paymentService.createOrder(request));
+	}
 
 }

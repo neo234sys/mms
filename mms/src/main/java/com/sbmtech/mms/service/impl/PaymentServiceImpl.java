@@ -44,6 +44,7 @@ import com.sbmtech.mms.models.TenureDetails;
 import com.sbmtech.mms.models.Unit;
 import com.sbmtech.mms.models.UnitStatus;
 import com.sbmtech.mms.payload.request.ApiResponse;
+import com.sbmtech.mms.payload.request.OrderRequest;
 import com.sbmtech.mms.payload.request.PaymentScheduleRequest;
 import com.sbmtech.mms.payload.request.SavePaymentDetailsRequest;
 import com.sbmtech.mms.repository.PaymentPurposeRepository;
@@ -56,6 +57,7 @@ import com.sbmtech.mms.repository.TenantUnitRepository;
 import com.sbmtech.mms.repository.TenureDetailsRepository;
 import com.sbmtech.mms.repository.UnitRepository;
 import com.sbmtech.mms.repository.UnitStatusRepository;
+import com.sbmtech.mms.service.PaymentOrderService;
 import com.sbmtech.mms.service.PaymentService;
 import com.sbmtech.mms.service.S3Service;
 import com.sbmtech.mms.util.CommonUtil;
@@ -70,6 +72,9 @@ public class PaymentServiceImpl implements PaymentService {
 	
 	@Autowired
 	private SubscriberRepository subscriberRepository;
+	
+	@Autowired
+	private PaymentOrderService paymentOrderService;
 
 	@Autowired
 	private TenantCCDetailsRepository tenantCCDetailsRepository;
@@ -290,10 +295,39 @@ public class PaymentServiceImpl implements PaymentService {
 	    TenureDetails tenure = tenureDetailsRepository.findById(tenureId)
 	            .orElseThrow(() -> new EntityNotFoundException("Tenure not found"));
 
-	    List<RentDueEntity> entities = rentDues.stream()
-	            .map(due -> new RentDueEntity(due.getDueDate(), due.getAmount(), tenure,new PaymentPurpose(due.getPaymentPurposeId(),due.getPaymentPurpose())))
-	            .collect(Collectors.toList());
+//	    List<RentDueEntity> entities = rentDues.stream()
+//	            .map(due -> new RentDueEntity(due.getDueDate(), due.getAmount(), tenure,new PaymentPurpose(due.getPaymentPurposeId(),due.getPaymentPurpose())))
+//	            .collect(Collectors.toList());
+	    
+	    List<RentDueEntity> entities = rentDues.stream().map(due -> {
+	        RentDueEntity entity = new RentDueEntity();
+	        entity.setDueDate(due.getDueDate());
+	        entity.setAmount(due.getAmount());
+	        entity.setTenure(tenure);
+	        entity.setPaymentStatus(CommonConstants.PENDING_DESC);
+
+	        PaymentPurpose purpose = new PaymentPurpose();
+	        purpose.setPurposeId(due.getPaymentPurposeId());
+	        purpose.setPurposeName(due.getPaymentPurpose());
+	        entity.setPaymentPurpose(purpose);
+	        
+	        entity.setSubscriber(tenure.getSubscriber());
+	        
+
+	        return entity;
+	    }).collect(Collectors.toList());
 
 	    rentDueRepository.saveAll(entities);
+	}
+
+	@Override
+	public ApiResponse<Object> createOrder(@Valid OrderRequest request) {
+		TenantUnit tu = tenantUnitRepository.findByTenantUnitIdIdAndSubscriberId(request.getTenantUnitId(),
+				 request.getSubscriberId());
+		if (tu == null) {
+			throw new BusinessException("TenantUnit or subscriber not associated", null);
+		}
+		//paymentOrderService.createOrder(request);
+		return null;
 	}
 }

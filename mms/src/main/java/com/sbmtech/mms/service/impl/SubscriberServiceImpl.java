@@ -74,7 +74,6 @@ import com.sbmtech.mms.models.DepartmentMaster;
 //import com.sbmtech.mms.models.Floor;
 import com.sbmtech.mms.models.FloorMaster;
 import com.sbmtech.mms.models.KeyMaster;
-import com.sbmtech.mms.models.Order;
 import com.sbmtech.mms.models.Otp;
 import com.sbmtech.mms.models.Parking;
 import com.sbmtech.mms.models.ParkingTypeEnum;
@@ -1569,6 +1568,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			tenureDetails.setTotalRentAfDiscount((unit.getRentYear()-(unit.getRentYear()*(request.getDiscount()/100))));
 			tenureDetails.setSecurityDeposit(unit.getSecurityDeposit());
 			tenureDetails.setCreatedBy(request.getSubscriberId());
+			tenureDetails.setSubscriber(subscriber.get());
 			tenureDetailsRepository.save(tenureDetails);
 			//tenantUnit.setTenureDetails(tenureDetails);
 			logger.info("TenureDetails saved successfully for tenantUnitId: {}", tenantUnit.getTenantUnitId());
@@ -2429,12 +2429,12 @@ public class SubscriberServiceImpl implements SubscriberService {
 						null, null);
 			}
 
-			List<Order> orders = orderRepository.findByTenantTenantId(request.getTenantId());
-			if (!orders.isEmpty()) {
-				List<Integer> orderIds = orders.stream().map(Order::getOrderId).collect(Collectors.toList());
-				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
-						"Cannot delete tenant because it has associated orders. Order ids=" + orderIds, null, null);
-			}
+//			List<Order> orders = orderRepository.findByTenantTenantId(request.getTenantId());
+//			if (!orders.isEmpty()) {
+//				List<Integer> orderIds = orders.stream().map(Order::getOrderId).collect(Collectors.toList());
+//				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
+//						"Cannot delete tenant because it has associated orders. Order ids=" + orderIds, null, null);
+//			}
 
 			List<TenureDetails> tenureDetails = tenureDetailsRepository
 					.findByTenantUnitTenantTenantId(request.getTenantId());

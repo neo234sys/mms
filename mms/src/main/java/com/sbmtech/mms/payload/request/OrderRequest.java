@@ -17,17 +17,21 @@ public class OrderRequest {
 	
 	private Integer tenantId;
 	
+	@NotNull(message = "paymentMode cannot be null")
 	private Integer tenantUnitId;
 	
-	private Integer purposeId;
+	@NotNull(message = "rentDueId cannot be null")
+	private Integer rentDueId;
 	
-	@ValidSubscriberlId
+	//private Integer purposeId;
+	
+	
 	private Integer subscriberId;
 	
 	@NotNull(message = "paymentMode cannot be null")
 	private Integer paymentModeId;
 	
-	private Double amount;
+	//private Double amount;
 	
 	//private String paymentMethod;
 		
