@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -55,6 +56,12 @@ public class CommonUtil {
 			}
 		}
 		return null;
+	}
+	
+	public static LocalDateTime getCurrentLocalDateTime() {
+		ZonedDateTime zonedDateTime = ZonedDateTime.now(ZONE_DUBAI);
+	    LocalDateTime localDateTime = zonedDateTime.toLocalDateTime();
+	    return localDateTime;
 	}
 
 	public static LocalDate getLocalDatefromString(String paramVal, String datePattern) {

@@ -17,6 +17,8 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import com.sbmtech.mms.dto.RentDue;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -33,11 +35,15 @@ public class PaymentOrderEntity {
 	@Column(name = "order_id")
     private Long orderId;
 
-    @OneToOne
-    @JoinColumn(name = "rent_due_id")
-    private RentDueEntity rentDue;
+//    @OneToOne
+//    @JoinColumn(name = "rent_due_id")
+//    private RentDueEntity rentDue;
     
-    @OneToOne
+//    @OneToOne
+//    @JoinColumn(name = "payment_mode_id")
+//    private PaymentMode paymentMode;
+    
+    @ManyToOne
     @JoinColumn(name = "payment_mode_id")
     private PaymentMode paymentMode;
     
@@ -54,6 +60,9 @@ public class PaymentOrderEntity {
     private LocalDateTime orderDate;
     
     private String status; //refere OrderSTatusEnum
+    
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    private List<RentDueEntity> rentDues = new ArrayList<>();
 
     
 }

@@ -1,5 +1,7 @@
 package com.sbmtech.mms.payload.request;
 
+import java.util.List;
+
 import javax.validation.constraints.NotNull;
 
 import com.sbmtech.mms.validator.ValidChannelId;
@@ -21,7 +23,7 @@ public class OrderRequest {
 	private Integer tenantUnitId;
 	
 	@NotNull(message = "rentDueId cannot be null")
-	private Integer rentDueId;
+	private List<Long> rentDueIds;
 	
 	//private Integer purposeId;
 	
@@ -36,8 +38,8 @@ public class OrderRequest {
 	//private String paymentMethod;
 		
 	
-	@ValidChannelId
-	private Integer channelId;
+	//@ValidChannelId
+	//private Integer channelId;
 
 
 

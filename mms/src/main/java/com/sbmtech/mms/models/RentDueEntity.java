@@ -58,7 +58,11 @@ public class RentDueEntity {
 	@JoinColumn(name = "purpose_id", referencedColumnName = "purpose_id")
 	private PaymentPurpose paymentPurpose;
     
-    @OneToOne(mappedBy = "rentDue", cascade = CascadeType.ALL)
+//    @OneToOne(mappedBy = "rentDue", cascade = CascadeType.ALL)
+//    private PaymentOrderEntity order;
+    
+    @ManyToOne
+    @JoinColumn(name = "order_id")
     private PaymentOrderEntity order;
     
     @Column(name = "payment_date")

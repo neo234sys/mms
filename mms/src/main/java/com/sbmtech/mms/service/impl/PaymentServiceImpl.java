@@ -31,6 +31,10 @@ import com.sbmtech.mms.dto.RentDue;
 import com.sbmtech.mms.dto.S3UploadDto;
 import com.sbmtech.mms.dto.S3UploadObjectDto;
 import com.sbmtech.mms.exception.BusinessException;
+import com.sbmtech.mms.models.OrderStatusEnum;
+import com.sbmtech.mms.models.PaymentMode;
+import com.sbmtech.mms.models.PaymentModeEnum;
+import com.sbmtech.mms.models.PaymentOrderEntity;
 import com.sbmtech.mms.models.PaymentPurpose;
 import com.sbmtech.mms.models.PaymentPurposeEnum;
 import com.sbmtech.mms.models.RentCycle;
@@ -47,6 +51,7 @@ import com.sbmtech.mms.payload.request.ApiResponse;
 import com.sbmtech.mms.payload.request.OrderRequest;
 import com.sbmtech.mms.payload.request.PaymentScheduleRequest;
 import com.sbmtech.mms.payload.request.SavePaymentDetailsRequest;
+import com.sbmtech.mms.repository.PaymentModeRepository;
 import com.sbmtech.mms.repository.PaymentPurposeRepository;
 import com.sbmtech.mms.repository.RentCycleRepository;
 import com.sbmtech.mms.repository.RentDueRepository;
@@ -106,6 +111,13 @@ public class PaymentServiceImpl implements PaymentService {
 	
 	@Autowired
 	PaymentPurposeRepository paymentPurposeRepository;
+	
+	@Autowired
+	private PaymentModeRepository paymentModeRepository;
+	
+	
+	
+	
 	
 	
 	@Override
@@ -308,7 +320,7 @@ public class PaymentServiceImpl implements PaymentService {
 
 	        PaymentPurpose purpose = new PaymentPurpose();
 	        purpose.setPurposeId(due.getPaymentPurposeId());
-	        purpose.setPurposeName(due.getPaymentPurpose());
+	        purpose.setPurposeName(due.getPaymentPurposeName());
 	        entity.setPaymentPurpose(purpose);
 	        
 	        entity.setSubscriber(tenure.getSubscriber());
@@ -327,7 +339,47 @@ public class PaymentServiceImpl implements PaymentService {
 		if (tu == null) {
 			throw new BusinessException("TenantUnit or subscriber not associated", null);
 		}
-		//paymentOrderService.createOrder(request);
+		
+		
+		Optional <PaymentMode> paymodeop=paymentModeRepository.findById(request.getPaymentModeId());
+		if(paymodeop.isPresent()) {
+			/*if(request.getPaymentModeId()==PaymentModeEnum.CREDIT_CARD.getValue() || request.getPaymentModeId()==PaymentModeEnum.CHEQUE.getValue()) {
+				TenantCCDetails tenantCCDetails=null;
+				TenantChequeDetails chequeDetails =null;
+				if((request.getPaymentModeId()==PaymentModeEnum.CREDIT_CARD.getValue())) {
+					tenantCCDetails =tenantCCDetailsRepository.findCardByTenantIdAndTenantUnitId(tu.getTenant().getTenantId(),request.getTenantUnitId());
+					
+				}
+				if((request.getPaymentModeId()==PaymentModeEnum.CHEQUE.getValue())) {
+					chequeDetails = tenantChequeDetailsRepository
+						    .findCardDetailsByTenantIdAndTenantUnitId(tu.getTenant().getTenantId(),request.getTenantUnitId());	
+				}
+				if(tenantCCDetails==null && chequeDetails==null) {
+					throw new BusinessException("Tenant doesnt have payment details. Please update payment details", null);
+				}
+			}*/
+			
+		}else {
+			throw new BusinessException("Invalid PaymentMode", null);
+		}
+		
+
+		List <RentDueEntity> listRentDues=rentDueRepository.findByRentDueIdsAndTenureId(request.getRentDueIds(),tu.getTenureDetails().get(0).getTenantTenureId());
+		if(listRentDues==null || listRentDues.isEmpty() ) {
+			throw new BusinessException("No Rent due for this tenant / create rent due to make order", null);
+		}
+		
+		PaymentOrderEntity order=new PaymentOrderEntity();
+		order.setOrderDate(CommonUtil.getCurrentLocalDateTime());
+		order.setPaymentMode(paymodeop.get());
+		order.setRentDues(listRentDues);
+		order.setStatus(OrderStatusEnum.PENDING.toString());
+		order.setSubscriber(tu.getSubscriber());
+		
+		 for (RentDueEntity rd : listRentDues) {
+	            rd.setOrder(order);
+	     }
+		paymentOrderService.createOrder(order);
 		return null;
 	}
 }
