@@ -527,24 +527,32 @@ public class PaymentServiceImpl implements PaymentService {
 		if (tu == null) {
 			throw new BusinessException("TenantUnit or subscriber not associated", null);
 		}
+		List <RentDueEntity> dueslist=rentDueRepository.findRentDuesByIds(request.getRentDueIds());
+		if(dueslist==null || dueslist.size()==0) {
+			throw new BusinessException("No such rent due ids", null);
+		}
+		boolean hasMultiplePaymentModes = rentDueRepository.countDistinctPaymentModes(request.getRentDueIds()) > 1;
 		
+		if(hasMultiplePaymentModes) {
+			throw new BusinessException("can not create order for different payment mode", null);
+		}
 		
 //		Optional <PaymentMode> paymodeop=paymentModeRepository.findById(request.getPaymentModeId());
 //		if(paymodeop.isPresent()) {
 			//if(request.getPaymentModeId()==PaymentModeEnum.CREDIT_CARD.getValue() || request.getPaymentModeId()==PaymentModeEnum.CHEQUE.getValue()) {
 				TenantCCDetails tenantCCDetails=null;
 				TenantChequeDetails chequeDetails =null;
-				if((request.getPaymentModeId()==PaymentModeEnum.CREDIT_CARD.getValue())) {
-					tenantCCDetails =tenantCCDetailsRepository.findCardByTenantIdAndTenantUnitId(tu.getTenant().getTenantId(),request.getTenantUnitId());
-					
-				}
-				if((request.getPaymentModeId()==PaymentModeEnum.CHEQUE.getValue())) {
-					chequeDetails = tenantChequeDetailsRepository
-						    .findCardDetailsByTenantIdAndTenantUnitId(tu.getTenant().getTenantId(),request.getTenantUnitId());	
-				}
-				if(tenantCCDetails==null && chequeDetails==null) {
-					throw new BusinessException("Tenant doesnt have payment details. Please update payment details", null);
-				}
+//				if((request.getPaymentModeId()==PaymentModeEnum.CREDIT_CARD.getValue())) {
+//					tenantCCDetails =tenantCCDetailsRepository.findCardByTenantIdAndTenantUnitId(tu.getTenant().getTenantId(),request.getTenantUnitId());
+//					
+//				}
+//				if((request.getPaymentModeId()==PaymentModeEnum.CHEQUE.getValue())) {
+//					chequeDetails = tenantChequeDetailsRepository
+//						    .findCardDetailsByTenantIdAndTenantUnitId(tu.getTenant().getTenantId(),request.getTenantUnitId());	
+//				}
+//				if(tenantCCDetails==null && chequeDetails==null) {
+//					throw new BusinessException("Tenant doesnt have payment details. Please update payment details", null);
+//				}
 			//}
 			
 //		}else {

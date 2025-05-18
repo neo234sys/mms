@@ -43,4 +43,11 @@ public interface RentDueRepository extends JpaRepository<RentDueEntity, Long> {
 		       "AND r.active = 1")
 	List<RentDueEntity> getActiveRentDues(@Param("tenureId") Integer tenureId,
 		                                      @Param("subscriberId") Integer subscriberId);
+	
+	
+	@Query("SELECT r FROM RentDueEntity r WHERE r.rentDueId IN :ids")
+	List<RentDueEntity> findRentDuesByIds(@Param("ids") List<Long> ids);
+	
+	@Query("SELECT COUNT(DISTINCT r.paymentMode.paymentModeId) FROM RentDueEntity r WHERE r.rentDueId IN :ids")
+	Long countDistinctPaymentModes(@Param("ids") List<Long> ids);
 }

@@ -19,7 +19,7 @@ public class OrderRequest {
 	
 	private Integer tenantId;
 	
-	@NotNull(message = "paymentMode cannot be null")
+	@NotNull(message = "tenantUnitId cannot be null")
 	private Integer tenantUnitId;
 	
 	@NotNull(message = "rentDueId cannot be null")
@@ -30,8 +30,8 @@ public class OrderRequest {
 	
 	private Integer subscriberId;
 	
-	@NotNull(message = "paymentMode cannot be null")
-	private Integer paymentModeId;
+	//@NotNull(message = "paymentMode cannot be null")
+	//private Integer paymentModeId;
 	
 	//private Double amount;
 	
