@@ -15,7 +15,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sbmtech.mms.payload.request.OrderRequest;
+import com.sbmtech.mms.payload.request.PaymentModeRequest;
 import com.sbmtech.mms.payload.request.PaymentScheduleRequest;
+import com.sbmtech.mms.payload.request.RentDuePaymentModeRequest;
 import com.sbmtech.mms.payload.request.SavePaymentDetailsRequest;
 import com.sbmtech.mms.service.PaymentService;
 import com.sbmtech.mms.service.SubscriberService;
@@ -47,6 +49,22 @@ public class PaymentController {
 		request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(paymentService.calculatePaymentSchedule(request));
 	}
+	
+	@PostMapping("/getPaymentSchedule")
+	public ResponseEntity<?> getPaymentSchedule(@Valid @RequestBody PaymentScheduleRequest request,
+			@CurrentSecurityContext(expression = "authentication") Authentication auth) throws Exception {
+		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
+		request.setSubscriberId(subscriberId);
+		return ResponseEntity.ok(paymentService.getPaymentSchedule(request));
+	}
+	
+	@PostMapping("/updatePaymentModeDetails")
+	public ResponseEntity<?> updatePaymentModeDetails(@Valid @RequestBody RentDuePaymentModeRequest request,
+			@CurrentSecurityContext(expression = "authentication") Authentication auth) throws Exception {
+		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
+		request.setSubscriberId(subscriberId);
+		return ResponseEntity.ok(paymentService.updatePaymentModeDetails(request));
+	}	
 
 	@PostMapping("/createOrder")
 	public ResponseEntity<?> createOrder(@Valid @RequestBody OrderRequest request,

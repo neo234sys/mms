@@ -16,6 +16,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -37,9 +38,17 @@ public class TenureDetails implements Serializable {
 	@Column(name = "tenant_tenure_id")
 	private Integer tenantTenureId;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "tenant_unit_id", referencedColumnName = "tenant_unit_id")
-	private TenantUnit tenantUnit;
+//	@ManyToOne(fetch = FetchType.LAZY)
+//	@JoinColumn(name = "tenant_unit_id", referencedColumnName = "tenant_unit_id")
+//	private TenantUnit tenantUnit;
+	
+//	@OneToOne(fetch = FetchType.LAZY)
+////	@JoinColumn(name = "tenant_unit_id", referencedColumnName = "tenant_unit_id")
+//	private TenantUnit tenantUnit;
+	
+	 @OneToOne
+	    @JoinColumn(name = "tenant_unit_id", referencedColumnName = "tenant_unit_id")
+	    private TenantUnit tenantUnit;
 
 	@Column(name = "tenancy_start_date")
 	private Date tenancyStartDate;

@@ -1,10 +1,9 @@
 package com.sbmtech.mms.models;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -13,7 +12,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -90,12 +88,15 @@ public class TenantUnit implements Serializable {
 	@JoinColumn(name = "subscriber_id")
 	private Subscriber subscriber;
 
-	@OneToMany(mappedBy = "tenantUnit", fetch = FetchType.LAZY)
-	private List<TenureDetails> tenureDetails = new ArrayList<>();
-
+//	@OneToMany(mappedBy = "tenantUnit", fetch = FetchType.LAZY)
+//	private List<TenureDetails> tenureDetails = new ArrayList<>();
+//
 //	@OneToOne(fetch = FetchType.LAZY)
 //	@JoinColumn(name = "tenant_unit_id", referencedColumnName = "tenant_unit_id")
 //	private TenureDetails tenureDetails;
+	
+	 @OneToOne(mappedBy = "tenantUnit", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = true)
+	    private TenureDetails tenureDetails;
 	
 
 }

@@ -3,9 +3,12 @@ package com.sbmtech.mms.models;
 import java.sql.Timestamp;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
 
@@ -30,6 +33,10 @@ public class TenantCCDetails {
     private String ccExpiry;
 
     private Timestamp createdAt;
+    
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "rent_due_id", referencedColumnName = "rent_due_id")
+    private RentDueEntity rentDue;
 
     @PrePersist
     protected void onCreate() {

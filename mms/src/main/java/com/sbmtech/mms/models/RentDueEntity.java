@@ -58,8 +58,16 @@ public class RentDueEntity {
 	@JoinColumn(name = "purpose_id", referencedColumnName = "purpose_id")
 	private PaymentPurpose paymentPurpose;
     
+    @OneToOne(fetch = FetchType.LAZY)
+   	@JoinColumn(name = "payment_mode_id", referencedColumnName = "payment_mode_id")
+   	private PaymentMode paymentMode;
+    
 //    @OneToOne(mappedBy = "rentDue", cascade = CascadeType.ALL)
 //    private PaymentOrderEntity order;
+    
+
+    @Column(name = "active", nullable = false)
+    private Integer active;
     
     @ManyToOne
     @JoinColumn(name = "order_id")
@@ -70,6 +78,13 @@ public class RentDueEntity {
     
     @Column(name = "payment_status")
     private String paymentStatus;
+    
+    @OneToOne(mappedBy = "rentDue", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private TenantChequeDetails chequeDetails;
+    
+    
+    @OneToOne(mappedBy = "rentDue", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private TenantCCDetails ccDetails;
 
     
 }

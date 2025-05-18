@@ -11,8 +11,8 @@ import com.sbmtech.mms.models.TenureDetails;
 @Repository
 public interface TenureDetailsRepository extends JpaRepository<TenureDetails, Integer> {
 
-	List<TenureDetails> findByTenantUnitTenantTenantId(Integer tenantId);
+	//List<TenureDetails> findByTenantUnitTenantTenantId(Integer tenantId);
 
-	List<TenureDetails> findByTenantUnit(TenantUnit tenantUnit);
+	//List<TenureDetails> findByTenantUnit(TenantUnit tenantUnit);
 
 }

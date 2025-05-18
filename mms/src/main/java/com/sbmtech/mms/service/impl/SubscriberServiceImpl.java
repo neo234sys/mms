@@ -1563,6 +1563,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 					.setTenancyStartDate(CommonUtil.getDatefromString(request.getTenancyStartDate(), DATE_ddMMyyyy));
 			tenureDetails.setTenancyEndDate(calculateTenancyEndDate(request));
 			tenureDetails.setTenantUnit(tenantUnit);
+			//tenureDetails.setTe
 			tenureDetails.setTotalRentPerYear(unit.getRentYear());
 			tenureDetails.setDiscount(request.getDiscount());
 			tenureDetails.setTotalRentAfDiscount((unit.getRentYear()-(unit.getRentYear()*(request.getDiscount()/100))));
@@ -1926,16 +1927,16 @@ public class SubscriberServiceImpl implements SubscriberService {
 						tenantDto.setNationality(tenant.getNationality().getName());
 					}
 
-					List<TenureDetails> tenureDetails = tenureDetailsRepository.findByTenantUnit(tenantUnit.get());
-					if (!tenureDetails.isEmpty()) {
-						tenantDto.setTenureDetails(tenureDetails.stream().map(td -> {
-							TenureDetailsDTO tenureDto = new TenureDetailsDTO();
-							tenureDto.setTenantTenureId(td.getTenantTenureId());
-							tenureDto.setTenancyStartDate(td.getTenancyStartDate());
-							tenureDto.setTenancyEndDate(td.getTenancyEndDate());
-							return tenureDto;
-						}).collect(Collectors.toList()));
-					}
+//					List<TenureDetails> tenureDetails = tenureDetailsRepository.findByTenantUnit(tenantUnit.get());
+//					if (!tenureDetails.isEmpty()) {
+//						tenantDto.setTenureDetails(tenureDetails.stream().map(td -> {
+//							TenureDetailsDTO tenureDto = new TenureDetailsDTO();
+//							tenureDto.setTenantTenureId(td.getTenantTenureId());
+//							tenureDto.setTenancyStartDate(td.getTenancyStartDate());
+//							tenureDto.setTenancyEndDate(td.getTenancyEndDate());
+//							return tenureDto;
+//						}).collect(Collectors.toList()));
+//					}
 
 					dto.setTenant(tenantDto);
 				}
@@ -2106,16 +2107,16 @@ public class SubscriberServiceImpl implements SubscriberService {
 					tenantDto.setNationality(tenant.getNationality().getName());
 				}
 
-				List<TenureDetails> tenureDetails = tenureDetailsRepository.findByTenantUnit(tenantUnit.get());
-				if (!tenureDetails.isEmpty()) {
-					tenantDto.setTenureDetails(tenureDetails.stream().map(td -> {
-						TenureDetailsDTO tenureDto = new TenureDetailsDTO();
-						tenureDto.setTenantTenureId(td.getTenantTenureId());
-						tenureDto.setTenancyStartDate(td.getTenancyStartDate());
-						tenureDto.setTenancyEndDate(td.getTenancyEndDate());
-						return tenureDto;
-					}).collect(Collectors.toList()));
-				}
+//				List<TenureDetails> tenureDetails = tenureDetailsRepository.findByTenantUnit(tenantUnit.get());
+//				if (!tenureDetails.isEmpty()) {
+//					tenantDto.setTenureDetails(tenureDetails.stream().map(td -> {
+//						TenureDetailsDTO tenureDto = new TenureDetailsDTO();
+//						tenureDto.setTenantTenureId(td.getTenantTenureId());
+//						tenureDto.setTenancyStartDate(td.getTenancyStartDate());
+//						tenureDto.setTenancyEndDate(td.getTenancyEndDate());
+//						return tenureDto;
+//					}).collect(Collectors.toList()));
+//				}
 
 				dto.setTenant(tenantDto);
 			}
@@ -2436,8 +2437,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 //						"Cannot delete tenant because it has associated orders. Order ids=" + orderIds, null, null);
 //			}
 
-			List<TenureDetails> tenureDetails = tenureDetailsRepository
-					.findByTenantUnitTenantTenantId(request.getTenantId());
+			List<TenureDetails> tenureDetails = null;//.findByTenantUnitTenantTenantId(request.getTenantId());
 			if (!tenureDetails.isEmpty()) {
 				List<Integer> tenureDetailIds = tenureDetails.stream().map(TenureDetails::getTenantTenureId)
 						.collect(Collectors.toList());

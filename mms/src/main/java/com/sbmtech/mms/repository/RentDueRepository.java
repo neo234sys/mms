@@ -22,4 +22,25 @@ public interface RentDueRepository extends JpaRepository<RentDueEntity, Long> {
 	
 	@Query(" SELECT r FROM RentDueEntity r  WHERE r.rentDueId IN :rentDueIds  AND r.tenure.tenantTenureId = :tenureId")
 	List<RentDueEntity> findByRentDueIdsAndTenureId(@Param("rentDueIds") List<Long> rentDueIds,@Param("tenureId") Integer tenureId);
+	
+	
+	@Query("SELECT r FROM RentDueEntity r " +
+		       "WHERE r.tenure.tenantTenureId = :tenureId " +
+		       "AND r.subscriber.subscriberId = :subscriberId " +
+		       "AND r.active = :active")
+	List<RentDueEntity> findByTenureIdAndSubscriberIdAndActive(
+		        @Param("tenureId") Integer tenureId,
+		        @Param("subscriberId") Integer subscriberId,
+		        @Param("active") Integer active
+		);
+	
+	
+	
+	
+	@Query("SELECT r FROM RentDueEntity r " +
+		       "WHERE r.tenure.tenantTenureId = :tenureId " +
+		       "AND r.subscriber.subscriberId = :subscriberId " +
+		       "AND r.active = 1")
+	List<RentDueEntity> getActiveRentDues(@Param("tenureId") Integer tenureId,
+		                                      @Param("subscriberId") Integer subscriberId);
 }
