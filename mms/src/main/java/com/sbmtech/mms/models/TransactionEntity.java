@@ -10,6 +10,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import lombok.Getter;
@@ -32,9 +33,13 @@ public class TransactionEntity {
     @JoinColumn(name = "order_id", nullable = false)
     private PaymentOrderEntity order;
 
-    private String paymentMode;
+    @OneToOne
+    @JoinColumn(name = "payment_mode_id")
+    private PaymentMode paymentMode;
+    
     private double amount;
     private LocalDateTime transactionDate;
 
+    private String status; //refere OrderSTatusEnum
 
 }

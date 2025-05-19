@@ -19,6 +19,7 @@ import com.sbmtech.mms.payload.request.PaymentModeRequest;
 import com.sbmtech.mms.payload.request.PaymentScheduleRequest;
 import com.sbmtech.mms.payload.request.RentDuePaymentModeRequest;
 import com.sbmtech.mms.payload.request.SavePaymentDetailsRequest;
+import com.sbmtech.mms.payload.request.TransactionRequest;
 import com.sbmtech.mms.service.PaymentService;
 import com.sbmtech.mms.service.SubscriberService;
 
@@ -73,6 +74,15 @@ public class PaymentController {
 		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
 		request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(paymentService.createOrder(request));
+	}
+	
+	@PostMapping("/createTransaction")
+	public ResponseEntity<?> createTransaction(@Valid @RequestBody TransactionRequest request,
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth)throws Exception {
+		
+		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
+		request.setSubscriberId(subscriberId);
+		return ResponseEntity.ok(paymentService.createTransaction(request));
 	}
 
 }

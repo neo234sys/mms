@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+
 import com.sbmtech.mms.models.RentDueEntity;
 
 public interface RentDueRepository extends JpaRepository<RentDueEntity, Long> {
@@ -50,4 +51,10 @@ public interface RentDueRepository extends JpaRepository<RentDueEntity, Long> {
 	
 	@Query("SELECT COUNT(DISTINCT r.paymentMode.paymentModeId) FROM RentDueEntity r WHERE r.rentDueId IN :ids")
 	Long countDistinctPaymentModes(@Param("ids") List<Long> ids);
+	
+	@Query("SELECT SUM(r.amount) FROM RentDueEntity r WHERE r.order.orderId = :orderId")
+	Double getTotalAmountByOrderIdFromRentDue(@Param("orderId") Long orderId);
+	
+	@Query("SELECT r FROM RentDueEntity r WHERE r.order.orderId = :orderId")
+    List<RentDueEntity> findByOrderId(@Param("orderId") Long orderId);
 }

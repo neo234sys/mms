@@ -35,13 +35,7 @@ public class PaymentOrderEntity {
 	@Column(name = "order_id")
     private Long orderId;
 
-//    @OneToOne
-//    @JoinColumn(name = "rent_due_id")
-//    private RentDueEntity rentDue;
-    
-//    @OneToOne
-//    @JoinColumn(name = "payment_mode_id")
-//    private PaymentMode paymentMode;
+
     
     @ManyToOne
     @JoinColumn(name = "payment_mode_id")
@@ -61,8 +55,6 @@ public class PaymentOrderEntity {
     
     private String status; //refere OrderSTatusEnum
     
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
-    private List<RentDueEntity> rentDues = new ArrayList<>();
 
     
 }

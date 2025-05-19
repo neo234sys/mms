@@ -10,6 +10,7 @@ import com.sbmtech.mms.payload.request.OrderRequest;
 import com.sbmtech.mms.payload.request.PaymentScheduleRequest;
 import com.sbmtech.mms.payload.request.RentDuePaymentModeRequest;
 import com.sbmtech.mms.payload.request.SavePaymentDetailsRequest;
+import com.sbmtech.mms.payload.request.TransactionRequest;
 
 public interface PaymentService {
 
@@ -24,4 +25,6 @@ public interface PaymentService {
 	public ApiResponse<Object> updatePaymentModeDetails(@Valid RentDuePaymentModeRequest request)throws Exception;
 
 	public ApiResponse<Object> getPaymentSchedule(@Valid PaymentScheduleRequest request);
+
+	public  ApiResponse<Object> createTransaction(@Valid TransactionRequest request);
 }
