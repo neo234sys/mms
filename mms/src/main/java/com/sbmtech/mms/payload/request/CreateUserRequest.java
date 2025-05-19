@@ -12,6 +12,7 @@ import com.sbmtech.mms.validator.ValidDateDDMMYYYY;
 import com.sbmtech.mms.validator.ValidPhoneNo;
 
 public class CreateUserRequest {
+	
 
 	@Email
 	private String email;

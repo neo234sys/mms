@@ -159,11 +159,11 @@ public class ManagementController {
 	}
 
 	@PostMapping("/createTenant")
-	public ResponseEntity<?> createUserAndMergeTenant(@Valid @RequestBody CreateUserRequest request,
+	public ResponseEntity<?> createTenant(@Valid @RequestBody CreateUserRequest request,
 			@CurrentSecurityContext(expression = "authentication") Authentication auth) throws Exception {
 		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
 		request.setSubscriberId(subscriberId);
-		return ResponseEntity.ok(subscriberService.createUserAndMergeTenant(request));
+		return ResponseEntity.ok(subscriberService.createTenant(request));
 	}
 
 	@PostMapping("/addParkingZone")

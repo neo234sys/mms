@@ -1150,7 +1150,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 	}
 
 	@SuppressWarnings("unchecked")
-	public ApiResponse<Object> createUserAndMergeTenant(CreateUserRequest request) throws Exception {
+	public ApiResponse<Object> createTenant(CreateUserRequest request) throws Exception {
 		List<S3UploadObjectDto> s3UploadObjectDtoList = new ArrayList<>();
 		S3UploadObjectDto s3BuildingLogoDto = null;
 		User existingUser = null;
@@ -1201,6 +1201,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		tenant.setEidaExpiryDate(CommonUtil.getDatefromString(request.getEidaExpiryDate(), DATE_ddMMyyyy));
 		tenant.setPassportNo(request.getPassportNo());
 		tenant.setPassportExpiryDate(CommonUtil.getDatefromString(request.getPassportExpiryDate(), DATE_ddMMyyyy));
+		tenant.setSubscriber(subscriber);
 
 		if (!ObjectUtils.isEmpty(request.getEidaCopy())) {
 			String contentType = CommonUtil.validateAttachment(request.getEidaCopy());
