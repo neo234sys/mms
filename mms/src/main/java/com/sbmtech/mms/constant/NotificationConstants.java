@@ -15,7 +15,7 @@ public class NotificationConstants {
 	
 	
 	//public static final String NOTIF_CONSTANTS = "notification-constants";
-	public static final String TEMPLATE_PATH= "email_templates/";
+	public static final String TEMPLATE_PATH= "templates/email_templates/";
 	public static final String NOTIF_OTP_SUBJECT_KEY = "OTP from mms.com";
 	public static final String NOTIF_OTP_TEMPLATE_KEY = "OTPEmailTemplate.vm";
 	public static final String NOTIF_ACCT_ACTIVE_TEMPLATE_KEY = "AccountActivationTemplate.vm";

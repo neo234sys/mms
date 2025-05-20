@@ -14,7 +14,7 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>mms</name>
 	<description>Maintainance Management System</description>
-	<packaging>jar</packaging>
+	<packaging>${packaging.type}</packaging>
 	<properties>
 		<java.version>11</java.version>
 	</properties>
@@ -208,6 +208,7 @@
 			<id>devlocal</id>
 			<properties>
 				<spring.profiles.active>devlocal</spring.profiles.active>
+				 <packaging.type>war</packaging.type>
 			</properties>
 			<build>
 				<finalName>mms</finalName>
@@ -228,11 +229,13 @@
 
 				</plugins>
 			</build>
+			
 		</profile>
 		<profile>
 			<id>devremote</id>
 			<properties>
 				<spring.profiles.active>devremote</spring.profiles.active>
+				<packaging.type>war</packaging.type>
 			</properties>
 			<build>
 				<finalName>mms</finalName>
@@ -258,6 +261,7 @@
 			<id>devawsremote</id>
 			<properties>
 				<spring.profiles.active>devawsremote</spring.profiles.active>
+				<packaging.type>jar</packaging.type>
 			</properties>
 			<build>
 				<finalName>mms</finalName>
@@ -284,6 +288,7 @@
 			<id>prod</id>
 			<properties>
 				<spring.profiles.active>prod</spring.profiles.active>
+				<packaging.type>war</packaging.type>
 			</properties>
 			<build>
 				<finalName>mms</finalName>

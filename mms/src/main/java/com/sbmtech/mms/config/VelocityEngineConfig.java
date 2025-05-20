@@ -21,11 +21,11 @@ public class VelocityEngineConfig {
 
 	private static final Logger logger = LogManager.getLogger(VelocityEngineConfig.class);
 
-	@Value("${email.templatePath}")
-	private String emailTemplatePath;
+//	@Value("${email.templatePath}")
+//	private String emailTemplatePath;
 
-	@Autowired
-	private ResourceLoader resourceLoader;
+//	@Autowired
+//	private ResourceLoader resourceLoader;
 
 //	@Bean
 //	VelocityEngine velocityEngine() throws VelocityException, IOException {
@@ -41,7 +41,7 @@ public class VelocityEngineConfig {
 //	}
 	
 	 @Bean
-	 public VelocityEngine velocityEngine() throws Exception {
+	 VelocityEngine velocityEngine() throws Exception {
 	        VelocityEngine velocityEngine = new VelocityEngine();
 
 	        velocityEngine.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
