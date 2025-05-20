@@ -254,7 +254,31 @@
 				</plugins>
 			</build>
 		</profile>
+	<profile>
+			<id>devawsremote</id>
+			<properties>
+				<spring.profiles.active>devawsremote</spring.profiles.active>
+			</properties>
+			<build>
+				<finalName>mms</finalName>
+				<plugins>
+					<plugin>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-maven-plugin</artifactId>
+						<configuration>
+							<excludes>
+								<exclude>
+									<groupId>org.projectlombok</groupId>
+									<artifactId>lombok</artifactId>
+								</exclude>
+							</excludes>
+						</configuration>
+					</plugin>
 
+
+				</plugins>
+			</build>
+		</profile>
 
 		<profile>
 			<id>prod</id>
