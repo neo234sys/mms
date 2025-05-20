@@ -27,16 +27,27 @@ public class VelocityEngineConfig {
 	@Autowired
 	private ResourceLoader resourceLoader;
 
-	@Bean
-	VelocityEngine velocityEngine() throws VelocityException, IOException {
-		Resource resource = resourceLoader.getResource("classpath:" + emailTemplatePath);
-		File templateDir = resource.getFile();
-		logger.info("<<< Template diretory= >>>" + templateDir.toPath().toString());
-		Properties props = new Properties();
-		props.put(RuntimeConstants.RESOURCE_LOADER, "file");
-		props.put(RuntimeConstants.FILE_RESOURCE_LOADER_PATH, templateDir.toPath().toString());
-		VelocityEngine velocityEngine = new VelocityEngine(props);
-		velocityEngine.init();
-		return velocityEngine;
-	}
+//	@Bean
+//	VelocityEngine velocityEngine() throws VelocityException, IOException {
+//		Resource resource = resourceLoader.getResource("classpath:" + emailTemplatePath);
+//		File templateDir = resource.getFile();
+//		logger.info("<<< Template diretory= >>>" + templateDir.toPath().toString());
+//		Properties props = new Properties();
+//		props.put(RuntimeConstants.RESOURCE_LOADER, "file");
+//		props.put(RuntimeConstants.FILE_RESOURCE_LOADER_PATH, templateDir.toPath().toString());
+//		VelocityEngine velocityEngine = new VelocityEngine(props);
+//		velocityEngine.init();
+//		return velocityEngine;
+//	}
+	
+	 @Bean
+	 public VelocityEngine velocityEngine() throws Exception {
+	        VelocityEngine velocityEngine = new VelocityEngine();
+
+	        velocityEngine.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
+	        velocityEngine.setProperty("classpath.resource.loader.class", 
+	            "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
+
+	        return velocityEngine;
+	    }
 }
