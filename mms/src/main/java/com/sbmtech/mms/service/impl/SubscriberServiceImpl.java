@@ -1215,6 +1215,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			s3UploadDto.setObjectType(S3UploadObjTypeEnum.EID.toString());
 			s3UploadDto.setS3UploadObjectDtoList(s3UploadObjectDtoList);
 			List<S3UploadObjectDto> s3UploadObjectDtoListRet = s3Service.upload(s3UploadDto);
+			s3UploadObjectDtoList.clear();
 			for (S3UploadObjectDto s3UploadObjectDto : s3UploadObjectDtoListRet) {
 				if (s3UploadObjectDto != null && StringUtils.isNotBlank(s3UploadObjectDto.getS3FileName())) {
 					if (s3UploadObjectDto.getObjectName().equals(CommonConstants.EID_PIC)) {
@@ -1236,6 +1237,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			s3UploadDto.setObjectType(S3UploadObjTypeEnum.PASSPORT.toString());
 			s3UploadDto.setS3UploadObjectDtoList(s3UploadObjectDtoList);
 			List<S3UploadObjectDto> s3UploadObjectDtoListRet = s3Service.upload(s3UploadDto);
+			s3UploadObjectDtoList.clear();
 			for (S3UploadObjectDto s3UploadObjectDto : s3UploadObjectDtoListRet) {
 				if (s3UploadObjectDto != null && StringUtils.isNotBlank(s3UploadObjectDto.getS3FileName())) {
 					if (s3UploadObjectDto.getObjectName().equals(CommonConstants.PASSPORT_PIC)) {
@@ -1258,6 +1260,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			s3UploadDto.setObjectType(S3UploadObjTypeEnum.PHOTO.toString());
 			s3UploadDto.setS3UploadObjectDtoList(s3UploadObjectDtoList);
 			List<S3UploadObjectDto> s3UploadObjectDtoListRet = s3Service.upload(s3UploadDto);
+			s3UploadObjectDtoList.clear();
 			for (S3UploadObjectDto s3UploadObjectDto : s3UploadObjectDtoListRet) {
 				if (s3UploadObjectDto != null && StringUtils.isNotBlank(s3UploadObjectDto.getS3FileName())) {
 					if (s3UploadObjectDto.getObjectName().equals(CommonConstants.PHOTO_PIC)) {
