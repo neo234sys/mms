@@ -2858,9 +2858,8 @@ public class SubscriberServiceImpl implements SubscriberService {
                     cb.like(cb.lower(root.get("email")), likeSearch),
                     cb.like(cb.lower(root.get("phoneNumber")), likeSearch),
                     // Assuming emiratesId is stored as string or you want to allow numeric match
-                    //cb.like(cb.str(root.get("emiratesId")), likeSearch)
                     cb.like(cb.function("str", String.class, root.get("emiratesId")), likeSearch)
-                   // cb.like(cb.lower(root.get("emiratesId")), likeSearch)
+
                 );
                 predicates.add(orPredicate);
             }
@@ -2881,11 +2880,11 @@ public class SubscriberServiceImpl implements SubscriberService {
 			dto.setDateOfBirth(tenant.getDateOfBirth());
 			dto.setEmiratesId(tenant.getEmiratesId());
 			dto.setEidaExpiryDate(tenant.getEidaExpiryDate());
-			dto.setEidaCopyFilename(tenant.getEidaCopyFilename());
+			//dto.setEidaCopyFilename(tenant.getEidaCopyFilename());
 			dto.setPassportNo(tenant.getPassportNo());
 			dto.setPassportExpiryDate(tenant.getPassportExpiryDate());
-			dto.setPassportCopyFilename(tenant.getPassportCopyFilename());
-			dto.setPhotoFilename(tenant.getPhotoFilename());
+			//dto.setPassportCopyFilename(tenant.getPassportCopyFilename());
+			//dto.setPhotoFilename(tenant.getPhotoFilename());
 			dto.setNationalityId(tenant.getNationalityId());
 			if (tenant.getNationality() != null) {
 				dto.setNationality(tenant.getNationality().getName());
@@ -2894,6 +2893,19 @@ public class SubscriberServiceImpl implements SubscriberService {
 			dto.setUpdatedTime(tenant.getUpdatedTime());
 			dto.setCreatedBy(tenant.getCreatedBy());
 			dto.setUpdatedBy(tenant.getUpdatedBy());
+			
+			if (StringUtils.isNotBlank(tenant.getEidaCopyFilename())) {
+				dto.setEidaCopyFileLink(s3Service.generatePresignedUrl(subscriberId, null, null,
+						tenant.getEidaCopyFilename()));
+			}
+			if (StringUtils.isNotBlank(tenant.getPassportCopyFilename())) {
+				dto.setPassportCopyFileLink(s3Service.generatePresignedUrl(subscriberId, null, null,
+						tenant.getPassportCopyFilename()));
+			}
+			if (StringUtils.isNotBlank(tenant.getPhotoFilename())) {
+				dto.setPhotoFileLink(s3Service.generatePresignedUrl(subscriberId, null, null,
+						tenant.getPhotoFilename()));
+			}
 			return dto;
 		}).collect(Collectors.toList());
 
