@@ -536,6 +536,8 @@ public class PaymentServiceImpl implements PaymentService {
 	
 	@Override
 	public ApiResponse<Object> createOrder(@Valid OrderRequest request) {
+		
+		
 		TenantUnit tu = tenantUnitRepository.findByTenantUnitIdIdAndSubscriberId(request.getTenantUnitId(),
 				 request.getSubscriberId());
 		if (tu == null) {

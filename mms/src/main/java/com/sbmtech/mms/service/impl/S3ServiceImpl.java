@@ -2,6 +2,7 @@ package com.sbmtech.mms.service.impl;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -172,7 +173,8 @@ public class S3ServiceImpl implements S3Service {
 						+ s3UploadDto.getSubscriberId());
 			}
 		}
-		return s3UploadObjectDtolist;
+		List<S3UploadObjectDto> s3UploadObjectDtolist2 =new ArrayList<>(s3UploadObjectDtolist);
+		return s3UploadObjectDtolist2;
 	}
 
 	@Override

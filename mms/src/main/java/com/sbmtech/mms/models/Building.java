@@ -17,8 +17,13 @@ import javax.persistence.TemporalType;
 
 import org.springframework.data.annotation.CreatedDate;
 
+import lombok.Getter;
+import lombok.Setter;
+
 @Entity
 @Table(name = "building")
+@Setter
+@Getter
 public class Building implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -80,145 +85,7 @@ public class Building implements Serializable {
 	@Column(name = "is_deleted", nullable = false)
 	private Boolean isDeleted = false;
 
-	public Integer getBuildingId() {
-		return buildingId;
-	}
-
-	public void setBuildingId(Integer buildingId) {
-		this.buildingId = buildingId;
-	}
-
-	public String getBuildingName() {
-		return buildingName;
-	}
-
-	public void setBuildingName(String buildingName) {
-		this.buildingName = buildingName;
-	}
-
-	public String getAddress() {
-		return address;
-	}
-
-	public void setAddress(String address) {
-		this.address = address;
-	}
-
-	public String getBuildingLogoFileName() {
-		return buildingLogoFileName;
-	}
-
-	public void setBuildingLogoFileName(String buildingLogoFileName) {
-		this.buildingLogoFileName = buildingLogoFileName;
-	}
-
-	public Boolean getHasGym() {
-		return hasGym;
-	}
-
-	public void setHasGym(Boolean hasGym) {
-		this.hasGym = hasGym;
-	}
-
-	public Boolean getHasSwimpool() {
-		return hasSwimpool;
-	}
-
-	public void setHasSwimpool(Boolean hasSwimpool) {
-		this.hasSwimpool = hasSwimpool;
-	}
-
-	public Boolean getHasKidsPlayground() {
-		return hasKidsPlayground;
-	}
-
-	public void setHasKidsPlayground(Boolean hasKidsPlayground) {
-		this.hasKidsPlayground = hasKidsPlayground;
-	}
-
-	public Boolean getHasPlaycourt() {
-		return hasPlaycourt;
-	}
-
-	public void setHasPlaycourt(Boolean hasPlaycourt) {
-		this.hasPlaycourt = hasPlaycourt;
-	}
-
-	public Community getCommunity() {
-		return community;
-	}
-
-	public void setCommunity(Community community) {
-		this.community = community;
-	}
-
-	public Area getArea() {
-		return area;
-	}
-
-	public void setArea(Area area) {
-		this.area = area;
-	}
-
-	public Subscriber getSubscriber() {
-		return subscriber;
-	}
-
-	public void setSubscriber(Subscriber subscriber) {
-		this.subscriber = subscriber;
-	}
-
-	public Integer getNoOfFloors() {
-		return noOfFloors;
-	}
-
-	public void setNoOfFloors(Integer noOfFloors) {
-		this.noOfFloors = noOfFloors;
-	}
-
-	public Integer getNoOfUnits() {
-		return noOfUnits;
-	}
-
-	public void setNoOfUnits(Integer noOfUnits) {
-		this.noOfUnits = noOfUnits;
-	}
-
-	public String getLatitude() {
-		return latitude;
-	}
-
-	public void setLatitude(String latitude) {
-		this.latitude = latitude;
-	}
-
-	public String getLongitude() {
-		return longitude;
-	}
-
-	public void setLongitude(String longitude) {
-		this.longitude = longitude;
-	}
-
-	public Date getCreatedAt() {
-		return createdAt;
-	}
-
-	public void setCreatedAt(Date createdAt) {
-		this.createdAt = createdAt;
-	}
-
-	public Boolean getIsDeleted() {
-		return isDeleted;
-	}
-
-	public void setIsDeleted(Boolean isDeleted) {
-		this.isDeleted = isDeleted;
-	}
-
-	public static long getSerialversionuid() {
-		return serialVersionUID;
-	}
+	
 
 	@Override
 	public String toString() {

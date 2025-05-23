@@ -2796,7 +2796,8 @@ public class SubscriberServiceImpl implements SubscriberService {
 		PageRequest pageable = PageRequest.of(paginationRequest.getPage(), paginationRequest.getSize(),
 				Sort.by(paginationRequest.getSortDirection().equalsIgnoreCase("desc") ? Sort.Direction.DESC
 						: Sort.Direction.ASC, paginationRequest.getSortBy()));
-
+		String searchTerm = request.getSearch();
+/*
 		Specification<Tenant> spec = (root, query, cb) -> {
 			root.fetch("nationality", JoinType.LEFT);
 			query.distinct(true);
@@ -2831,7 +2832,42 @@ public class SubscriberServiceImpl implements SubscriberService {
 			}
 
 			return cb.and(predicates.toArray(new Predicate[0]));
-		};
+		};*/
+		
+		Specification<Tenant> spec =(root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            // Ensure we fetch distinct tenants to avoid duplicates
+            query.distinct(true);
+
+            // Join tenantUnits and unit to check for occupancy
+            Join<Tenant, TenantUnit> tenantUnitJoin = root.join("tenantUnits", JoinType.LEFT);
+            Join<TenantUnit, Unit> unitJoin = tenantUnitJoin.join("unit", JoinType.LEFT);
+
+            // Required filters
+            predicates.add(cb.equal(root.get("isDeleted"), false));
+            predicates.add(cb.equal(root.get("subscriber").get("subscriberId"), subscriberId));
+           // predicates.add(cb.equal(tenantUnitJoin.get("active"), true));
+            //predicates.add(cb.equal(tenantUnitJoin.get("expired"), false));
+
+            if (searchTerm != null && !searchTerm.isBlank()) {
+                String likeSearch = "%" + searchTerm.toLowerCase() + "%";
+                Predicate orPredicate = cb.or(
+                    cb.like(cb.lower(root.get("firstName")), likeSearch),
+                    cb.like(cb.lower(root.get("lastName")), likeSearch),
+                    cb.like(cb.lower(root.get("email")), likeSearch),
+                    cb.like(cb.lower(root.get("phoneNumber")), likeSearch),
+                    // Assuming emiratesId is stored as string or you want to allow numeric match
+                    //cb.like(cb.str(root.get("emiratesId")), likeSearch)
+                    cb.like(cb.function("str", String.class, root.get("emiratesId")), likeSearch)
+                   // cb.like(cb.lower(root.get("emiratesId")), likeSearch)
+                );
+                predicates.add(orPredicate);
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+    
 
 		Page<Tenant> pageResult = tenantRepository.findAll(spec, pageable);
 
