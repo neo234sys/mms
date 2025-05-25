@@ -1,8 +1,14 @@
 package com.sbmtech.mms.payload.request;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Setter
+@Getter
 public class TenantSearchRequest {
 
 	private String search;
+	private String status;
 	private PaginationRequest paginationRequest;
 
 	public String getSearch() {

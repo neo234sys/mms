@@ -170,6 +170,7 @@ public class PaymentServiceImpl implements PaymentService {
 		               due.setAmount(entity.getAmount());
 		               due.setDueDate(entity.getDueDate());
 		               due.setPaymentPurposeId(entity.getPaymentPurpose().getPurposeId());
+		               due.setPaymentPurposeName(entity.getPaymentPurpose().getPurposeName());
 		               
 		               
 		               return due;
@@ -621,6 +622,7 @@ public class PaymentServiceImpl implements PaymentService {
         
         unit.setUnitStatus(unitStatusRepository.findByUnitStatusName(UnitStatusEnum.OCCUPIED.toString()));
         tenantUnit.setActive(true);
+        tenantUnit.getTenant().setStatus(CommonConstants.ACTIVE);
         if (transaction.getTransactionId() != null) {
         	TransactionResponse transResp = new TransactionResponse();
 			BeanUtils.copyProperties(transaction, transResp);

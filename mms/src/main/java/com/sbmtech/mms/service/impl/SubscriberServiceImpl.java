@@ -2797,43 +2797,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 				Sort.by(paginationRequest.getSortDirection().equalsIgnoreCase("desc") ? Sort.Direction.DESC
 						: Sort.Direction.ASC, paginationRequest.getSortBy()));
 		String searchTerm = request.getSearch();
-/*
-		Specification<Tenant> spec = (root, query, cb) -> {
-			root.fetch("nationality", JoinType.LEFT);
-			query.distinct(true);
 
-			List<Predicate> predicates = new ArrayList<>();
-			predicates.add(cb.isFalse(root.get("isDeleted")));
-
-			String searchTerm = request.getSearch();
-			if (searchTerm != null && !searchTerm.isEmpty()) {
-				searchTerm = searchTerm.trim().toLowerCase();
-				Predicate byFirstName = cb.like(cb.lower(root.get("firstName")), "%" + searchTerm + "%");
-				Predicate byLastName = cb.like(cb.lower(root.get("lastName")), "%" + searchTerm + "%");
-				Predicate byEmail = cb.like(cb.lower(root.get("email")), "%" + searchTerm + "%");
-				Predicate byPhone = cb.like(root.get("phoneNumber"), "%" + searchTerm + "%");
-				Predicate byEmiratesId = cb.like(root.get("emiratesId").as(String.class), "%" + searchTerm + "%");
-				predicates.add(cb.or(byFirstName, byLastName, byEmail, byPhone, byEmiratesId));
-			}
-
-			if (subscriberId != null) {
-				Subquery<Long> subquery = query.subquery(Long.class);
-				Root<TenantUnit> tenantUnitRoot = subquery.from(TenantUnit.class);
-				Join<TenantUnit, Unit> unitJoin = tenantUnitRoot.join("unit");
-				Join<Unit, Building> buildingJoin = unitJoin.join("building");
-				Join<Building, Subscriber> subscriberJoin = buildingJoin.join("subscriber");
-
-				subquery.select(cb.literal(1L)).where(
-						cb.equal(tenantUnitRoot.get("tenant").get("tenantId"), root.get("tenantId")),
-						cb.equal(tenantUnitRoot.get("active"), true),
-						cb.equal(subscriberJoin.get("subscriberId"), subscriberId));
-
-				predicates.add(cb.exists(subquery));
-			}
-
-			return cb.and(predicates.toArray(new Predicate[0]));
-		};*/
-		
 		Specification<Tenant> spec =(root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
@@ -2863,7 +2827,32 @@ public class SubscriberServiceImpl implements SubscriberService {
                 );
                 predicates.add(orPredicate);
             }
+            
+            
+         // Status filter logic
+        /*	if (request.getStatus() != null) {
+        		String status = request.getStatus();
+        		Date now = new Date();
 
+        		switch (status) {
+        			case CommonConstants.ACTIVE:
+        				predicates.add(cb.isTrue(tenantUnitJoin.get("active")));
+        				predicates.add(cb.or(
+        					cb.isFalse(tenantUnitJoin.get("expired")),
+        					cb.isNull(tenantUnitJoin.get("expired"))
+        				));
+        				break;
+
+        			case CommonConstants.FUTURE:
+        				predicates.add(cb.greaterThan(
+        					tenantUnitJoin.get("tenureDetails").get("startDate"), now));
+        				break;
+
+        			case CommonConstants.EX_TENANT:
+        				predicates.add(cb.isTrue(tenantUnitJoin.get("expired")));
+        				break;
+        		}
+        	}*/
             return cb.and(predicates.toArray(new Predicate[0]));
         };
     
@@ -2905,6 +2894,11 @@ public class SubscriberServiceImpl implements SubscriberService {
 			if (StringUtils.isNotBlank(tenant.getPhotoFilename())) {
 				dto.setPhotoFileLink(s3Service.generatePresignedUrl(subscriberId, null, null,
 						tenant.getPhotoFilename()));
+			}
+			
+			dto.setStatus(tenant.getStatus());
+			if (StringUtils.isBlank(tenant.getStatus())) {
+				dto.setStatus(CommonConstants.IN_ACTIVE);
 			}
 			return dto;
 		}).collect(Collectors.toList());

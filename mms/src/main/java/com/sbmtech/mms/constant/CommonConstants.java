@@ -72,6 +72,10 @@ public class CommonConstants {
 	public static final String PASSPORT_PIC="passport";
 	public static final String PHOTO_PIC="photo";
 	public static final String CHEQUE_PIC="cheque";
+	public static final String ACTIVE = "ACTIVE";
+	public static final String IN_ACTIVE = "INACTIVE";
+	public static final String FUTURE = "FUTURE";
+	public static final String EX_TENANT = "EX-TENANT";
 	
 		
 }
