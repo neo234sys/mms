@@ -57,6 +57,7 @@ import com.sbmtech.mms.dto.S3UploadDto;
 import com.sbmtech.mms.dto.S3UploadObjectDto;
 import com.sbmtech.mms.dto.TenantDTO;
 import com.sbmtech.mms.dto.TenantSimpleDTO;
+import com.sbmtech.mms.dto.TenantUnitDTO;
 import com.sbmtech.mms.dto.TenureDetailsDTO;
 import com.sbmtech.mms.dto.UnitAllDTO;
 import com.sbmtech.mms.dto.UnitDTO;
@@ -1201,6 +1202,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		tenant.setEidaExpiryDate(CommonUtil.getDatefromString(request.getEidaExpiryDate(), DATE_ddMMyyyy));
 		tenant.setPassportNo(request.getPassportNo());
 		tenant.setPassportExpiryDate(CommonUtil.getDatefromString(request.getPassportExpiryDate(), DATE_ddMMyyyy));
+		tenant.setNationality(nationality);
 		tenant.setSubscriber(subscriber);
 
 		if (!ObjectUtils.isEmpty(request.getEidaCopy())) {
@@ -2603,6 +2605,10 @@ public class SubscriberServiceImpl implements SubscriberService {
 		try {
 			Tenant existingTenant = tenantRepository.findById(request.getTenantId())
 					.orElseThrow(() -> new Exception("Tenant not found"));
+			
+
+		Countries country=	countriesRepository.findById(request.getNationalityId())
+				.orElseThrow(() -> new BusinessException("Invalid Nationality ID",null));
 
 			existingTenant.setFirstName(request.getFirstName());
 			existingTenant.setLastName(request.getLastName());
@@ -2613,7 +2619,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			existingTenant.setEidaExpiryDate(request.getEidaExpiryDate());
 			existingTenant.setPassportNo(request.getPassportNo());
 			existingTenant.setPassportExpiryDate(request.getPassportExpiryDate());
-			existingTenant.setNationalityId(request.getNationalityId());
+			existingTenant.setNationality(country);
 
 			tenantRepository.save(existingTenant);
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Tenant successfully updated", null, null);
@@ -2874,7 +2880,8 @@ public class SubscriberServiceImpl implements SubscriberService {
 			dto.setPassportExpiryDate(tenant.getPassportExpiryDate());
 			//dto.setPassportCopyFilename(tenant.getPassportCopyFilename());
 			//dto.setPhotoFilename(tenant.getPhotoFilename());
-			dto.setNationalityId(tenant.getNationalityId());
+			dto.setNationalityId(tenant.getNationality().getCountryId());
+			dto.setNationality(tenant.getNationality().getName());
 			if (tenant.getNationality() != null) {
 				dto.setNationality(tenant.getNationality().getName());
 			}
@@ -2900,6 +2907,37 @@ public class SubscriberServiceImpl implements SubscriberService {
 			if (StringUtils.isBlank(tenant.getStatus())) {
 				dto.setStatus(CommonConstants.IN_ACTIVE);
 			}
+			
+			if(tenant.getTenantUnits()!=null && tenant.getTenantUnits().size()>1 ) {
+				
+				List<TenantUnitDTO> tenantUnitsDtolist=new ArrayList<>();
+				List <TenantUnit> tenantUnitList=tenant.getTenantUnits();
+				for(TenantUnit tu:tenantUnitList) {
+					TenantUnitDTO tuDto=new TenantUnitDTO();
+					if(tu!=null) {
+						tuDto.setTenantUnitId(tu.getTenantUnitId());
+						tuDto.setUnitId(tu.getUnit().getUnitId());
+						tuDto.setTenurePeriodMonth(tu.getTenurePeriodMonth());
+						if(tu.getTenureDetails()!=null) {
+							tuDto.setTenancyStartDate(CommonUtil.getStringDatefromDate(tu.getTenureDetails().getTenancyStartDate()));	
+							tuDto.setTenancyEndDate(CommonUtil.getStringDatefromDate(tu.getTenureDetails().getTenancyEndDate()));
+							
+						}
+						tuDto.setActive(tu.getActive());
+						tuDto.setExpired(tu.getExpired());
+						
+						
+						
+					}
+					
+					tenantUnitsDtolist.add(tuDto);
+				}
+				dto.setTenantUnits(tenantUnitsDtolist);
+				
+			}
+			dto.setNationality(tenant.getNationality().getName());
+			//dto.setNationalityId(tenant.ge)
+			
 			return dto;
 		}).collect(Collectors.toList());
 

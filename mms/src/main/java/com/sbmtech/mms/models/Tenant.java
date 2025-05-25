@@ -75,11 +75,11 @@ public class Tenant {
 	@Column(name = "photo_filename")
 	private String photoFilename;
 
-	@Column(name = "nat_id")
-	private Integer nationalityId;
+	//@Column(name = "nat_id")
+	//private Integer nationalityId;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "nat_id", referencedColumnName = "country_id", insertable = false, updatable = false)
+	@JoinColumn(name = "nat_id", referencedColumnName = "country_id")
 	private Countries nationality;
 
 	@Column(name = "created_time")
@@ -116,7 +116,7 @@ public class Tenant {
 		return "Tenant [tenantId=" + tenantId + ", firstName=" + firstName + ", lastName=" + lastName + ", email="
 				+ email + ", phoneNumber=" + phoneNumber + ", dateOfBirth=" + dateOfBirth + ", emiratesId=" + emiratesId
 				+ ", eidaExpiryDate=" + eidaExpiryDate + ", passportNo=" + passportNo + ", passportExpiryDate="
-				+ passportExpiryDate + ", passportCopy=" + ", nationalityId=" + nationalityId + ", nationality="
+				+ passportExpiryDate + ", passportCopy=" +  ", nationality="
 				+ nationality + ", createdTime=" + createdTime + ", updatedTime=" + updatedTime + ", createdBy="
 				+ createdBy + ", updatedBy=" + updatedBy + ", isDeleted=" + isDeleted + "]";
 	}

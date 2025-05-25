@@ -1,12 +1,16 @@
 package com.sbmtech.mms.dto;
 
 import java.util.Date;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Setter
 @Getter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class TenantDTO {
 
 	private Integer tenantId;
@@ -29,6 +33,7 @@ public class TenantDTO {
 	private Integer createdBy;
 	private Integer updatedBy;
 	private String status;
+	private List<TenantUnitDTO> tenantUnits;
 
 
 }
