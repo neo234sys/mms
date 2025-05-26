@@ -85,4 +85,13 @@ public class PaymentController {
 		return ResponseEntity.ok(paymentService.createTransaction(request));
 	}
 
+	
+	@PostMapping("/getDueDetailsByDate")
+	public ResponseEntity<?> getDueDetailsByDate(@Valid @RequestBody PaymentScheduleRequest request,
+			@CurrentSecurityContext(expression = "authentication") Authentication auth) throws Exception {
+		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
+		request.setSubscriberId(subscriberId);
+		//return ResponseEntity.ok(paymentService.getDueDetailsByDate(request));
+		return null;
+	}
 }

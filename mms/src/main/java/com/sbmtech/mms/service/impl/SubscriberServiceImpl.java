@@ -146,6 +146,7 @@ import com.sbmtech.mms.payload.response.TenantDetailResponse;
 import com.sbmtech.mms.payload.response.TenantUnitResponse;
 import com.sbmtech.mms.payload.response.UniKeyResponse;
 import com.sbmtech.mms.payload.response.UnitDetailResponse;
+import com.sbmtech.mms.payload.response.UnitReserveResponse;
 import com.sbmtech.mms.payload.response.UnitResponse;
 import com.sbmtech.mms.repository.AreaRepository;
 import com.sbmtech.mms.repository.BuildingRepository;
@@ -1349,6 +1350,214 @@ public class SubscriberServiceImpl implements SubscriberService {
 		}
 
 	}
+	
+	public ApiResponse<Object> reserveUnit(Integer subscriberId, ReserveUnitRequest request)throws Exception {
+		List<S3UploadObjectDto> s3UploadObjectDtoList = new ArrayList<>();
+		S3UploadObjectDto s3BuildingLogoDto = null;
+		User user = null;
+		
+		Role role = roleRepository.findById(RoleEnum.ROLE_TENANT.getValue()).orElse(null);
+		if (role == null) {
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, RoleEnum.ROLE_TENANT.getName() + " Role not found",
+					null, null);
+		}
+		
+		
+		ProductConfig productConfig = productConfigRepository.findBySubscriberId(subscriberId);
+		if (productConfig == null || (productConfig != null && productConfig.getConfigjson() == null)) {
+			throw new BusinessException("Product configuration not found for subscriberId: " + subscriberId, null);
+		}
+		Map<String, Object> configJson = productConfig.getConfigjson();
+
+		Boolean unitReserveOption = (Boolean) configJson.get("unitReserveOption");
+
+		if (unitReserveOption == null || (!unitReserveOption)) {
+			throw new BusinessException("unitReserveOption not enabled for this subscriber", null);
+		}
+
+		Unit unit = unitRepository.findByUnitId(request.getUnitId())
+				.orElseThrow(() -> new BusinessException("Unit not found", null));
+
+		if (!unit.getUnitStatus().getUnitStatusName().equals(UnitStatusEnum.VACANT.toString())) {
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
+					"Unit is not available for reservation. Status: " + unit.getUnitStatus().getUnitStatusName(),
+					null, null);
+		}
+
+		@SuppressWarnings("unchecked")
+		Map<String, Object> unitReserve = (Map<String, Object>) configJson.get("unitReserve");
+		if (unitReserve == null) {
+			throw new BusinessException("unitReserve not found in product config", null);
+		}
+
+		Boolean unitReservePaymentOption = (Boolean) unitReserve.get("unitReservePaymentOption");
+
+		Integer unitReserveDays = (unitReserve.get("unitReserveDays") != null)
+				? (Integer) unitReserve.get("unitReserveDays")
+				: null;
+
+		if (unitReserveDays == null) {
+			throw new BusinessException("unitReserveDays not found in product config", null);
+		}
+
+		Countries nationality = countriesRepository.findById(request.getNationalityId()).orElseThrow(() -> new BusinessException("Nationality not found with ID: " + request.getNationalityId(),null));
+		Subscriber subscriber = subscriberRepository.findById(subscriberId).orElseThrow(() -> new BusinessException("Subscriber not found with ID: " ,null));
+		//findReservationsForDate
+		
+		List <UnitReserveDetails>  activeReserveList = unitReserveDetailsRepository.findReservationsForDate(request.getUnitId(), new Date());
+		if(activeReserveList==null || activeReserveList.size()!=0) {
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,"Currently this unit is Reserved status",null, null);
+		}
+		
+		Tenant tenant = new Tenant();
+		tenant.setFirstName(request.getFirstName());
+		//tenant.setLastName(request.getLastName());
+		tenant.setEmail(request.getEmail());
+		tenant.setPhoneNumber(request.getMobileNo());
+		tenant.setDateOfBirth(CommonUtil.getDatefromString(request.getDob(), DATE_ddMMyyyy));
+		tenant.setEmiratesId(CommonUtil.getLongValofObject(request.getEmiratesId()));
+		//tenant.setEidaExpiryDate(CommonUtil.getDatefromString(request.getEidaExpiryDate(), DATE_ddMMyyyy));
+		//tenant.setPassportNo(request.getPassportNo());
+		//tenant.setPassportExpiryDate(CommonUtil.getDatefromString(request.getPassportExpiryDate(), DATE_ddMMyyyy));
+		tenant.setNationality(nationality);
+		tenant.setSubscriber(subscriber);
+		tenant.setStatus(CommonConstants.TENANT_ACTIVE);		
+		if (!ObjectUtils.isEmpty(request.getEidaCopy())) {
+			String contentType = CommonUtil.validateAttachment(request.getEidaCopy());
+			String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+			s3BuildingLogoDto = new S3UploadObjectDto(CommonConstants.EID_PIC, contentType, fileExt,
+					Base64.getEncoder().encodeToString(request.getEidaCopy()), null);
+			s3UploadObjectDtoList.add(s3BuildingLogoDto);
+
+			S3UploadDto s3UploadDto = new S3UploadDto();
+			s3UploadDto.setSubscriberId(request.getSubscriberId());
+			s3UploadDto.setObjectType(S3UploadObjTypeEnum.EID.toString());
+			s3UploadDto.setS3UploadObjectDtoList(s3UploadObjectDtoList);
+			List<S3UploadObjectDto> s3UploadObjectDtoListRet = s3Service.upload(s3UploadDto);
+			s3UploadObjectDtoList.clear();
+			for (S3UploadObjectDto s3UploadObjectDto : s3UploadObjectDtoListRet) {
+				if (s3UploadObjectDto != null && StringUtils.isNotBlank(s3UploadObjectDto.getS3FileName())) {
+					if (s3UploadObjectDto.getObjectName().equals(CommonConstants.EID_PIC)) {
+						tenant.setEidaCopyFilename(s3UploadObjectDto.getS3FileName());
+					}
+
+				}
+			}
+		}
+		
+		String pwd = CommonUtil.generateRandomPwd();
+		pwd = "123456";// remove this
+		
+		
+		Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
+		if (existingUser.isPresent()) {
+			logger.info("reserveUnit existing user=" + request.getEmail());
+			user = existingUser.get();
+			if (StringUtils.isNoneBlank(tenant.getEidaCopyFilename())) {
+				user.setEidaCopyFilename(tenant.getEidaCopyFilename());
+			}
+		} else {
+			logger.info("reserveUnit new user=" + request.getEmail());
+			user = new User();
+			user.setEmail(request.getEmail());
+			user.setMobileNo(Long.valueOf(request.getMobileNo()));
+			user.setPassword(encoder.encode(pwd));
+			user.setActive(false);  // Active only if he become real tenant
+			user.setEmiratesId(CommonUtil.getLongValofObject(request.getEmiratesId()));
+			user.setDob(CommonUtil.getDatefromString(request.getDob(), DATE_ddMMyyyy));
+			user.setGender(request.getGender());
+			user.setAddress(request.getAddress());
+			// user.setEidaCopy(request.getEidaCopy());
+			if (StringUtils.isNoneBlank(tenant.getEidaCopyFilename())) {
+				user.setEidaCopyFilename(tenant.getEidaCopyFilename());
+			}
+			user.setNationality(nationality);
+			// user.setUserType(userType);
+			user.setSubscriber(subscriber);
+			user.setCreatedDate(new Date());
+			
+			Set<Role> roles = new HashSet<>();
+			roles.add(role);
+			user.setRoles(roles);
+
+			user.setTenantId(tenant.getTenantId());
+			user = userRepository.save(user);
+			//userRepository.save(newUser);
+		}
+		
+
+//		NotifEmailDTO dto = new NotifEmailDTO();
+//		dto.setEmailTo(request.getEmail());
+//		dto.setCustomerName(request.getFirstName());
+//		dto.setPwd(pwd);
+//		resp = notificationService.sendTenentAccountCreationEmail(dto);
+		
+		
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(new Date());
+		calendar.add(Calendar.DAY_OF_YEAR, unitReserveDays);
+		Date reserveEndDate = calendar.getTime();
+		
+		if (unitReservePaymentOption) {
+			// create Order todo
+			UnitReserveDetails reserveDetails = new UnitReserveDetails();
+			reserveDetails.setUnit(unit);
+			reserveDetails.setUser(user);
+			reserveDetails.setReserveStartDate(new Date());
+			reserveDetails.setReserveEndDate(reserveEndDate);
+			reserveDetails.setPaymentRequired((unitReservePaymentOption) ? 1 : 0);
+			UnitReserveDetails reserveDet = unitReserveDetailsRepository.save(reserveDetails);
+			if (reserveDet != null && reserveDet.getUnitReserveId() != null) {
+				unit.setUnitStatus(unitStatusRepository.findByUnitStatusName(UnitStatusEnum.RESERVED.toString()));
+				unitRepository.save(unit);
+				UnitReserveResponse gr = new UnitReserveResponse();
+				gr.setUnitReserveId(reserveDetails.getUnitReserveId());
+				gr.setMsg("Please proceed to payment");
+				return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, gr, null, null);
+				//return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Please proceed the payment", null, null);
+			}
+			
+
+		} else {
+			unit.setUnitStatus(unitStatusRepository.findByUnitStatusName(UnitStatusEnum.RESERVED.toString()));
+			unitRepository.save(unit);
+
+			UnitReserveDetails reserveDetails = new UnitReserveDetails();
+			reserveDetails.setUnit(unit);
+			reserveDetails.setUser(user);
+			reserveDetails.setReserveStartDate(new Date());
+			reserveDetails.setReserveEndDate(reserveEndDate);
+			reserveDetails.setPaymentRequired((unitReservePaymentOption) ? 1 : 0);
+			reserveDetails.setStatus(CommonConstants.UNIT_RESERVE_RESERVED);
+			UnitReserveDetails reserveDet = unitReserveDetailsRepository.save(reserveDetails);
+			if (reserveDet != null && reserveDet.getUnitReserveId() != null) {
+				NotifEmailDTO dto = new NotifEmailDTO();
+				dto.setEmailTo(request.getEmail());
+				dto.setCustomerName(request.getEmail());
+				dto.setBuildingId(CommonUtil.getStringValofObject(unit.getBuilding().getBuildingId()));
+				dto.setBuildingName(unit.getBuilding().getBuildingName());
+				dto.setUnitId(CommonUtil.getStringValofObject(unit.getUnitId()));
+				dto.setUnitName(unit.getUnitName());
+				dto.setReserveFromDate(CommonUtil.getStringDatefromDate(new Date()));
+				dto.setReserveToDate(CommonUtil.getStringDatefromDate(reserveEndDate));
+				;
+
+				NotificationEmailResponseDTO notifResp = notificationService.sendUnitReservationEmail(dto);
+				if (notifResp != null && notifResp.isEmailSent()) {
+					logger.info("reserveUnit email successfully sent to user{}, reserveDet={}" + user.getEmail(),
+							reserveDet);
+					UnitReserveResponse gr = new UnitReserveResponse();
+					gr.setUnitReserveId(reserveDetails.getUnitReserveId());
+					gr.setMsg("Unit successfully reserved");
+					return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, gr, null, null);
+				}
+			}
+		}
+		
+		
+		return null;
+		
+	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public ApiResponse<Object> createParkingZone(ParkingZoneRequest request) {
@@ -1625,11 +1834,11 @@ public class SubscriberServiceImpl implements SubscriberService {
 		}
 		return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
 	}
-
-	public ApiResponse<Object> reserveUnit(Integer subscriberId, ReserveUnitRequest request) {
+/*
+	public ApiResponse<Object> reserveUnit(Integer subscriberId, ReserveUnitRequest request)throws Exception {
 		List<S3UploadObjectDto> s3UploadObjectDtoList = new ArrayList<>();
 		S3UploadObjectDto s3BuildingLogoDto = null;
-		try {
+		//try {
 
 			ProductConfig productConfig = productConfigRepository.findBySubscriberId(subscriberId);
 			if (productConfig == null || (productConfig != null && productConfig.getConfigjson() == null)) {
@@ -1720,6 +1929,22 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 			if (unitReservePaymentOption) {
 				// create Order todo
+				UnitReserveDetails reserveDetails = new UnitReserveDetails();
+				reserveDetails.setUnit(unit);
+				reserveDetails.setUser(newUser);
+				reserveDetails.setReserveStartDate(new Date());
+				reserveDetails.setReserveEndDate(reserveEndDate);
+				reserveDetails.setPaymentRequired((unitReservePaymentOption) ? 1 : 0);
+				UnitReserveDetails reserveDet = unitReserveDetailsRepository.save(reserveDetails);
+				if (reserveDet != null && reserveDet.getUnitReserveId() != null) {
+					unit.setUnitStatus(unitStatusRepository.findByUnitStatusName(UnitStatusEnum.RESERVED.toString()));
+					unitRepository.save(unit);
+					GenericResponse gr = new GenericResponse();
+					gr.setId(unit.getUnitId());
+					return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, gr, null, null);
+					//return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Please proceed the payment", null, null);
+				}
+				
 
 			} else {
 				unit.setUnitStatus(unitStatusRepository.findByUnitStatusName(UnitStatusEnum.RESERVED.toString()));
@@ -1748,17 +1973,19 @@ public class SubscriberServiceImpl implements SubscriberService {
 					if (notifResp != null && notifResp.isEmailSent()) {
 						logger.info("reserveUnit email successfully sent to user{}, reserveDet={}" + newUser.getEmail(),
 								reserveDet);
+						
 						return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Unit successfully reserved", null, null);
 					}
 				}
 			}
 
-		} catch (Exception e) {
-			throw new BusinessException("Failed to reserve unit", null);
-		}
+//		} catch (Exception e) {
+//			throw new BusinessException("Failed to reserve unit", e);
+//			//throw e;
+//		}
 		return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Failed to reserve unit: ", null, null);
 	}
-
+*/
 	@SuppressWarnings("rawtypes")
 	public ApiResponse<Object> getAllBuildings(Integer subscriberId, BuildingSearchRequest request) {
 		PaginationRequest paginationRequest = request.getPaginationRequest();
@@ -2905,7 +3132,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			
 			dto.setStatus(tenant.getStatus());
 			if (StringUtils.isBlank(tenant.getStatus())) {
-				dto.setStatus(CommonConstants.IN_ACTIVE);
+				dto.setStatus(CommonConstants.TENANT_IN_ACTIVE);
 			}
 			
 			if(tenant.getTenantUnits()!=null && tenant.getTenantUnits().size()>1 ) {

@@ -18,6 +18,7 @@ import lombok.Setter;
 public class ReserveUnitRequest {
 
 	private Integer unitId;
+	private Integer subscriberId;
 	
 	@NotEmpty(message = "firstName cannot be null")
 	private String firstName;

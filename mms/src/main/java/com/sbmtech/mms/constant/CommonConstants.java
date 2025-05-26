@@ -72,10 +72,16 @@ public class CommonConstants {
 	public static final String PASSPORT_PIC="passport";
 	public static final String PHOTO_PIC="photo";
 	public static final String CHEQUE_PIC="cheque";
-	public static final String ACTIVE = "ACTIVE";
-	public static final String IN_ACTIVE = "INACTIVE";
-	public static final String FUTURE = "FUTURE";
-	public static final String EX_TENANT = "EX-TENANT";
+	
+	public static final String TENANT_ACTIVE = "ACTIVE";
+	public static final String TENANT_IN_ACTIVE = "INACTIVE";
+	public static final String TENANT_FUTURE = "FUTURE";
+	public static final String TENANT_EX = "EX-TENANT";
+	
+	public static final String UNIT_RESERVE_RELEASED="REALEASED";
+	public static final String UNIT_RESERVE_OCCUPIED="OCCUPIED";
+	public static final String UNIT_RESERVE_PAYMENTDONE="PAYMENT_DONE";
+	public static final String UNIT_RESERVE_RESERVED="RESERVED";
 	
 		
 }

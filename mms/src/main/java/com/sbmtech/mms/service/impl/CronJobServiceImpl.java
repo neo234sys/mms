@@ -13,6 +13,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.sbmtech.mms.constant.CommonConstants;
 import com.sbmtech.mms.constant.SubscriptionStatus;
 import com.sbmtech.mms.models.Subscriber;
 import com.sbmtech.mms.models.Subscriptions;
@@ -97,6 +98,7 @@ public class CronJobServiceImpl implements CronJobService {
 				if (reserveDetails.getReserveEndDate().before(new Date())) {
 					Unit unit = reserveDetails.getUnit();
 					unit.setUnitStatus(unitStatusRepository.findByUnitStatusName(UnitStatusEnum.VACANT.toString()));
+					reserveDetails.setStatus(CommonConstants.UNIT_RESERVE_RELEASED);
 					unitRepository.save(unit);
 				}
 			}

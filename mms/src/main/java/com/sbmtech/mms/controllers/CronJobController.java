@@ -47,6 +47,12 @@ public class CronJobController {
 	public void releaseReservedUnits() throws Exception {
 		cronJobService.releaseReservedUnits();
 	}
+	
+	@GetMapping("/releaseReservedUnits")
+	public void releaseReservedUnitsRest() throws Exception {
+
+		cronJobService.releaseReservedUnits();
+	}
 
 	/**
 	 * Checks the unused images and remove from S3

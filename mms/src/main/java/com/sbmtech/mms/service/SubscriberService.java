@@ -94,7 +94,7 @@ public interface SubscriberService {
 
 	public ApiResponse<Object> searchBuildings(Integer subscriberId, BuildingSearchRequest request) throws Exception;
 
-	public ApiResponse<Object> reserveUnit(Integer subscriberId, ReserveUnitRequest reserveUnitRequest);
+	public ApiResponse<Object> reserveUnit(Integer subscriberId, ReserveUnitRequest reserveUnitRequest)throws Exception;
 
 	public ApiResponse<Object> getAllUnitsByBuildingId(Integer subscriberId, Integer buildingId,
 			PaginationRequest paginationRequest);

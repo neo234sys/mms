@@ -55,6 +55,9 @@ public class UnitReserveDetails implements Serializable {
 
 	@Column(name = "payment_required")
 	private Integer paymentRequired;
+	
+	@Column(name = "status")
+	private String status;  //REALEASED,OCCUPIED, PAYMENT_DONE
 
 	@Column(name = "created_time", updatable = false, nullable = false)
 	@CreationTimestamp
@@ -69,6 +72,10 @@ public class UnitReserveDetails implements Serializable {
 
 	@Column(name = "updated_by")
 	private Integer updatedBy;
+	
+	 @ManyToOne
+	 @JoinColumn(name = "order_id")
+	 private PaymentOrderEntity order;
 
 	@Override
 	public String toString() {
