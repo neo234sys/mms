@@ -155,7 +155,7 @@ public class PaymentServiceImpl implements PaymentService {
 
 
 	@Override
-	public ApiResponse<Object> calculatePaymentSchedule(@Valid PaymentScheduleRequest request) {
+	public ApiResponse<Object> createPaymentSchedule(@Valid PaymentScheduleRequest request) {
 
 		
 		TenantUnit tu = tenantUnitRepository.findByTenantUnitIdIdAndSubscriberId(request.getTenantUnitId(),
@@ -208,12 +208,13 @@ public class PaymentServiceImpl implements PaymentService {
 
         //List<LocalDate> dueDates = new ArrayList<>();
         List<RentDue> rentDues = new ArrayList<>();
+        rentDues.add(new RentDue(startDate, tenureDetails.getSecurityDeposit(),PaymentPurposeEnum.SECURITY_DEPOSIT.getValue(),PaymentPurposeEnum.SECURITY_DEPOSIT.getName()));
         for (int i = 0; i < totalCycles; i++) {
            // dueDates.add(startDate.plus(interval.multipliedBy(i)));
         	 LocalDate dueDate = startDate.plus(interval.multipliedBy(i));
              rentDues.add(new RentDue(dueDate, rentPerCycle,PaymentPurposeEnum.RENT.getValue(),PaymentPurposeEnum.RENT.getName()));
         }
-        rentDues.add(new RentDue(startDate, tenureDetails.getSecurityDeposit(),PaymentPurposeEnum.SECURITY_DEPOSIT.getValue(),PaymentPurposeEnum.SECURITY_DEPOSIT.getName()));
+      //  rentDues.add(new RentDue(startDate, tenureDetails.getSecurityDeposit(),PaymentPurposeEnum.SECURITY_DEPOSIT.getValue(),PaymentPurposeEnum.SECURITY_DEPOSIT.getName()));
 
       System.out.println("dueDates="+ rentDues);
         
@@ -543,7 +544,7 @@ public class PaymentServiceImpl implements PaymentService {
 	@Override
 	public ApiResponse<Object> createOrder(@Valid OrderRequest request) {
 		
-		PaymentPurpose paymentPurpose = paymentPurposeRepository.findById(request.getPurposeId())
+	PaymentPurpose paymentPurpose = paymentPurposeRepository.findById(request.getPurposeId())
 		            .orElseThrow(() -> new BusinessException("PaymentPurposeId not found",null));
 		 
 		TenantUnit tu = tenantUnitRepository.findByTenantUnitIdIdAndSubscriberId(request.getTenantUnitId(),
@@ -564,6 +565,14 @@ public class PaymentServiceImpl implements PaymentService {
 				throw new BusinessException("Can not create order for different payment mode", null);
 			}
 			
+			boolean hasDifferentPaymentPurpose = rentDueRepository.countDistinctPaymentPurpose(request.getRentDueIds()) > 1;
+			
+			if(hasDifferentPaymentPurpose) {
+				throw new BusinessException("Can not create order for different payment purpose", null);
+			}
+			
+			
+			
 			if(dueslist.get(0).getPaymentMode()==null) {
 				throw new BusinessException("Payment mode is not set for this rent due id" + dueslist  , null);
 			}
@@ -577,30 +586,33 @@ public class PaymentServiceImpl implements PaymentService {
 			}
 			order.setOrderDate(CommonUtil.getCurrentLocalDateTime());
 			order.setPaymentMode(paymode);
+			order.setPaymentPurpose(paymentPurpose);
 			order.setStatus(OrderStatusEnum.PENDING.toString());
 			order.setSubscriber(tu.getSubscriber());
 			
 			for (RentDueEntity rd : listRentDues) {
 		            rd.setOrder(order);
 		    }
-		}else if(request.getPurposeId()!=null && request.getPurposeId()==PaymentPurposeEnum.RESERVATION.getValue()) { //REservation
-			
-			
-			PaymentMode paymentMode = paymentModeRepository.findById(request.getPaymentModeId())
-		            .orElseThrow(() -> new BusinessException("PaymentModeId not found",null));
-			
-			UnitReserveDetails unitReserveDetEnt=unitReserveDetailsRepository.findById(request.getUnitReserveId())
-            .orElseThrow(() -> new BusinessException("Unit ReservidID not found",null));
-			
-			//PaymentMode paymode=paymentModeRepository.findById(dueslist.get(0).getPaymentMode().getPaymentModeId()).get();
-			order.setOrderDate(CommonUtil.getCurrentLocalDateTime());
-			order.setPaymentMode(paymentMode);
-			order.setStatus(OrderStatusEnum.PENDING.toString());
-			order.setSubscriber(tu.getSubscriber());
-			unitReserveDetEnt.setOrder(order);
-			 
-			
 		}
+	//		else if(request.getPurposeId()!=null && request.getPurposeId()==PaymentPurposeEnum.RESERVATION.getValue()) { //Reservation
+//			
+//			
+//			PaymentMode paymentMode = paymentModeRepository.findById(request.getPaymentModeId())
+//		            .orElseThrow(() -> new BusinessException("PaymentModeId not found",null));
+//			
+//			UnitReserveDetails unitReserveDetEnt=unitReserveDetailsRepository.findById(request.getUnitReserveId())
+//            .orElseThrow(() -> new BusinessException("Unit ReservidID not found",null));
+//			
+//			//PaymentMode paymode=paymentModeRepository.findById(dueslist.get(0).getPaymentMode().getPaymentModeId()).get();
+//			order.setOrderDate(CommonUtil.getCurrentLocalDateTime());
+//			order.setPaymentMode(paymentMode);
+//			order.setPaymentPurpose(paymentPurpose);
+//			order.setStatus(OrderStatusEnum.PENDING.toString());
+//			order.setSubscriber(tu.getSubscriber());
+//			unitReserveDetEnt.setOrder(order);
+//			 
+//			
+//		}
 		
 		
 		

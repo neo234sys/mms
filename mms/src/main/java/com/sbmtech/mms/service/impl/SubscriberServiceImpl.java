@@ -1022,11 +1022,11 @@ public class SubscriberServiceImpl implements SubscriberService {
 			throw new BusinessException("UnitTypeId not match with unitSubTypeId", null);
 		}
 
-		Optional<Building> buildingOptional = buildingRepository.findById(request.getBuildingId());
-		if (!buildingOptional.isPresent()) {
+		Building building = buildingRepository.findByBuildingIdAndSubscriberId(request.getBuildingId(),request.getSubscriberId());
+		if (building==null) {
 			throw new BusinessException("Building not found with id: " + request.getBuildingId(), null);
 		}
-		Building building = buildingOptional.get();
+		//Building building = buildingOptional.get();
 
 		Optional<UnitStatus> unitStatusTypeOp = unitStatusRepository.findById(1);
 
@@ -1038,6 +1038,8 @@ public class SubscriberServiceImpl implements SubscriberService {
 //		if (!floorOptional.isPresent()) {
 //			throw new BusinessException("Floor not found with id: " + request.getFloorId(), null);
 //		}
+		
+		Subscriber subscriber = subscriberRepository.findById(request.getSubscriberId()).orElse(null);
 
 		Optional<FloorMaster> floorOptional = floorMasterRepository.findByFloorName(request.getFloorName());
 		if (!floorOptional.isPresent()) {
@@ -1099,7 +1101,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		unit.setEbConnNo(request.getEbConnNo());
 		unit.setWaterConnNo(request.getWaterConnNo());
 		unit.setSecurityDeposit(request.getSecurityDeposit());
-
+		unit.setSubscriber(subscriber);
 		unitRepository.save(unit);
 
 		S3UploadDto s3UploadDto = new S3UploadDto();
@@ -2439,7 +2441,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 					: Sort.by(paginationRequest.getSortBy()).ascending();
 			PageRequest pageable = PageRequest.of(paginationRequest.getPage(), paginationRequest.getSize(), sort);
 
-			Page<Unit> unitPage = unitRepository.findUnitsByBuildingIdWithPagination(buildingId, pageable);
+			Page<Unit> unitPage = unitRepository.findUnitsByBuildingIdWithPagination(buildingId, subscriberId,pageable);
 
 			List<UnitDetailResponse> unitDTOs = unitPage.getContent().stream().map(unit -> {
 				UnitDetailResponse dto = new UnitDetailResponse();

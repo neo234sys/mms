@@ -18,7 +18,7 @@ public interface PaymentService {
 
 	public ApiResponse<Object> savePaymentDetails(SavePaymentDetailsRequest request)throws Exception;
 
-	public ApiResponse<Object> calculatePaymentSchedule(@Valid PaymentScheduleRequest request);
+	public ApiResponse<Object> createPaymentSchedule(@Valid PaymentScheduleRequest request);
 
 	public ApiResponse<Object>  createOrder(@Valid OrderRequest request);
 

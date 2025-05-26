@@ -52,6 +52,9 @@ public interface RentDueRepository extends JpaRepository<RentDueEntity, Long> {
 	@Query("SELECT COUNT(DISTINCT r.paymentMode.paymentModeId) FROM RentDueEntity r WHERE r.rentDueId IN :ids")
 	Long countDistinctPaymentModes(@Param("ids") List<Long> ids);
 	
+	@Query("SELECT COUNT(DISTINCT r.paymentPurpose.purposeId) FROM RentDueEntity r WHERE r.rentDueId IN :ids")
+	Long countDistinctPaymentPurpose(@Param("ids") List<Long> ids);
+	
 	@Query("SELECT SUM(r.amount) FROM RentDueEntity r WHERE r.order.orderId = :orderId")
 	Double getTotalAmountByOrderIdFromRentDue(@Param("orderId") Long orderId);
 	

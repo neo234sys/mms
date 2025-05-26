@@ -12,6 +12,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -73,7 +74,7 @@ public class UnitReserveDetails implements Serializable {
 	@Column(name = "updated_by")
 	private Integer updatedBy;
 	
-	 @ManyToOne
+	 @OneToOne
 	 @JoinColumn(name = "order_id")
 	 private PaymentOrderEntity order;
 

@@ -24,8 +24,9 @@ public interface UnitRepository extends JpaRepository<Unit, Integer>, JpaSpecifi
 
 	Optional<Unit> findByUnitId(Integer unitId);
 
-	@Query("SELECT u FROM Unit u WHERE u.building.buildingId = :buildingId AND u.isDeleted = false")
-	Page<Unit> findUnitsByBuildingIdWithPagination(@Param("buildingId") Integer buildingId, Pageable pageable);
+	@Query("SELECT u FROM Unit u WHERE u.building.buildingId = :buildingId AND u.building.subscriber.subscriberId = :subscriberId AND u.isDeleted = false")
+	Page<Unit> findUnitsByBuildingIdWithPagination(@Param("buildingId") Integer buildingId,
+			@Param("subscriberId") Integer subscriberId, Pageable pageable);
 
 	@Query("SELECT COUNT(u) > 0 FROM Unit u WHERE u.building.buildingId = :buildingId")
 	boolean existsByBuildingBuildingId(@Param("buildingId") Integer buildingId);

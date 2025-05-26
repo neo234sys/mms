@@ -42,6 +42,9 @@ public class PaymentOrderEntity {
     private PaymentMode paymentMode;
     
     
+    @OneToOne
+    @JoinColumn(name = "purpose_id")
+    PaymentPurpose PaymentPurpose;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<TransactionEntity> transactions = new ArrayList<>();

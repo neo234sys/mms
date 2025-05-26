@@ -48,7 +48,7 @@ public class PaymentController {
 			@CurrentSecurityContext(expression = "authentication") Authentication auth) throws Exception {
 		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
 		request.setSubscriberId(subscriberId);
-		return ResponseEntity.ok(paymentService.calculatePaymentSchedule(request));
+		return ResponseEntity.ok(paymentService.createPaymentSchedule(request));
 	}
 	
 	@PostMapping("/getPaymentSchedule")
