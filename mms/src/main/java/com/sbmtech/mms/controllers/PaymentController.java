@@ -14,7 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sbmtech.mms.payload.request.OrderRequest;
+import com.sbmtech.mms.payload.request.OrderRentRequest;
+import com.sbmtech.mms.payload.request.OrderReservationRequest;
 import com.sbmtech.mms.payload.request.PaymentModeRequest;
 import com.sbmtech.mms.payload.request.PaymentScheduleRequest;
 import com.sbmtech.mms.payload.request.RentDuePaymentModeRequest;
@@ -67,14 +68,26 @@ public class PaymentController {
 		return ResponseEntity.ok(paymentService.updatePaymentModeDetails(request));
 	}	
 
-	@PostMapping("/createOrder")
-	public ResponseEntity<?> createOrder(@Valid @RequestBody OrderRequest request,
+	//For rent and Security Deposit
+	@PostMapping("/createRentOrder")  
+	public ResponseEntity<?> createRentOrder(@Valid @RequestBody OrderRentRequest request,
 			@CurrentSecurityContext(expression = "authentication")  Authentication auth)throws Exception {
 		
 		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
 		request.setSubscriberId(subscriberId);
-		return ResponseEntity.ok(paymentService.createOrder(request));
+		return ResponseEntity.ok(paymentService.createRentOrder(request));
 	}
+	
+	//For Reservation
+	@PostMapping("/createReservationOrder")  
+	public ResponseEntity<?> createReservationOrder(@Valid @RequestBody OrderReservationRequest request,
+			@CurrentSecurityContext(expression = "authentication")  Authentication auth)throws Exception {
+		
+		Integer subscriberId=subscriberService.getSubscriberIdfromAuth(auth);
+		request.setSubscriberId(subscriberId);
+		return ResponseEntity.ok(paymentService.createReservationOrder(request));
+	}
+
 	
 	@PostMapping("/createTransaction")
 	public ResponseEntity<?> createTransaction(@Valid @RequestBody TransactionRequest request,

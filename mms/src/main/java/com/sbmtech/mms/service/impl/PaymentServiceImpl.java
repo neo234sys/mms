@@ -36,6 +36,7 @@ import com.sbmtech.mms.dto.S3UploadObjectDto;
 import com.sbmtech.mms.exception.BusinessException;
 import com.sbmtech.mms.models.OrderStatusEnum;
 import com.sbmtech.mms.models.PaymentMode;
+import com.sbmtech.mms.models.PaymentModeEnum;
 import com.sbmtech.mms.models.PaymentOrderEntity;
 import com.sbmtech.mms.models.PaymentPurpose;
 import com.sbmtech.mms.models.PaymentPurposeEnum;
@@ -53,7 +54,8 @@ import com.sbmtech.mms.models.UnitReserveDetails;
 import com.sbmtech.mms.models.UnitStatus;
 import com.sbmtech.mms.models.UnitStatusEnum;
 import com.sbmtech.mms.payload.request.ApiResponse;
-import com.sbmtech.mms.payload.request.OrderRequest;
+import com.sbmtech.mms.payload.request.OrderRentRequest;
+import com.sbmtech.mms.payload.request.OrderReservationRequest;
 import com.sbmtech.mms.payload.request.PaymentScheduleRequest;
 import com.sbmtech.mms.payload.request.RentDuePaymentModeRequest;
 import com.sbmtech.mms.payload.request.SavePaymentDetailsRequest;
@@ -542,16 +544,16 @@ public class PaymentServiceImpl implements PaymentService {
 	
 	
 	@Override
-	public ApiResponse<Object> createOrder(@Valid OrderRequest request) {
+	public ApiResponse<Object> createRentOrder(@Valid OrderRentRequest request) {
 		
-	PaymentPurpose paymentPurpose = paymentPurposeRepository.findById(request.getPurposeId())
-		            .orElseThrow(() -> new BusinessException("PaymentPurposeId not found",null));
+	//PaymentPurpose paymentPurpose = paymentPurposeRepository.findById(request.getPurposeId())
+		//            .orElseThrow(() -> new BusinessException("PaymentPurposeId not found",null));
 		 
 		TenantUnit tu = tenantUnitRepository.findByTenantUnitIdIdAndSubscriberId(request.getTenantUnitId(),
 				 request.getSubscriberId());
 		PaymentOrderEntity order=new PaymentOrderEntity();
-		if(request.getPurposeId()!=null && request.getPurposeId()==PaymentPurposeEnum.SECURITY_DEPOSIT.getValue() ||
-				 request.getPurposeId()==PaymentPurposeEnum.RENT.getValue() ) { // for Rent & securitydeposit
+		//if(request.getPurposeId()!=null && request.getPurposeId()==PaymentPurposeEnum.SECURITY_DEPOSIT.getValue() ||
+			//	 request.getPurposeId()==PaymentPurposeEnum.RENT.getValue() ) { // for Rent & securitydeposit
 			if (tu == null) {
 				throw new BusinessException("TenantUnit or subscriber not associated", null);
 			}
@@ -579,6 +581,10 @@ public class PaymentServiceImpl implements PaymentService {
 			
 			PaymentMode paymode=paymentModeRepository.findById(dueslist.get(0).getPaymentMode().getPaymentModeId()).get();
 			
+			if(dueslist.get(0).getPaymentPurpose()==null) {
+				throw new BusinessException("Payment Purpose is not set for this rent due id" + dueslist  , null);
+			}
+			PaymentPurpose paymentPurpose=paymentPurposeRepository.findById(dueslist.get(0).getPaymentPurpose().getPurposeId()).get();
 	
 			List <RentDueEntity> listRentDues=rentDueRepository.findByRentDueIdsAndTenureId(request.getRentDueIds(),tu.getTenureDetails().getTenantTenureId());
 			if(listRentDues==null || listRentDues.isEmpty() ) {
@@ -587,32 +593,13 @@ public class PaymentServiceImpl implements PaymentService {
 			order.setOrderDate(CommonUtil.getCurrentLocalDateTime());
 			order.setPaymentMode(paymode);
 			order.setPaymentPurpose(paymentPurpose);
-			order.setStatus(OrderStatusEnum.PENDING.toString());
+			order.setPaymentStatus(OrderStatusEnum.PENDING.toString());
 			order.setSubscriber(tu.getSubscriber());
 			
 			for (RentDueEntity rd : listRentDues) {
 		            rd.setOrder(order);
 		    }
-		}
-	//		else if(request.getPurposeId()!=null && request.getPurposeId()==PaymentPurposeEnum.RESERVATION.getValue()) { //Reservation
-//			
-//			
-//			PaymentMode paymentMode = paymentModeRepository.findById(request.getPaymentModeId())
-//		            .orElseThrow(() -> new BusinessException("PaymentModeId not found",null));
-//			
-//			UnitReserveDetails unitReserveDetEnt=unitReserveDetailsRepository.findById(request.getUnitReserveId())
-//            .orElseThrow(() -> new BusinessException("Unit ReservidID not found",null));
-//			
-//			//PaymentMode paymode=paymentModeRepository.findById(dueslist.get(0).getPaymentMode().getPaymentModeId()).get();
-//			order.setOrderDate(CommonUtil.getCurrentLocalDateTime());
-//			order.setPaymentMode(paymentMode);
-//			order.setPaymentPurpose(paymentPurpose);
-//			order.setStatus(OrderStatusEnum.PENDING.toString());
-//			order.setSubscriber(tu.getSubscriber());
-//			unitReserveDetEnt.setOrder(order);
-//			 
-//			
-//		}
+
 		
 		
 		
@@ -629,6 +616,49 @@ public class PaymentServiceImpl implements PaymentService {
 		return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
 	
 	}
+	
+	@Override
+	public ApiResponse<Object> createReservationOrder(@Valid OrderReservationRequest request) {
+		if(request.getPurposeId()!=null && request.getPurposeId()==PaymentPurposeEnum.RESERVATION.getValue()) { //Reservation
+		
+		
+			PaymentMode paymentMode = paymentModeRepository.findById(request.getPaymentModeId())
+		            .orElseThrow(() -> new BusinessException("PaymentModeId not found",null));
+			
+			PaymentPurpose paymentPurpose = paymentPurposeRepository.findById(request.getPurposeId())
+					            .orElseThrow(() -> new BusinessException("PaymentPurposeId not found",null));
+			
+			UnitReserveDetails unitReserveDetEnt=unitReserveDetailsRepository.findById(request.getUnitReserveId())
+	        .orElseThrow(() -> new BusinessException("Unit ReservidID not found",null));
+			
+			
+			if(request.getPaymentModeId()!=PaymentModeEnum.CREDIT_CARD.getValue() && request.getPaymentModeId()!=PaymentModeEnum.CASH.getValue()) {
+				throw new BusinessException("Only cash or Cheque accepted",null);
+			}
+			
+			
+			
+			PaymentOrderEntity order=new PaymentOrderEntity();
+			order.setOrderDate(CommonUtil.getCurrentLocalDateTime());
+			order.setPaymentMode(paymentMode);
+			order.setPaymentPurpose(paymentPurpose);
+			order.setPaymentStatus(OrderStatusEnum.PENDING.toString());
+			order.setSubscriber(unitReserveDetEnt.getUnit().getSubscriber());
+			PaymentOrderEntity orderEnt=	paymentOrderService.createOrder(order);
+			if (orderEnt.getOrderId() != null) {
+				unitReserveDetEnt.setOrder(order);
+				unitReserveDetEnt.setUnitReserveStatus(CommonConstants.UNIT_RESERVE_PAYMNET_PENDING);
+				PaymentOrderResponse orderResp = new PaymentOrderResponse();
+				BeanUtils.copyProperties(orderEnt, orderResp);
+				logger.info("Payment Order saved successfully, returning response orderId=>"+orderEnt.getOrderId());
+				return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, orderResp, null, null);
+			}
+		
+		 
+		
+		}
+		return null;
+	}
 
 
 
@@ -637,33 +667,54 @@ public class PaymentServiceImpl implements PaymentService {
 		
 		PaymentOrderEntity paymentOrderEnt=paymentOrderRepository.findById(request.getOrderId())
 				.orElseThrow(() -> new BusinessException("Order with ID " + request.getOrderId() + " not found", null));
-		
-		Double totalOrderAmount=rentDueRepository.getTotalAmountByOrderIdFromRentDue(request.getOrderId());
-		System.out.println("totalOrderAmount="+totalOrderAmount);
-		
+		List<RentDueEntity> rentDuesList=rentDueRepository.findByOrderId(request.getOrderId());
+		UnitReserveDetails unitReserveDetails=unitReserveDetailsRepository.findByOrderId(request.getOrderId());
 		TransactionEntity transaction = new TransactionEntity();
-        transaction.setAmount(totalOrderAmount);
-        transaction.setPaymentMode(paymentOrderEnt.getPaymentMode());
-        transaction.setTransactionDate(LocalDateTime.now());
-        transaction.setOrder(paymentOrderEnt);
-        transaction.setStatus(OrderStatusEnum.PROCESSED.toString());
+		if(rentDuesList!=null && !rentDuesList.isEmpty()) {
+			Double totalOrderAmount=rentDueRepository.getTotalAmountByOrderIdFromRentDue(request.getOrderId());
+			System.out.println("totalOrderAmount="+totalOrderAmount);
+			
+			
+	        transaction.setAmount(totalOrderAmount);
+	        transaction.setPaymentMode(paymentOrderEnt.getPaymentMode());
+	        transaction.setTransactionDate(LocalDateTime.now());
+	        transaction.setOrder(paymentOrderEnt);
+	        transaction.setStatus(OrderStatusEnum.PROCESSED.toString());
+	
+	        transactionRepository.save(transaction);
+	        
+	        paymentOrderEnt.setPaymentStatus(OrderStatusEnum.PROCESSED.toString());
+        
+      
+      
+        	TenureDetails tenureDetails=rentDuesList.get(0).getTenure();
+            TenantUnit tenantUnit=tenureDetails.getTenantUnit();
+            Unit unit=tenantUnit.getUnit();
+            paymentOrderEnt.setPaymentStatus(OrderStatusEnum.PROCESSED.toString());
+            for (RentDueEntity rd : rentDuesList) {
+            	rd.setPaymentStatus(OrderStatusEnum.PROCESSED.toString());
+            }	
+            unit.setUnitStatus(unitStatusRepository.findByUnitStatusName(UnitStatusEnum.OCCUPIED.toString()));
+            tenantUnit.setActive(true);
+            tenantUnit.getTenant().setStatus(CommonConstants.TENANT_ACTIVE);
+        }
+      
+        if(unitReserveDetails!=null) {
 
-        transactionRepository.save(transaction);
-        
-        paymentOrderEnt.setStatus(OrderStatusEnum.PROCESSED.toString());
-        
-        List<RentDueEntity> rentDuesList=rentDueRepository.findByOrderId(request.getOrderId());
-        TenureDetails tenureDetails=rentDuesList.get(0).getTenure();
-        TenantUnit tenantUnit=tenureDetails.getTenantUnit();
-        Unit unit=tenantUnit.getUnit();
-        paymentOrderEnt.setStatus(OrderStatusEnum.PROCESSED.toString());
-        for (RentDueEntity rd : rentDuesList) {
-        	rd.setPaymentStatus(OrderStatusEnum.PROCESSED.toString());
+	        transaction.setAmount(unitReserveDetails.getUnitReserveAmount());
+	        transaction.setPaymentMode(paymentOrderEnt.getPaymentMode());
+	        transaction.setTransactionDate(LocalDateTime.now());
+	        transaction.setOrder(paymentOrderEnt);
+	        transaction.setStatus(OrderStatusEnum.PROCESSED.toString());
+	
+	        transactionRepository.save(transaction);
+	        
+	        paymentOrderEnt.setPaymentStatus(OrderStatusEnum.PROCESSED.toString());
+        	unitReserveDetails.setUnitReserveStatus(CommonConstants.UNIT_RESERVE_PAYMENTDONE);
+        	unitReserveDetails.getUnit().setUnitStatus(unitStatusRepository.findByUnitStatusName(UnitStatusEnum.RESERVED.toString()));
         }
         
-        unit.setUnitStatus(unitStatusRepository.findByUnitStatusName(UnitStatusEnum.OCCUPIED.toString()));
-        tenantUnit.setActive(true);
-        tenantUnit.getTenant().setStatus(CommonConstants.TENANT_ACTIVE);
+      
         if (transaction.getTransactionId() != null) {
         	TransactionResponse transResp = new TransactionResponse();
 			BeanUtils.copyProperties(transaction, transResp);
@@ -673,5 +724,9 @@ public class PaymentServiceImpl implements PaymentService {
         logger.info("Failed to create Transaction properly orderID="+request.getOrderId());
 		return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
 	}
+
+
+
+
 
 }

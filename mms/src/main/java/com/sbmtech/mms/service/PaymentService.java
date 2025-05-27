@@ -6,7 +6,8 @@ import javax.validation.Valid;
 
 import com.sbmtech.mms.models.PaymentPurpose;
 import com.sbmtech.mms.payload.request.ApiResponse;
-import com.sbmtech.mms.payload.request.OrderRequest;
+import com.sbmtech.mms.payload.request.OrderRentRequest;
+import com.sbmtech.mms.payload.request.OrderReservationRequest;
 import com.sbmtech.mms.payload.request.PaymentScheduleRequest;
 import com.sbmtech.mms.payload.request.RentDuePaymentModeRequest;
 import com.sbmtech.mms.payload.request.SavePaymentDetailsRequest;
@@ -20,11 +21,14 @@ public interface PaymentService {
 
 	public ApiResponse<Object> createPaymentSchedule(@Valid PaymentScheduleRequest request);
 
-	public ApiResponse<Object>  createOrder(@Valid OrderRequest request);
+	public ApiResponse<Object>  createRentOrder(@Valid OrderRentRequest request);
+	
 
 	public ApiResponse<Object> updatePaymentModeDetails(@Valid RentDuePaymentModeRequest request)throws Exception;
 
 	public ApiResponse<Object> getPaymentSchedule(@Valid PaymentScheduleRequest request);
 
 	public  ApiResponse<Object> createTransaction(@Valid TransactionRequest request);
+
+	public ApiResponse<Object> createReservationOrder(@Valid OrderReservationRequest request);
 }

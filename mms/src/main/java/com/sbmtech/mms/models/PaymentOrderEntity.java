@@ -17,7 +17,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
-import com.sbmtech.mms.dto.RentDue;
+
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -56,7 +56,7 @@ public class PaymentOrderEntity {
 	@Column(name = "order_date")
     private LocalDateTime orderDate;
     
-    private String status; //refere OrderSTatusEnum
+    private String paymentStatus; //refere OrderSTatusEnum
     
 
     

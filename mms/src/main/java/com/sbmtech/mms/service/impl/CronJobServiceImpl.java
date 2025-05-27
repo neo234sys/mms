@@ -98,7 +98,7 @@ public class CronJobServiceImpl implements CronJobService {
 				if (reserveDetails.getReserveEndDate().before(new Date())) {
 					Unit unit = reserveDetails.getUnit();
 					unit.setUnitStatus(unitStatusRepository.findByUnitStatusName(UnitStatusEnum.VACANT.toString()));
-					reserveDetails.setStatus(CommonConstants.UNIT_RESERVE_RELEASED);
+					reserveDetails.setUnitReserveStatus(CommonConstants.UNIT_RESERVE_RELEASED);
 					unitRepository.save(unit);
 				}
 			}

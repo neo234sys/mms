@@ -1393,6 +1393,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		}
 
 		Boolean unitReservePaymentOption = (Boolean) unitReserve.get("unitReservePaymentOption");
+		Double unitReserveAmount = (Double) unitReserve.get("unitReserveAmount");
 
 		Integer unitReserveDays = (unitReserve.get("unitReserveDays") != null)
 				? (Integer) unitReserve.get("unitReserveDays")
@@ -1508,7 +1509,10 @@ public class SubscriberServiceImpl implements SubscriberService {
 			reserveDetails.setReserveStartDate(new Date());
 			reserveDetails.setReserveEndDate(reserveEndDate);
 			reserveDetails.setPaymentRequired((unitReservePaymentOption) ? 1 : 0);
+			reserveDetails.setUnitReserveStatus(CommonConstants.UNIT_RESERVE_PAYMNET_PENDING);
+			reserveDetails.setUnitReserveAmount(unitReserveAmount);
 			UnitReserveDetails reserveDet = unitReserveDetailsRepository.save(reserveDetails);
+			
 			if (reserveDet != null && reserveDet.getUnitReserveId() != null) {
 				unit.setUnitStatus(unitStatusRepository.findByUnitStatusName(UnitStatusEnum.RESERVED.toString()));
 				unitRepository.save(unit);
@@ -1530,7 +1534,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			reserveDetails.setReserveStartDate(new Date());
 			reserveDetails.setReserveEndDate(reserveEndDate);
 			reserveDetails.setPaymentRequired((unitReservePaymentOption) ? 1 : 0);
-			reserveDetails.setStatus(CommonConstants.UNIT_RESERVE_RESERVED);
+			reserveDetails.setUnitReserveStatus(CommonConstants.UNIT_RESERVE_RESERVED);
 			UnitReserveDetails reserveDet = unitReserveDetailsRepository.save(reserveDetails);
 			if (reserveDet != null && reserveDet.getUnitReserveId() != null) {
 				NotifEmailDTO dto = new NotifEmailDTO();
