@@ -696,7 +696,7 @@ public class PaymentServiceImpl implements PaymentService {
             }	
             unit.setUnitStatus(unitStatusRepository.findByUnitStatusName(UnitStatusEnum.OCCUPIED.toString()));
             tenantUnit.setActive(true);
-            tenantUnit.getTenant().setStatus(CommonConstants.TENANT_ACTIVE);
+            tenantUnit.getTenant().setTenantStatus(CommonConstants.TENANT_ACTIVE);
         }
       
         if(unitReserveDetails!=null) {

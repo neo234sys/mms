@@ -108,8 +108,8 @@ public class Tenant {
 	@OneToMany(mappedBy = "tenant", fetch = FetchType.LAZY)
 	private List<TenantUnit> tenantUnits;
 	
-	@Column(name = "status")
-	private String status;
+	@Column(name = "tenant_status")
+	private String tenantStatus;
 
 	@Override
 	public String toString() {

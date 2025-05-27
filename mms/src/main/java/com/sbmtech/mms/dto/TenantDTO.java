@@ -32,7 +32,7 @@ public class TenantDTO {
 	private Date updatedTime;
 	private Integer createdBy;
 	private Integer updatedBy;
-	private String status;
+	private String tenantStatus;
 	private List<TenantUnitDTO> tenantUnits;
 
 

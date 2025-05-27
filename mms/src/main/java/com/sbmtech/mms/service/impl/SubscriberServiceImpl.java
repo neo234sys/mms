@@ -1277,6 +1277,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		}
 
 		tenant.setNationality(nationality);
+		tenant.setTenantStatus(CommonConstants.TENANT_NEW);
 		tenant = tenantRepository.save(tenant);
 		String pwd = CommonUtil.generateRandomPwd();
 		pwd = "123456";// remove this
@@ -1424,7 +1425,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 		//tenant.setPassportExpiryDate(CommonUtil.getDatefromString(request.getPassportExpiryDate(), DATE_ddMMyyyy));
 		tenant.setNationality(nationality);
 		tenant.setSubscriber(subscriber);
-		tenant.setStatus(CommonConstants.TENANT_ACTIVE);		
+		tenant.setTenantStatus(CommonConstants.TENANT_ACTIVE);		
 		if (!ObjectUtils.isEmpty(request.getEidaCopy())) {
 			String contentType = CommonUtil.validateAttachment(request.getEidaCopy());
 			String fileExt = contentType.substring(contentType.indexOf("/") + 1);
@@ -1520,7 +1521,6 @@ public class SubscriberServiceImpl implements SubscriberService {
 				gr.setUnitReserveId(reserveDetails.getUnitReserveId());
 				gr.setMsg("Please proceed to payment");
 				return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, gr, null, null);
-				//return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Please proceed the payment", null, null);
 			}
 			
 
@@ -3136,9 +3136,9 @@ public class SubscriberServiceImpl implements SubscriberService {
 						tenant.getPhotoFilename()));
 			}
 			
-			dto.setStatus(tenant.getStatus());
-			if (StringUtils.isBlank(tenant.getStatus())) {
-				dto.setStatus(CommonConstants.TENANT_IN_ACTIVE);
+			dto.setTenantStatus(tenant.getTenantStatus());
+			if (StringUtils.isBlank(tenant.getTenantStatus())) {
+				dto.setTenantStatus(CommonConstants.TENANT_IN_ACTIVE);
 			}
 			
 			if(tenant.getTenantUnits()!=null && tenant.getTenantUnits().size()>1 ) {
