@@ -345,7 +345,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 	}
 
 	@Override
-	public Map<String, Object> createSubscriber(SubscriberRequest request) throws Exception {
+	public Map<String, Object> createSubscriber(SubscriberRequest request,Integer...defaultRoleId) throws Exception {
 
 		ChannelMaster channelMaster = channelMasterRepository.findById(request.getChannelId()).orElse(null);
 		Countries country = countriesRepository.findById(request.getNatId()).orElse(null);
@@ -441,8 +441,13 @@ public class SubscriberServiceImpl implements SubscriberService {
 		user.setSubscriber(subscriber);
 		user.setUserType(userType);
 		user.setCreatedDate(new Date());
-		Role defaultRole = roleRepository.findById(2)
-				.orElseThrow(() -> new RuntimeException("Role not found for ID 2"));
+		
+		Integer roleId=2; //by default ROLE_MGT_ADMIN
+		if(defaultRoleId!=null && defaultRoleId.length!=0) {
+			roleId=defaultRoleId[0]; // whatever roleId we are passing
+		}
+		Role defaultRole = roleRepository.findById(roleId)
+				.orElseThrow(() -> new RuntimeException("Role not found for ID "));
 		user.getRoles().add(defaultRole);
 		user.setNationality(country);
 		userRepository.save(user);

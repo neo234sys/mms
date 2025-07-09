@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sbmtech.mms.constant.CommonConstants;
+import com.sbmtech.mms.models.RoleEnum;
 import com.sbmtech.mms.models.Subscriber;
 import com.sbmtech.mms.models.Subscriptions;
 import com.sbmtech.mms.models.User;
@@ -156,6 +157,17 @@ public class SubscriberController {
 	@PostMapping("/createSubscriber")
 	public ResponseEntity<?> createSubscriber(@Valid @RequestBody SubscriberRequest request) throws Exception {
 		return ResponseEntity.ok(subscriberService.createSubscriber(request));
+	}
+	
+	/**
+	 * This method is for to create BedSpace Subscriber 
+	 * @param request
+	 * @return
+	 * @throws Exception
+	 */
+	@PostMapping("/createBSSubscriber")
+	public ResponseEntity<?> createBSSubscriber(@Valid @RequestBody SubscriberRequest request) throws Exception {
+		return ResponseEntity.ok(subscriberService.createSubscriber(request,RoleEnum.ROLE_BS_MGT_ADMIN.getValue()));
 	}
 
 	@PostMapping("/verifyOtp")

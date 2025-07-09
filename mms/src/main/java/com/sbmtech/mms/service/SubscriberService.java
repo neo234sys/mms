@@ -44,7 +44,7 @@ public interface SubscriberService {
 
 	public Integer getSubscriberIdfromAuth(Authentication auth) throws Exception;
 
-	public Map<String, Object> createSubscriber(SubscriberRequest request) throws Exception;
+	public Map<String, Object> createSubscriber(SubscriberRequest request,Integer...defaultRoleId) throws Exception;
 
 	public ApiResponse<?> verifyOtp(VerifyOtpRequest request);
 
