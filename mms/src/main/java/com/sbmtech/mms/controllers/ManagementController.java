@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sbmtech.mms.constant.CommonConstants;
 import com.sbmtech.mms.models.ProductConfig;
 import com.sbmtech.mms.payload.request.AdditionalDetailsRequest;
 import com.sbmtech.mms.payload.request.AreaRequest;
@@ -88,7 +89,7 @@ public class ManagementController {
 	public ResponseEntity<?> getAllSubscriptionPlans(
 			@CurrentSecurityContext(expression = "authentication") Authentication auth) throws Exception {
 
-		return ResponseEntity.ok(subscriberService.getAllSubscriptionPlans());
+		return ResponseEntity.ok(subscriberService.getAllSubscriptionPlans(CommonConstants.PLAN_CATEGORY_BM));
 	}
 
 	@GetMapping("/countries")

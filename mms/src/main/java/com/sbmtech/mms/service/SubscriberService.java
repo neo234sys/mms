@@ -58,7 +58,7 @@ public interface SubscriberService {
 
 	public ApiResponse<String> saveSubscription(SubscriptionRequest subscriptionRequest);
 
-	public ApiResponse<List<SubscriptionPlans>> getAllSubscriptionPlans();
+	public ApiResponse<List<SubscriptionPlans>> getAllSubscriptionPlans(String planCategory);
 
 	public ApiResponse<String> makePayment(SubscriptionPaymentRequest paymentRequest);
 

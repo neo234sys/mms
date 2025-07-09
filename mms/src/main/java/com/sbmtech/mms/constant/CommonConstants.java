@@ -84,6 +84,8 @@ public class CommonConstants {
 	public static final String UNIT_RESERVE_PAYMENTDONE="PAYMENT_DONE";
 	public static final String UNIT_RESERVE_PAYMNET_PENDING="PAYMENT_PENDING";
 	public static final String UNIT_RESERVE_RESERVED="RESERVED";
+	public static final String PLAN_CATEGORY_BM="BM";
+	public static final String PLAN_CATEGORY_BSM="BSM";
 	
 		
 }

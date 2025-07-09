@@ -30,11 +30,11 @@ public class SubscriptionPlans {
 
 	private Map<String, Object> metadata;
 
-
+	private String planCategory;
 
 	public SubscriptionPlans(Integer planId, String planName, Double priceMonth, Double priceYear, String currency,
 			Integer durationInDays, Integer trialDays, String description, List<String> features,
-			Map<String, Object> metadata) {
+			Map<String, Object> metadata,String planCategory) {
 
 		this.planId = planId;
 		this.planName = planName;
@@ -46,6 +46,7 @@ public class SubscriptionPlans {
 		this.description = description;
 		this.features = features;
 		this.metadata = metadata;
+		this.planCategory=planCategory;
 
 	}
 

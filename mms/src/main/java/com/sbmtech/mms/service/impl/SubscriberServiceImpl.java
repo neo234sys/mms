@@ -337,6 +337,19 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 							return subscriberId;
 						}
+					}else if (RoleEnum.ROLE_BS_MGT_ADMIN.getName().equals(role.getName().toString())) {
+						if (user.getSubscriber() != null) {
+							Integer subscriberId = user.getSubscriber().getSubscriberId();
+							logger.info("getSubscriberIdfromAuth subscriber->= {}", user.getSubscriber());
+
+							boolean exists = subscriberRepository.existsBySubscriberIdAndActive(subscriberId, 1);
+							if (!exists) {
+								logger.info("Subscription suspended for subscriberId ->:{} ", subscriberId);
+								throw new BusinessException("Subscription suspended", null);
+							}
+
+							return subscriberId;
+						}
 					}
 				}
 			}
@@ -691,12 +704,12 @@ public class SubscriberServiceImpl implements SubscriberService {
 				subscription.getSubscriber().getSubscriberId());
 	}
 
-	public ApiResponse<List<SubscriptionPlans>> getAllSubscriptionPlans() {
+	public ApiResponse<List<SubscriptionPlans>> getAllSubscriptionPlans(String planCategory) {
 		List<SubscriptionPlanMaster> plansList = subscriptionPlanRepository.findAll();
-		List<SubscriptionPlans> result = plansList.stream().filter(e -> e.getActive() == 1)
+		List<SubscriptionPlans> result = plansList.stream().filter(e -> e.getActive() == 1 && e.getPlanCategory().equals(planCategory))
 				.map(e -> new SubscriptionPlans(e.getPlanId(), e.getPlanName(), e.getPriceMonth(), e.getPriceYear(),
 						e.getCurrency(), e.getDurationInDays(), e.getTrialDays(), e.getDescription(), e.getFeatures(),
-						e.getMetadata()))
+						e.getMetadata(),e.getPlanCategory()))
 				.collect(Collectors.toList());
 		if (result.isEmpty()) {
 			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);

@@ -64,4 +64,7 @@ public class SubscriptionPlanMaster {
     
     @Column(name = "active", nullable = false)
     private Integer active;
+    
+    @Column(name = "plan_category")
+    private String planCategory;
 }

@@ -14,6 +14,9 @@ class SecurityService {
     public String getMgtAdmin(){
         return "MGT_ADMIN";
     }
+    public String getBSMgtAdmin(){
+        return "BS_MGT_ADMIN";
+    }
    
     
     
