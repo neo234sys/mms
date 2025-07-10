@@ -13,6 +13,7 @@ import com.sbmtech.mms.models.Subscriptions;
 import com.sbmtech.mms.payload.request.AdditionalDetailsRequest;
 import com.sbmtech.mms.payload.request.ApiResponse;
 import com.sbmtech.mms.payload.request.AreaRequest;
+import com.sbmtech.mms.payload.request.BSUnitRequest;
 import com.sbmtech.mms.payload.request.BuildingRequest;
 import com.sbmtech.mms.payload.request.BuildingSearchRequest;
 import com.sbmtech.mms.payload.request.CommunityRequest;
@@ -75,6 +76,8 @@ public interface SubscriberService {
 	// public ApiResponse<Object> addFloor(FloorRequest request);
 
 	public ApiResponse<Object> addUnit(UnitRequest request) throws Exception;
+	
+	public ApiResponse<Object> addUnit(BSUnitRequest request) throws Exception;
 
 	public ApiResponse<Object> createTenant(CreateUserRequest request) throws Exception;
 

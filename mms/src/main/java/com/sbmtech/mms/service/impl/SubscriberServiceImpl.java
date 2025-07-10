@@ -119,6 +119,7 @@ import com.sbmtech.mms.payload.request.ParkingZoneRequest;
 import com.sbmtech.mms.payload.request.ResendOtpRequest;
 import com.sbmtech.mms.payload.request.ReserveUnitRequest;
 import com.sbmtech.mms.payload.request.AreaRequest;
+import com.sbmtech.mms.payload.request.BSUnitRequest;
 import com.sbmtech.mms.payload.request.SubscriberRequest;
 import com.sbmtech.mms.payload.request.SubscriptionPaymentRequest;
 import com.sbmtech.mms.payload.request.SubscriptionRequest;
@@ -1154,6 +1155,145 @@ public class SubscriberServiceImpl implements SubscriberService {
 		BeanUtils.copyProperties(unit, unitResp);
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, unitResp, null, null);
 	}
+	
+	
+	public ApiResponse<Object> addUnit(BSUnitRequest request) throws Exception {
+		S3UploadObjectDto s3MainPicDto = null;
+		S3UploadObjectDto s3Pic2Dto = null;
+		S3UploadObjectDto s3Pic3Dto = null;
+		S3UploadObjectDto s3Pic4Dto = null;
+		S3UploadObjectDto s3Pic5Dto = null;
+		List<S3UploadObjectDto> s3UploadObjectDtoList = new ArrayList<>();
+		Optional<UnitType> unitTypeOptional = unitTypeRepository.findById(request.getUnitTypeId());
+		if (!unitTypeOptional.isPresent()) {
+			throw new BusinessException("UnitType not found with id: " + request.getUnitTypeId(), null);
+		}
+
+		Optional<UnitSubType> unitSubTypeOptional = unitSubTypeRepository.findById(request.getUnitSubTypeId());
+		if (!unitSubTypeOptional.isPresent()) {
+			throw new BusinessException("UnitSubType not found with id: " + request.getUnitSubTypeId(), null);
+		}
+
+		UnitType unitType = unitSubTypeOptional.get().getUnitType();
+		if (unitType.getUnitTypeId() != request.getUnitTypeId().intValue()) {
+			throw new BusinessException("UnitTypeId not match with unitSubTypeId", null);
+		}
+
+		Building building = buildingRepository.findByBuildingIdAndSubscriberId(request.getBuildingId(),request.getSubscriberId());
+		if (building==null) {
+			throw new BusinessException("Building not found with id: " + request.getBuildingId(), null);
+		}
+		//Building building = buildingOptional.get();
+
+		Optional<UnitStatus> unitStatusTypeOp = unitStatusRepository.findById(1);
+
+		if (!unitStatusTypeOp.isPresent()) {
+			throw new BusinessException("UnitStatus not found", null);
+		}
+
+//		Optional<Floor> floorOptional = floorRepository.findById(request.getFloorId());
+//		if (!floorOptional.isPresent()) {
+//			throw new BusinessException("Floor not found with id: " + request.getFloorId(), null);
+//		}
+		
+		Subscriber subscriber = subscriberRepository.findById(request.getSubscriberId()).orElse(null);
+
+		Optional<FloorMaster> floorOptional = floorMasterRepository.findByFloorName(request.getFloorName());
+		if (!floorOptional.isPresent()) {
+			throw new BusinessException("FloorName not found: " + request.getFloorName(), null);
+		}
+		FloorMaster floor = floorOptional.get();
+
+		validateNoOfFloorAndUnitsConfig(building);
+
+		if (!ObjectUtils.isEmpty(request.getUnitMainPic1())) {
+			String contentType = CommonUtil.validateAttachment(request.getUnitMainPic1());
+			String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+			s3MainPicDto = new S3UploadObjectDto(CommonConstants.UNIT_MAIN_PIC, contentType, fileExt,
+					Base64.getEncoder().encodeToString(request.getUnitMainPic1()), null);
+			s3UploadObjectDtoList.add(s3MainPicDto);
+		}
+		if (!ObjectUtils.isEmpty(request.getUnitPic2())) {
+			String contentType = CommonUtil.validateAttachment(request.getUnitPic2());
+			String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+			s3Pic2Dto = new S3UploadObjectDto(CommonConstants.UNIT_PIC2, contentType, fileExt,
+					Base64.getEncoder().encodeToString(request.getUnitPic2()), null);
+			s3UploadObjectDtoList.add(s3Pic2Dto);
+		}
+		if (!ObjectUtils.isEmpty(request.getUnitPic3())) {
+			String contentType = CommonUtil.validateAttachment(request.getUnitPic3());
+			String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+			s3Pic3Dto = new S3UploadObjectDto(CommonConstants.UNIT_PIC3, contentType, fileExt,
+					Base64.getEncoder().encodeToString(request.getUnitPic3()), null);
+			s3UploadObjectDtoList.add(s3Pic3Dto);
+		}
+		if (!ObjectUtils.isEmpty(request.getUnitPic4())) {
+			String contentType = CommonUtil.validateAttachment(request.getUnitPic4());
+			String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+			s3Pic4Dto = new S3UploadObjectDto(CommonConstants.UNIT_PIC4, contentType, fileExt,
+					Base64.getEncoder().encodeToString(request.getUnitPic4()), null);
+			s3UploadObjectDtoList.add(s3Pic4Dto);
+		}
+		if (!ObjectUtils.isEmpty(request.getUnitPic5())) {
+			String contentType = CommonUtil.validateAttachment(request.getUnitPic5());
+			String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+			s3Pic5Dto = new S3UploadObjectDto(CommonConstants.UNIT_PIC5, contentType, fileExt,
+					Base64.getEncoder().encodeToString(request.getUnitPic5()), null);
+			s3UploadObjectDtoList.add(s3Pic5Dto);
+		}
+
+		Unit unit = new Unit();
+		unit.setBuilding(building);
+		// unit.setFloor(floor);
+		unit.setFloor(floor);
+		unit.setUnitName(request.getUnitName());
+		unit.setUnitType(unitType);
+		unit.setUnitSubType(unitSubTypeOptional.get());
+		unit.setSize(request.getSize());
+		unit.setHasBalcony(request.getHasBalcony());
+		unit.setUnitStatus(unitStatusTypeOp.get());
+
+		//unit.setRentMonth(request.getRentMonth());
+		//unit.setRentYear(request.getRentYear());
+		unit.setEbConnNo(request.getEbConnNo());
+		unit.setWaterConnNo(request.getWaterConnNo());
+		//unit.setSecurityDeposit(request.getSecurityDeposit());
+		unit.setSubscriber(subscriber);
+		unitRepository.save(unit);
+
+		S3UploadDto s3UploadDto = new S3UploadDto();
+		s3UploadDto.setSubscriberId(request.getSubscriberId());
+		s3UploadDto.setBuildingId(request.getBuildingId());
+		s3UploadDto.setUnitId(unit.getUnitId());
+		s3UploadDto.setObjectType(S3UploadObjTypeEnum.UNIT.toString());
+		s3UploadDto.setS3UploadObjectDtoList(s3UploadObjectDtoList);
+
+		List<S3UploadObjectDto> s3UploadObjectDtoListRet = s3Service.upload(s3UploadDto);
+		for (S3UploadObjectDto s3UploadObjectDto : s3UploadObjectDtoListRet) {
+			if (s3UploadObjectDto != null && StringUtils.isNotBlank(s3UploadObjectDto.getS3FileName())) {
+				if (s3UploadObjectDto.getObjectName().equals(CommonConstants.UNIT_MAIN_PIC)) {
+					unit.setUnitMainPic1Name(s3UploadObjectDto.getS3FileName());
+				}
+				if (s3UploadObjectDto.getObjectName().equals(CommonConstants.UNIT_PIC2)) {
+					unit.setUnitPic2Name(s3UploadObjectDto.getS3FileName());
+				}
+				if (s3UploadObjectDto.getObjectName().equals(CommonConstants.UNIT_PIC3)) {
+					unit.setUnitPic3Name(s3UploadObjectDto.getS3FileName());
+				}
+				if (s3UploadObjectDto.getObjectName().equals(CommonConstants.UNIT_PIC4)) {
+					unit.setUnitPic4Name(s3UploadObjectDto.getS3FileName());
+				}
+				if (s3UploadObjectDto.getObjectName().equals(CommonConstants.UNIT_PIC5)) {
+					unit.setUnitPic5Name(s3UploadObjectDto.getS3FileName());
+				}
+			}
+		}
+
+		UnitResponse unitResp = new UnitResponse();
+		BeanUtils.copyProperties(unit, unitResp);
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, unitResp, null, null);
+	}
+
 
 	private void validateNoOfFloorAndUnitsConfig(Building building) {
 		// Long
@@ -1165,7 +1305,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 //			throw new BusinessException("No of floor exceeded for buildingId: " + building.getBuildingId(), null);
 //		}
 
-		if (currentUnitsCount > noOfUnitsBuildingConfig) {
+		if (noOfUnitsBuildingConfig !=null && currentUnitsCount!=0 && currentUnitsCount > noOfUnitsBuildingConfig) {
 			throw new BusinessException("No of units exceeded for buildingId: " + building.getBuildingId(), null);
 		}
 

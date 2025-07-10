@@ -44,12 +44,12 @@ public class BuildingRequest {
 	private String latitude;
 	private String longitude;
 
-	@Min(value = 1, message = "noOfFloors min value should 1")
-	@NotNull(message = "noOfFloors field cannot be null")
+	//@Min(value = 1, message = "noOfFloors min value should 1")
+	//@NotNull(message = "noOfFloors field cannot be null")
 	private Integer noOfFloors;
 
-	@Min(value = 1, message = "noOfunits min value should 1")
-	@NotNull(message = "noOfunits field cannot be null")
+	//@Min(value = 1, message = "noOfunits min value should 1")
+	//@NotNull(message = "noOfunits field cannot be null")
 	private Integer noOfunits;
 
 }

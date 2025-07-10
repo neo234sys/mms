@@ -21,6 +21,7 @@ import com.sbmtech.mms.constant.CommonConstants;
 import com.sbmtech.mms.models.ProductConfig;
 import com.sbmtech.mms.payload.request.AdditionalDetailsRequest;
 import com.sbmtech.mms.payload.request.AreaRequest;
+import com.sbmtech.mms.payload.request.BSUnitRequest;
 import com.sbmtech.mms.payload.request.DeleteBuildingRequest;
 import com.sbmtech.mms.payload.request.DeleteUnitRequest;
 import com.sbmtech.mms.payload.request.BuildingRequest;
@@ -152,7 +153,7 @@ public class BSManagementController {
 	 */
 
 	@PostMapping("/addUnit")
-	public ResponseEntity<?> addUnit(@Valid @RequestBody UnitRequest request,
+	public ResponseEntity<?> addUnit(@Valid @RequestBody BSUnitRequest request,
 			@CurrentSecurityContext(expression = "authentication") Authentication auth) throws Exception {
 		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
 		request.setSubscriberId(subscriberId);
