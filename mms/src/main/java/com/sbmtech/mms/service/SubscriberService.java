@@ -14,6 +14,7 @@ import com.sbmtech.mms.payload.request.AdditionalDetailsRequest;
 import com.sbmtech.mms.payload.request.ApiResponse;
 import com.sbmtech.mms.payload.request.AreaRequest;
 import com.sbmtech.mms.payload.request.BSUnitRequest;
+import com.sbmtech.mms.payload.request.BedspaceRequest;
 import com.sbmtech.mms.payload.request.BuildingRequest;
 import com.sbmtech.mms.payload.request.BuildingSearchRequest;
 import com.sbmtech.mms.payload.request.CommunityRequest;
@@ -128,5 +129,7 @@ public interface SubscriberService {
 	public ApiResponse<Object> searchUnits(Integer subscriberId, UnitPaginationRequest request);
 
 	public ApiResponse<Object> getAllTenants(Integer subscriberId, TenantSearchRequest request);
+
+	public ApiResponse<Object> createBedspace(Integer subscriberId, BedspaceRequest request);
 
 }

@@ -22,6 +22,7 @@ import com.sbmtech.mms.models.ProductConfig;
 import com.sbmtech.mms.payload.request.AdditionalDetailsRequest;
 import com.sbmtech.mms.payload.request.AreaRequest;
 import com.sbmtech.mms.payload.request.BSUnitRequest;
+import com.sbmtech.mms.payload.request.BedspaceRequest;
 import com.sbmtech.mms.payload.request.DeleteBuildingRequest;
 import com.sbmtech.mms.payload.request.DeleteUnitRequest;
 import com.sbmtech.mms.payload.request.BuildingRequest;
@@ -391,6 +392,12 @@ public class BSManagementController {
 		return ResponseEntity.ok(subscriberService.getAllTenants(subscriberId, request));
 	}
 	
-	
+	@PostMapping
+    public ResponseEntity<?> saveBedspace(@CurrentSecurityContext(expression = "authentication") Authentication auth,
+    		@RequestBody BedspaceRequest request)throws Exception {
+		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
+        return ResponseEntity.ok(subscriberService.createBedspace(subscriberId, request));
+       
+    }
 	
 }

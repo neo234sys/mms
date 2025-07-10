@@ -66,6 +66,7 @@ import com.sbmtech.mms.dto.UnitReserveDetailsDTO;
 import com.sbmtech.mms.dto.UserSimpleDTO;
 import com.sbmtech.mms.exception.BusinessException;
 import com.sbmtech.mms.models.Area;
+import com.sbmtech.mms.models.Bedspace;
 import com.sbmtech.mms.models.Building;
 import com.sbmtech.mms.models.ChannelMaster;
 import com.sbmtech.mms.models.City;
@@ -120,6 +121,7 @@ import com.sbmtech.mms.payload.request.ResendOtpRequest;
 import com.sbmtech.mms.payload.request.ReserveUnitRequest;
 import com.sbmtech.mms.payload.request.AreaRequest;
 import com.sbmtech.mms.payload.request.BSUnitRequest;
+import com.sbmtech.mms.payload.request.BedspaceRequest;
 import com.sbmtech.mms.payload.request.SubscriberRequest;
 import com.sbmtech.mms.payload.request.SubscriptionPaymentRequest;
 import com.sbmtech.mms.payload.request.SubscriptionRequest;
@@ -140,6 +142,7 @@ import com.sbmtech.mms.payload.response.KeyResponse;
 import com.sbmtech.mms.payload.response.PaginationResponse;
 import com.sbmtech.mms.payload.response.ParkingDetailResponse;
 import com.sbmtech.mms.payload.response.AreaResponse;
+import com.sbmtech.mms.payload.response.BedspaceResponse;
 import com.sbmtech.mms.payload.response.ParkingResponse;
 import com.sbmtech.mms.payload.response.ParkingZoneResponse;
 import com.sbmtech.mms.payload.response.SubscriptionPlans;
@@ -169,6 +172,10 @@ import com.sbmtech.mms.repository.RentCycleRepository;
 import com.sbmtech.mms.repository.RoleRepository;
 import com.sbmtech.mms.repository.StateRepository;
 import com.sbmtech.mms.repository.AreaRepositoryCustom;
+import com.sbmtech.mms.repository.BedspaceBathroomTypeRepository;
+import com.sbmtech.mms.repository.BedspaceCatRepository;
+import com.sbmtech.mms.repository.BedspacePartitionMasterRepository;
+import com.sbmtech.mms.repository.BedspaceRepository;
 import com.sbmtech.mms.repository.SubscriberRepository;
 import com.sbmtech.mms.repository.SubscriptionPaymentRepository;
 import com.sbmtech.mms.repository.SubscriptionPlanMasterRepository;
@@ -315,6 +322,18 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	@Autowired
 	private OrderRepository orderRepository;
+	
+	@Autowired
+	private BedspacePartitionMasterRepository partitionRepository;
+	
+	@Autowired
+	private BedspaceCatRepository bedspaceCatRepository;
+	
+	@Autowired
+	private BedspaceBathroomTypeRepository bedspaceBathroomTypeRepository;
+	
+	@Autowired
+	private BedspaceRepository bedspaceRepository;
 
 	@Override
 	public Integer getSubscriberIdfromAuth(Authentication auth) throws Exception {
@@ -3337,6 +3356,40 @@ public class SubscriberServiceImpl implements SubscriberService {
 				pageResult.getTotalElements(), pageResult.isFirst(), pageResult.isLast());
 
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, pgResp, null, null);
+	}
+
+	@Override
+	public ApiResponse<Object> createBedspace(Integer subscriberId, BedspaceRequest dto) {
+		BedspaceResponse bedspaceResp ;
+		try {
+			
+			Bedspace bedspace = new Bedspace();
+		    bedspace.setBedspaceName(dto.getBedspaceName());
+		    bedspace.setSecurityDeposit(dto.getSecurityDeposit());
+		    bedspace.setRentMonth(dto.getRentMonth());
+		    bedspace.setRentDay(dto.getRentDay());
+		    bedspace.setHasWardrobe(dto.getHasWardrobe());
+		    bedspace.setHasKitchen(dto.getHasKitchen());
+		    bedspace.setFeatures(dto.getFeatures());
+	
+		    // fetch and set references
+		    bedspace.setUnit(unitRepository.findById(dto.getUnitId()).orElseThrow());
+		    bedspace.setPartition(partitionRepository.findById(dto.getPartitionId()).orElseThrow());
+		    bedspace.setBedspaceCategory(bedspaceCatRepository.findById(dto.getBedspaceCatId()).orElseThrow());
+		    bedspace.setBathroomType(bedspaceBathroomTypeRepository.findById(dto.getBedspaceBathroomTypeId()).orElseThrow());
+		    bedspace.setSubscriber(subscriberRepository.findById(dto.getSubscriberId()).orElseThrow());
+	
+		    bedspaceRepository.save(bedspace);
+		    
+		    bedspaceResp = new BedspaceResponse();
+			BeanUtils.copyProperties(bedspace, bedspaceResp);
+
+		} catch (Exception e) {
+			throw new BusinessException("addBedspace failed ", e);
+		}
+
+	return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, bedspaceResp, null, dto.getSubscriberId());
+		
 	}
 
 }
