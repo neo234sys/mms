@@ -43,6 +43,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.sbmtech.mms.constant.CommonConstants;
 import com.sbmtech.mms.constant.SubscriptionStatus;
+import com.sbmtech.mms.dto.BedspaceDTO;
+import com.sbmtech.mms.dto.BedspaceSearchCriteria;
 import com.sbmtech.mms.dto.BuildingDetailDTO;
 import com.sbmtech.mms.dto.BuildingSearchDto;
 import com.sbmtech.mms.dto.FloorDTO;
@@ -67,6 +69,9 @@ import com.sbmtech.mms.dto.UserSimpleDTO;
 import com.sbmtech.mms.exception.BusinessException;
 import com.sbmtech.mms.models.Area;
 import com.sbmtech.mms.models.Bedspace;
+import com.sbmtech.mms.models.BedspaceBathroomTypeMaster;
+import com.sbmtech.mms.models.BedspaceCatMaster;
+import com.sbmtech.mms.models.BedspacePartitionMaster;
 import com.sbmtech.mms.models.Building;
 import com.sbmtech.mms.models.ChannelMaster;
 import com.sbmtech.mms.models.City;
@@ -176,6 +181,7 @@ import com.sbmtech.mms.repository.BedspaceBathroomTypeRepository;
 import com.sbmtech.mms.repository.BedspaceCatRepository;
 import com.sbmtech.mms.repository.BedspacePartitionMasterRepository;
 import com.sbmtech.mms.repository.BedspaceRepository;
+import com.sbmtech.mms.repository.BedspaceSpecifications;
 import com.sbmtech.mms.repository.SubscriberRepository;
 import com.sbmtech.mms.repository.SubscriptionPaymentRepository;
 import com.sbmtech.mms.repository.SubscriptionPlanMasterRepository;
@@ -324,7 +330,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 	private OrderRepository orderRepository;
 	
 	@Autowired
-	private BedspacePartitionMasterRepository partitionRepository;
+	private BedspacePartitionMasterRepository bedspacePartitionRepository;
 	
 	@Autowired
 	private BedspaceCatRepository bedspaceCatRepository;
@@ -334,6 +340,9 @@ public class SubscriberServiceImpl implements SubscriberService {
 	
 	@Autowired
 	private BedspaceRepository bedspaceRepository;
+	
+
+
 
 	@Override
 	public Integer getSubscriberIdfromAuth(Authentication auth) throws Exception {
@@ -676,7 +685,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 				}
 			}
 		} catch (Exception e) {
-			logger.error("image upload failed");
+			logger.error("image upload failed:"+e.getMessage());
 		}
 
 		subscriber.setUpdatedDate(new Date());
@@ -981,7 +990,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			buildingResp = new BuildingResponse();
 			BeanUtils.copyProperties(building, buildingResp);
 		} catch (Exception e) {
-			throw new BusinessException("addBuilding failed ", e);
+			throw new BusinessException("addBuilding failed "+e.getMessage(), e);
 		}
 
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, buildingResp, null, request.getSubscriberId());
@@ -2456,6 +2465,56 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, pgResp, null, null);
 	}
+	
+	
+	 @Override
+	 @Transactional(readOnly = true)
+	 public ApiResponse<Object> searchBedspaces(BedspaceSearchCriteria criteria) {
+		 //Page<BedspaceDTO>
+		 PaginationRequest paginationRequest = criteria.getPaginationRequest();
+			Sort sort = paginationRequest.getSortDirection().equalsIgnoreCase("desc")
+					? Sort.by(paginationRequest.getSortBy()).descending()
+					: Sort.by(paginationRequest.getSortBy()).ascending();
+			PageRequest pageable = PageRequest.of(paginationRequest.getPage(), paginationRequest.getSize(), sort);
+			
+		// PageRequest pageable = PageRequest.of(paginationRequest.getPage(),paginationRequest.getSize());
+		 
+		 Page<Bedspace> pageResult =   bedspaceRepository.findAll(BedspaceSpecifications.matchesCriteria(criteria),pageable);
+	                //.map(bedspaceMapper::toDto);
+		 
+		 List<BedspaceDTO> dtos = pageResult.getContent().stream().map(bedspace -> {
+			 
+//				String areaName =  bedspace.getUnit().getBuilding().getArea() != null ? bedspace.getUnit().getBuilding().getArea().getAreaName() : null;
+//				String cityName = (bedspace.getUnit().getBuilding().getArea() != null && bedspace.getUnit().getBuilding().getArea().getCity() != null)
+//						? bedspace.getUnit().getBuilding().getArea().getCity().getName()
+//						: null;
+
+				return new BedspaceDTO(
+						bedspace.getBedspaceId(), 
+						bedspace.getBedspaceName(),
+						bedspace.getFeatures(),
+						bedspace.getSecurityDeposit(),
+						bedspace.getRentMonth(),
+						bedspace.getRentDay(),
+						bedspace.getHasWardrobe(),
+						bedspace.getHasKitchen(),
+						bedspace.getUnit().getUnitId(),
+						bedspace.getPartition().getBedspacePartitionId(),
+						bedspace.getPartition().getBedspacePartitionName(),
+						bedspace.getBedspaceCategory().getBedspaceCatId(),
+						bedspace.getBedspaceCategory().getBedspaceCatName(),
+						bedspace.getBathroomType().getBedspaceBathroomTypeId()
+						//"")
+				);
+			}).collect(Collectors.toList());
+
+			@SuppressWarnings("rawtypes")
+			PaginationResponse pgResp = new PaginationResponse<>(dtos, pageResult.getNumber(), pageResult.getTotalPages(),
+					pageResult.getTotalElements(), pageResult.isFirst(), pageResult.isLast());
+
+			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, pgResp, null, null);
+	 }
+
 
 	private List<FloorDTO> getBuildlingFloors(Building b) {
 
@@ -2693,7 +2752,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, response, null, null);
 		} catch (Exception e) {
-			throw new BusinessException("Error fetching units", null);
+			throw new BusinessException("Error fetching units"+e.getMessage(), null);
 		}
 	}
 
@@ -2776,7 +2835,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Building successfully marked as deleted", null, null);
 		} catch (Exception e) {
-			throw new BusinessException("Failed to delete building:", e);
+			throw new BusinessException("Failed to delete building:"+e.getMessage(), e);
 		}
 	}
 
@@ -2823,7 +2882,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Unit successfully marked as deleted", null, null);
 		} catch (Exception e) {
 
-			throw new BusinessException("Failed to delete unit:", e);
+			throw new BusinessException("Failed to delete unit:"+e.getMessage(), e);
 		}
 	}
 
@@ -2868,7 +2927,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Tenant successfully marked as deleted", null, null);
 		} catch (Exception e) {
-			throw new BusinessException("Failed to delete tenant:", e);
+			throw new BusinessException("Failed to delete tenant:"+e.getMessage(), e);
 		}
 	}
 
@@ -3034,7 +3093,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 			tenantRepository.save(existingTenant);
 			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Tenant successfully updated", null, null);
 		} catch (Exception e) {
-			throw new BusinessException("FFailed to update tenant:", e);
+			throw new BusinessException("FFailed to update tenant:"+e.getMessage(), e);
 		}
 	}
 
@@ -3357,11 +3416,52 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, pgResp, null, null);
 	}
+	
+	
+	
+	
+	@Override
+    public ApiResponse<Object> getAllBedspaceCategories() {
+		
+		List<BedspaceCatMaster> bedspaceMas = bedspaceCatRepository.findAll();
+		if (bedspaceMas.isEmpty()) {
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
+		}
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, bedspaceMas, null, null);
+     
+    }
+
+    @Override
+    public ApiResponse<Object> getAllBedspaceBathroomTypes() {
+        
+        List<BedspaceBathroomTypeMaster> bathTypeMas = bedspaceBathroomTypeRepository.findAll();
+		if (bathTypeMas.isEmpty()) {
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
+		}
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, bathTypeMas, null, null);
+    }
+
+    @Override
+    public ApiResponse<Object>getAllBedspacePartitions() {
+    
+    
+      List<BedspacePartitionMaster> partitionMas = bedspacePartitionRepository.findAll();
+		if (partitionMas.isEmpty()) {
+			return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, null, null, null);
+		}
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, partitionMas, null, null);
+        
+    }
 
 	@Override
-	public ApiResponse<Object> createBedspace(Integer subscriberId, BedspaceRequest dto) {
+	public ApiResponse<Object> createBedspace(Integer subscriberId, BedspaceRequest dto)throws Exception {
 		BedspaceResponse bedspaceResp ;
-		try {
+		S3UploadObjectDto s3MainPicDto = null;
+		S3UploadObjectDto s3Pic2Dto = null;
+		S3UploadObjectDto s3Pic3Dto = null;
+		S3UploadObjectDto s3Pic4Dto = null;
+		S3UploadObjectDto s3Pic5Dto = null;
+		List<S3UploadObjectDto> s3UploadObjectDtoList = new ArrayList<>();
 			
 			Bedspace bedspace = new Bedspace();
 		    bedspace.setBedspaceName(dto.getBedspaceName());
@@ -3371,25 +3471,215 @@ public class SubscriberServiceImpl implements SubscriberService {
 		    bedspace.setHasWardrobe(dto.getHasWardrobe());
 		    bedspace.setHasKitchen(dto.getHasKitchen());
 		    bedspace.setFeatures(dto.getFeatures());
-	
+		    	
 		    // fetch and set references
-		    bedspace.setUnit(unitRepository.findById(dto.getUnitId()).orElseThrow());
-		    bedspace.setPartition(partitionRepository.findById(dto.getPartitionId()).orElseThrow());
-		    bedspace.setBedspaceCategory(bedspaceCatRepository.findById(dto.getBedspaceCatId()).orElseThrow());
-		    bedspace.setBathroomType(bedspaceBathroomTypeRepository.findById(dto.getBedspaceBathroomTypeId()).orElseThrow());
-		    bedspace.setSubscriber(subscriberRepository.findById(dto.getSubscriberId()).orElseThrow());
-	
-		    bedspaceRepository.save(bedspace);
 		    
-		    bedspaceResp = new BedspaceResponse();
-			BeanUtils.copyProperties(bedspace, bedspaceResp);
+		    Unit unit = unitRepository.findByUnitIdAndSubscriberId(dto.getUnitId(), subscriberId);  
+			if (unit==null) {
+				throw new BusinessException("Unit not found with id: " + dto.getUnitId(), null);
+			}
+			
+			bedspace.setSubscriber(unit.getSubscriber());	
+			bedspace.setUnit(unit);
+		    bedspace.setPartition(bedspacePartitionRepository.findById(dto.getPartitionId()).orElseThrow(() -> new BusinessException("Bedspace Partition not found", null)));
+		    bedspace.setBedspaceCategory(bedspaceCatRepository.findById(dto.getBedspaceCatId()).orElseThrow(() -> new BusinessException("Bedsapace category not found", null)));
+		    bedspace.setBathroomType(bedspaceBathroomTypeRepository.findById(dto.getBedspaceBathroomTypeId()).orElseThrow(() -> new BusinessException("Bedsapace bathroom not found", null)));
+		    
+		    
+		    if (!ObjectUtils.isEmpty(dto.getBsMainPic1())) {
+				String contentType = CommonUtil.validateAttachment(dto.getBsMainPic1());
+				String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+				s3MainPicDto = new S3UploadObjectDto(CommonConstants.BS_MAIN_PIC, contentType, fileExt,
+						Base64.getEncoder().encodeToString(dto.getBsMainPic1()), null);
+				s3UploadObjectDtoList.add(s3MainPicDto);
+			}
+			if (!ObjectUtils.isEmpty(dto.getBsPic2())) {
+				String contentType = CommonUtil.validateAttachment(dto.getBsPic2());
+				String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+				s3Pic2Dto = new S3UploadObjectDto(CommonConstants.BS_PIC2, contentType, fileExt,
+						Base64.getEncoder().encodeToString(dto.getBsPic2()), null);
+				s3UploadObjectDtoList.add(s3Pic2Dto);
+			}
+			if (!ObjectUtils.isEmpty(dto.getBsPic3())) {
+				String contentType = CommonUtil.validateAttachment(dto.getBsPic3());
+				String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+				s3Pic3Dto = new S3UploadObjectDto(CommonConstants.BS_PIC3, contentType, fileExt,
+						Base64.getEncoder().encodeToString(dto.getBsPic3()), null);
+				s3UploadObjectDtoList.add(s3Pic3Dto);
+			}
+			if (!ObjectUtils.isEmpty(dto.getBsPic4())) {
+				String contentType = CommonUtil.validateAttachment(dto.getBsPic4());
+				String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+				s3Pic4Dto = new S3UploadObjectDto(CommonConstants.BS_PIC4, contentType, fileExt,
+						Base64.getEncoder().encodeToString(dto.getBsPic4()), null);
+				s3UploadObjectDtoList.add(s3Pic4Dto);
+			}
+			if (!ObjectUtils.isEmpty(dto.getBsPic5())) {
+				String contentType = CommonUtil.validateAttachment(dto.getBsPic5());
+				String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+				s3Pic5Dto = new S3UploadObjectDto(CommonConstants.BS_PIC5, contentType, fileExt,
+						Base64.getEncoder().encodeToString(dto.getBsPic5()), null);
+				s3UploadObjectDtoList.add(s3Pic5Dto);
+			}
+		    
+		    try {
+		    	bedspaceRepository.save(bedspace);
+		    	
+		    	S3UploadDto s3UploadDto = new S3UploadDto();
+				s3UploadDto.setSubscriberId(subscriberId);
+				s3UploadDto.setBsId(bedspace.getBedspaceId());
+				s3UploadDto.setBuildingId(unit.getBuilding().getBuildingId());
+				s3UploadDto.setUnitId(unit.getUnitId());
+				s3UploadDto.setObjectType(S3UploadObjTypeEnum.BS.toString());
+				s3UploadDto.setS3UploadObjectDtoList(s3UploadObjectDtoList);
+
+				List<S3UploadObjectDto> s3UploadObjectDtoListRet = s3Service.upload(s3UploadDto);
+				for (S3UploadObjectDto s3UploadObjectDto : s3UploadObjectDtoListRet) {
+					if (s3UploadObjectDto != null && StringUtils.isNotBlank(s3UploadObjectDto.getS3FileName())) {
+						if (s3UploadObjectDto.getObjectName().equals(CommonConstants.BS_MAIN_PIC)) {
+							bedspace.setBsMainPic1Name(s3UploadObjectDto.getS3FileName());
+						}
+						if (s3UploadObjectDto.getObjectName().equals(CommonConstants.BS_PIC2)) {
+							bedspace.setBsPic2Name(s3UploadObjectDto.getS3FileName());
+						}
+						if (s3UploadObjectDto.getObjectName().equals(CommonConstants.BS_PIC3)) {
+							bedspace.setBsPic3Name(s3UploadObjectDto.getS3FileName());
+						}
+						if (s3UploadObjectDto.getObjectName().equals(CommonConstants.BS_PIC4)) {
+							bedspace.setBsPic4Name(s3UploadObjectDto.getS3FileName());
+						}
+						if (s3UploadObjectDto.getObjectName().equals(CommonConstants.BS_PIC5)) {
+							bedspace.setBsPic5Name(s3UploadObjectDto.getS3FileName());
+						}
+					}
+				}
+
+		    
+		    	bedspaceResp = new BedspaceResponse();
+		    	BeanUtils.copyProperties(bedspace, bedspaceResp);
 
 		} catch (Exception e) {
-			throw new BusinessException("addBedspace failed ", e);
+			throw new BusinessException("addBedspace failed :"+e.getMessage(), e);
 		}
 
 	return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, bedspaceResp, null, dto.getSubscriberId());
 		
 	}
 
+	@Override
+	public ApiResponse<?> updateBedspace(Integer subscriberId, BedspaceRequest request) {
+		List<S3UploadObjectDto> s3UploadObjectDtoList = new ArrayList<>();
+		S3UploadObjectDto s3BuildingLogoDto = null;
+		S3UploadObjectDto s3MainPicDto = null;
+		S3UploadObjectDto s3Pic2Dto = null;
+		S3UploadObjectDto s3Pic3Dto = null;
+		S3UploadObjectDto s3Pic4Dto = null;
+		S3UploadObjectDto s3Pic5Dto = null;
+		try {
+			Bedspace existingBs = bedspaceRepository.findByIdAndSubscriberId(request.getBedspaceId(),subscriberId)
+					.orElseThrow(() -> new BusinessException("Bedspace not found",null));
+
+			existingBs.setBedspaceName(request.getBedspaceName());
+			existingBs.setSecurityDeposit(request.getSecurityDeposit());
+			existingBs.setRentMonth(request.getRentMonth());
+			existingBs.setRentDay(request.getRentDay());
+			existingBs.setHasWardrobe(request.getHasWardrobe());
+			existingBs.setHasKitchen(request.getHasKitchen());
+			existingBs.setFeatures(request.getFeatures());
+			
+			Unit unit = unitRepository.findByUnitIdAndSubscriberId(request.getUnitId(), subscriberId);  
+			if (unit==null) {
+				throw new BusinessException("Unit not found with id: " + request.getUnitId(), null);
+			}
+				
+			existingBs.setSubscriber(unit.getSubscriber());	
+			existingBs.setUnit(unit);
+			existingBs.setPartition(bedspacePartitionRepository.findById(request.getPartitionId()).orElseThrow(() -> new BusinessException("Bedspace Partition not found", null)));
+			existingBs.setBedspaceCategory(bedspaceCatRepository.findById(request.getBedspaceCatId()).orElseThrow(() -> new BusinessException("Bedsapace category not found", null)));
+			existingBs.setBathroomType(bedspaceBathroomTypeRepository.findById(request.getBedspaceBathroomTypeId()).orElseThrow(() -> new BusinessException("Bedsapace bathroom not found", null)));
+			
+			 if (!ObjectUtils.isEmpty(request.getBsMainPic1())) {
+					String contentType = CommonUtil.validateAttachment(request.getBsMainPic1());
+					String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+					s3MainPicDto = new S3UploadObjectDto(CommonConstants.BS_MAIN_PIC, contentType, fileExt,
+							Base64.getEncoder().encodeToString(request.getBsMainPic1()), null);
+					s3UploadObjectDtoList.add(s3MainPicDto);
+				}
+				if (!ObjectUtils.isEmpty(request.getBsPic2())) {
+					String contentType = CommonUtil.validateAttachment(request.getBsPic2());
+					String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+					s3Pic2Dto = new S3UploadObjectDto(CommonConstants.BS_PIC2, contentType, fileExt,
+							Base64.getEncoder().encodeToString(request.getBsPic2()), null);
+					s3UploadObjectDtoList.add(s3Pic2Dto);
+				}
+				if (!ObjectUtils.isEmpty(request.getBsPic3())) {
+					String contentType = CommonUtil.validateAttachment(request.getBsPic3());
+					String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+					s3Pic3Dto = new S3UploadObjectDto(CommonConstants.BS_PIC3, contentType, fileExt,
+							Base64.getEncoder().encodeToString(request.getBsPic3()), null);
+					s3UploadObjectDtoList.add(s3Pic3Dto);
+				}
+				if (!ObjectUtils.isEmpty(request.getBsPic4())) {
+					String contentType = CommonUtil.validateAttachment(request.getBsPic4());
+					String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+					s3Pic4Dto = new S3UploadObjectDto(CommonConstants.BS_PIC4, contentType, fileExt,
+							Base64.getEncoder().encodeToString(request.getBsPic4()), null);
+					s3UploadObjectDtoList.add(s3Pic4Dto);
+				}
+				if (!ObjectUtils.isEmpty(request.getBsPic5())) {
+					String contentType = CommonUtil.validateAttachment(request.getBsPic5());
+					String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+					s3Pic5Dto = new S3UploadObjectDto(CommonConstants.BS_PIC5, contentType, fileExt,
+							Base64.getEncoder().encodeToString(request.getBsPic5()), null);
+					s3UploadObjectDtoList.add(s3Pic5Dto);
+				}
+			
+			bedspaceRepository.save(existingBs);
+			if (!s3UploadObjectDtoList.isEmpty()) {
+				S3UploadDto s3UploadDto = new S3UploadDto();
+				s3UploadDto.setSubscriberId(request.getSubscriberId());
+				s3UploadDto.setBuildingId(existingBs.getUnit().getBuilding().getBuildingId());
+				s3UploadDto.setUnitId(existingBs.getUnit().getUnitId());
+				s3UploadDto.setBsId(existingBs.getBedspaceId());
+				s3UploadDto.setObjectType(S3UploadObjTypeEnum.BS.toString());
+				s3UploadDto.setS3UploadObjectDtoList(s3UploadObjectDtoList);
+
+				List<S3UploadObjectDto> s3UploadObjectDtoListRet = s3Service.upload(s3UploadDto);
+				for (S3UploadObjectDto s3UploadObjectDto : s3UploadObjectDtoListRet) {
+					if (s3UploadObjectDto != null && StringUtils.isNotBlank(s3UploadObjectDto.getS3FileName())) {
+						if (s3UploadObjectDto.getObjectName().equals(CommonConstants.BS_MAIN_PIC)) {
+							existingBs.setBsMainPic1Name(s3UploadObjectDto.getS3FileName());;
+						}
+						if (s3UploadObjectDto.getObjectName().equals(CommonConstants.BS_PIC2)) {
+							existingBs.setBsPic2Name(s3UploadObjectDto.getS3FileName());
+						}
+						if (s3UploadObjectDto.getObjectName().equals(CommonConstants.BS_PIC3)) {
+							existingBs.setBsPic3Name(s3UploadObjectDto.getS3FileName());
+						}
+						if (s3UploadObjectDto.getObjectName().equals(CommonConstants.BS_PIC4)) {
+							existingBs.setBsPic4Name(s3UploadObjectDto.getS3FileName());
+						}
+						if (s3UploadObjectDto.getObjectName().equals(CommonConstants.BS_PIC5)) {
+							existingBs.setBsPic5Name(s3UploadObjectDto.getS3FileName());
+						}
+					}
+				}
+				bedspaceRepository.save(existingBs);
+			}
+
+			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Bedspace successfully updated", null, null);
+		} catch (Exception e) {
+			throw new BusinessException("Failed to update unit:"+e.getMessage(), e);
+		}
+	}
+	
+//	
+//	@Transactional(readOnly = true)
+//	public List<Bedspace> searchBedspaces(BedspaceSearchCriteria criteria) {
+//		 List<Bedspace> result = bedspaceRepository.findAll(BedspaceSpecifications.matchesCriteria(criteria));
+//	    //return bedspaceRepository.findAll(BedspaceSpecifications.matchesCriteria(criteria));
+//		 return null;
+//	}
+	
+	
 }

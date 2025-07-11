@@ -8,7 +8,7 @@ import lombok.Setter;
 public class BedspaceResponse {
 
 
-	private Integer bedspaceId;
+	private Long bedspaceId;
 
 
 	

@@ -6,6 +6,9 @@ import lombok.Setter;
 @Setter
 @Getter
 public class BedspaceRequest {
+	
+	private Long bedspaceId;
+	
     private String bedspaceName;
 
     private Integer unitId;
@@ -29,4 +32,10 @@ public class BedspaceRequest {
     private Boolean hasKitchen;
 
     private String features;
+    
+    private byte[] bsMainPic1;
+	private byte[] bsPic2;
+	private byte[] bsPic3;
+	private byte[] bsPic4;
+	private byte[] bsPic5;
 }

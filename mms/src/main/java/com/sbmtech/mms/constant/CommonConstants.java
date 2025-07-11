@@ -65,6 +65,14 @@ public class CommonConstants {
 	public static final String UNIT_PIC3="unitpic3";
 	public static final String UNIT_PIC4="unitpic4";
 	public static final String UNIT_PIC5="unitpic5";
+	
+	public static final String BS_MAIN_PIC="bsmain";
+	public static final String BS_PIC2="bspic2";
+	public static final String BS_PIC3="bspic3";
+	public static final String BS_PIC4="bspic4";
+	public static final String BS_PIC5="bspic5";
+	
+	
 	public static final String BUILD_MAIN_PIC="buildingmain";
 	public static final String TRADE_LIC_PIC="tradelicense";
 	public static final String COMPANY_LOGO_PIC="companylogo";

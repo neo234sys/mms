@@ -18,9 +18,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.sbmtech.mms.constant.CommonConstants;
 import com.sbmtech.mms.dto.S3DownloadDto;
 import com.sbmtech.mms.dto.S3UploadDto;
 import com.sbmtech.mms.dto.S3UploadObjectDto;
+import com.sbmtech.mms.models.S3UploadObjTypeEnum;
 import com.sbmtech.mms.service.S3Service;
 
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -147,7 +149,7 @@ public class S3ServiceImpl implements S3Service {
 
 		List<S3UploadObjectDto> s3UploadObjectDtolist = s3UploadDto.getS3UploadObjectDtoList();
 		for (S3UploadObjectDto s3UploadObjectDto : s3UploadObjectDtolist) {
-
+			String fileName ="S_" + s3UploadDto.getSubscriberId() + "#" + UUID.randomUUID();
 			try {
 				if (s3UploadObjectDto != null && StringUtils.isNotBlank(s3UploadObjectDto.getObjectBase64())) {
 					String base64Image = s3UploadObjectDto.getObjectBase64();
@@ -156,21 +158,23 @@ public class S3ServiceImpl implements S3Service {
 					}
 					byte[] imageBytes = Base64.getDecoder().decode(base64Image);
 					
-					String fileName = "S_" + s3UploadDto.getSubscriberId() + "#" + UUID.randomUUID() + "#B_"
-							+ s3UploadDto.getBuildingId() + "#U_" + s3UploadDto.getUnitId() + "."
-							+ s3UploadObjectDto.getFileExt();
+					
+					if(s3UploadDto.getObjectType().equals(S3UploadObjTypeEnum.BUILDING.toString())) {
+						 fileName = fileName + "#B_"+ s3UploadDto.getBuildingId()  + "." + s3UploadObjectDto.getFileExt();
+					}else if(s3UploadDto.getObjectType().equals(S3UploadObjTypeEnum.UNIT.toString())) {
+						 fileName = fileName + "#B_"+ s3UploadDto.getBuildingId()  + "#U_" + s3UploadDto.getUnitId() + "."+ s3UploadObjectDto.getFileExt();
+					}else if(s3UploadDto.getObjectType().equals(S3UploadObjTypeEnum.BS.toString())) {
+						 fileName = fileName + "#B_"+ s3UploadDto.getBuildingId()  + "#U_" + s3UploadDto.getUnitId() + "#BS_" + s3UploadDto.getBsId()+  "."+ s3UploadObjectDto.getFileExt();
+					}
+					
 					PutObjectRequest putRequest = PutObjectRequest.builder().bucket(bucketName).key(fileName)
 							.contentType(s3UploadObjectDto.getContentType()).build();
 					s3Client.putObject(putRequest, RequestBody.fromBytes(imageBytes));
 					s3UploadObjectDto.setS3FileName(fileName);
-					logger.info("S3 upload object Success for " + s3UploadDto.getObjectType() + ", unitId="
-							+ s3UploadDto.getUnitId() + ", buildingId=" + s3UploadDto.getBuildingId()
-							+ ", subscriberId=" + s3UploadDto.getSubscriberId());
+					logger.info("S3 upload object Success for " + s3UploadDto.getObjectType() +"=>"+ fileName);
 				}
 			} catch (Exception ex) {
-				logger.error("S3 Failed to upload object for " + s3UploadDto.getObjectType() + ", unitId="
-						+ s3UploadDto.getUnitId() + ", buildingId=" + s3UploadDto.getBuildingId() + ", subscriberId="
-						+ s3UploadDto.getSubscriberId());
+				logger.error("S3 Failed to upload object for " + s3UploadDto.getObjectType() +"=>"+ fileName);
 			}
 		}
 		List<S3UploadObjectDto> s3UploadObjectDtolist2 =new ArrayList<>(s3UploadObjectDtolist);

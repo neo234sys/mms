@@ -2,6 +2,7 @@ package com.sbmtech.mms.models;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -12,7 +13,6 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -64,4 +64,19 @@ public class Bedspace implements Serializable{
     private Boolean hasKitchen;
 
     private String features;
+    
+    @Column(name = "bs_main_pic1_name")
+	private String bsMainPic1Name;
+
+	@Column(name = "bs_pic2_name")
+	private String bsPic2Name;
+
+	@Column(name = "bs_pic3_name")
+	private String bsPic3Name;
+
+	@Column(name = "bs_pic4_name")
+	private String bsPic4Name;
+
+	@Column(name = "bs_pic5_name")
+	private String bsPic5Name;
 }

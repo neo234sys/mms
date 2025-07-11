@@ -7,6 +7,7 @@ import javax.validation.Valid;
 
 import org.springframework.security.core.Authentication;
 
+import com.sbmtech.mms.dto.BedspaceSearchCriteria;
 import com.sbmtech.mms.models.ChannelMaster;
 import com.sbmtech.mms.models.Countries;
 import com.sbmtech.mms.models.Subscriptions;
@@ -130,6 +131,15 @@ public interface SubscriberService {
 
 	public ApiResponse<Object> getAllTenants(Integer subscriberId, TenantSearchRequest request);
 
-	public ApiResponse<Object> createBedspace(Integer subscriberId, BedspaceRequest request);
+	public ApiResponse<Object> createBedspace(Integer subscriberId, BedspaceRequest request)throws Exception;
+	
+	
+	public ApiResponse<Object>  getAllBedspaceCategories();
+	public ApiResponse<Object>  getAllBedspaceBathroomTypes();
+	public ApiResponse<Object>  getAllBedspacePartitions();
+	
+	public ApiResponse<?> updateBedspace(Integer subscriberId, BedspaceRequest request);
+
+	public  ApiResponse<Object> searchBedspaces(BedspaceSearchCriteria criteria);
 
 }

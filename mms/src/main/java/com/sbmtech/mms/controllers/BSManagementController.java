@@ -1,5 +1,6 @@
 package com.sbmtech.mms.controllers;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.validation.Valid;
@@ -18,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sbmtech.mms.constant.CommonConstants;
+import com.sbmtech.mms.dto.BedspaceSearchCriteria;
+import com.sbmtech.mms.models.Bedspace;
 import com.sbmtech.mms.models.ProductConfig;
 import com.sbmtech.mms.payload.request.AdditionalDetailsRequest;
 import com.sbmtech.mms.payload.request.AreaRequest;
@@ -392,12 +395,56 @@ public class BSManagementController {
 		return ResponseEntity.ok(subscriberService.getAllTenants(subscriberId, request));
 	}
 	
-	@PostMapping
-    public ResponseEntity<?> saveBedspace(@CurrentSecurityContext(expression = "authentication") Authentication auth,
+	@GetMapping("/bsCategories")
+	public  ResponseEntity<?> getAllCategories() {
+		return ResponseEntity.ok(subscriberService.getAllBedspaceCategories());
+	}
+
+	@GetMapping("/bsBathtypes")
+	public  ResponseEntity<?> getAllBathroomTypes() {
+	    return ResponseEntity.ok(subscriberService.getAllBedspaceBathroomTypes());
+	}
+
+	@GetMapping("/bsPartitions")
+	public  ResponseEntity<?> getAllPartitions() {
+	    return ResponseEntity.ok(subscriberService.getAllBedspacePartitions());
+	}
+	
+	@PostMapping("/createBedspace")
+    public ResponseEntity<?> createBedspace(@CurrentSecurityContext(expression = "authentication") Authentication auth,
     		@RequestBody BedspaceRequest request)throws Exception {
 		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
         return ResponseEntity.ok(subscriberService.createBedspace(subscriberId, request));
        
     }
+	
+	@PostMapping("/updateBedspace")
+	public ResponseEntity<?> updateBedspace(@CurrentSecurityContext(expression = "authentication") Authentication auth,
+			@Valid @RequestBody BedspaceRequest request) throws Exception {
+		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
+		request.setSubscriberId(subscriberId);
+		return ResponseEntity.ok(subscriberService.updateBedspace(subscriberId, request));
+	}
+	/*
+	@PostMapping("/search")
+	public ResponseEntity<?> searchBedspaces(@RequestBody BedspaceSearchCriteria criteria) {
+		//ResponseEntity<List<BedspaceDTO>>
+		List<Bedspace> bedspaces = subscriberService.searchBedspaces(criteria);
+	    List<BedspaceDTO> result = bedspaces.stream()
+	                                            .map(this::mapToDTO)
+	                                            .collect(Collectors.toList());
+	    return ResponseEntity.ok(result);
+	}
+	*/
+	@PostMapping("/searchBedSpaces")
+	public ResponseEntity<?> searchBedspaces(@CurrentSecurityContext(expression = "authentication") Authentication auth,
+			@RequestBody BedspaceSearchCriteria criteria)throws Exception {
+		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
+		criteria.setSubscriberId(subscriberId);
+		//List<Bedspace> bedspaces =subscriberService.searchBedspaces(criteria);
+	    return ResponseEntity.ok(subscriberService.searchBedspaces(criteria));
+	    
+	  //  return ResponseEntity.ok(result);
+	}
 	
 }
