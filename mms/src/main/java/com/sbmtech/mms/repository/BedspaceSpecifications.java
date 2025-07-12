@@ -40,7 +40,7 @@ public class BedspaceSpecifications {
             // 4. City by name
             if (criteria.getCity() != null && !criteria.getCity().isBlank()) {
                 predicates.add(cb.equal(
-                        cb.lower(root.get("unit").get("building").get("area").get("city").get("cityName")),
+                        cb.lower(root.get("unit").get("building").get("area").get("city").get("name")),
                         criteria.getCity().toLowerCase()
                 ));
             }
@@ -120,24 +120,71 @@ public class BedspaceSpecifications {
                         criteria.getMaxRentDay()
                 ));
             }
-
+/*
             // 13. Keyword giant OR filter
             if (criteria.getKeyword() != null && !criteria.getKeyword().isBlank()) {
                 String kw = "%" + criteria.getKeyword().toLowerCase() + "%";
 
                 List<Predicate> keywordPredicates = new ArrayList<>();
                 keywordPredicates.add(cb.like(cb.lower(root.get("unit").get("building").get("area").get("areaName")), kw));
-                keywordPredicates.add(cb.like(cb.lower(root.get("unit").get("building").get("area").get("city").get("cityName")), kw));
+                keywordPredicates.add(cb.like(cb.lower(root.get("unit").get("building").get("area").get("city").get("name")), kw));
                 keywordPredicates.add(cb.like(cb.lower(root.get("partition").get("bedspacePartitionName")), kw));
                 keywordPredicates.add(cb.like(cb.lower(root.get("bedspaceCategory").get("bedspaceCatName")), kw));
                 keywordPredicates.add(cb.like(cb.lower(root.get("bathroomType").get("bedspaceBathroomTypeName")), kw));
                 keywordPredicates.add(cb.like(cb.lower(root.get("features")), kw));
-                keywordPredicates.add(cb.like(cb.lower(cb.function("CAST", String.class, root.get("hasKitchen"))), kw));
-                keywordPredicates.add(cb.like(cb.lower(cb.function("CAST", String.class, root.get("hasWardrobe"))), kw));
+                //keywordPredicates.add(cb.like(cb.lower(cb.function("CAST", B.class, root.get("hasKitchen"))), kw));
+               // keywordPredicates.add(cb.like(cb.lower(cb.function("CAST", String.class, root.get("hasWardrobe"))), kw));
+               // keywordPredicates.add(cb.equal(root.get("hasKitchen"), kwAsInt));
+                //keywordPredicates.add(cb.equal(root.get("hasWardrobe"), kwAsInt))
 
                 predicates.add(cb.or(keywordPredicates.toArray(new Predicate[0])));
             }
+*/
+            // 13️⃣ Complex KEYWORD search with multiple values (comma separated)
+            if (criteria.getKeyword() != null && !criteria.getKeyword().isBlank()) {
+                String[] tokens = criteria.getKeyword().split(",");
+                List<Predicate> overallKeywordPredicates = new ArrayList<>();
 
+                for (String token : tokens) {
+                    String trimmed = token.trim();
+                    if (trimmed.isEmpty()) continue;
+
+                    String kw = "%" + trimmed.toLowerCase() + "%";
+
+                    List<Predicate> singleKeywordPredicates = new ArrayList<>();
+
+                    singleKeywordPredicates.add(cb.like(cb.lower(root.get("unit").get("building").get("area").get("areaName")), kw));
+                    singleKeywordPredicates.add(cb.like(cb.lower(root.get("unit").get("building").get("area").get("city").get("name")), kw));
+                    singleKeywordPredicates.add(cb.like(cb.lower(root.get("partition").get("bedspacePartitionName")), kw));
+                    singleKeywordPredicates.add(cb.like(cb.lower(root.get("bedspaceCategory").get("bedspaceCatName")), kw));
+                    singleKeywordPredicates.add(cb.like(cb.lower(root.get("bathroomType").get("bedspaceBathroomTypeName")), kw));
+                    singleKeywordPredicates.add(cb.like(cb.lower(root.get("features")), kw));
+
+                    // Try parsing to Integer for 0/1 matches on kitchen/wardrobe
+                    try {
+                        Integer kwAsInt = Integer.parseInt(trimmed);
+                        singleKeywordPredicates.add(cb.equal(root.get("hasKitchen"), kwAsInt));
+                        singleKeywordPredicates.add(cb.equal(root.get("hasWardrobe"), kwAsInt));
+                    } catch (NumberFormatException ignored) {
+                        // Not numeric, skip
+                    }
+
+                    // OR for this single keyword
+                    overallKeywordPredicates.add(cb.or(singleKeywordPredicates.toArray(new Predicate[0])));
+                }
+
+                // OR of all keyword tokens
+                if (!overallKeywordPredicates.isEmpty()) {
+                    predicates.add(cb.or(overallKeywordPredicates.toArray(new Predicate[0])));
+                }
+            }
+            
+            if (criteria.getStatus() != null && !criteria.getStatus().isBlank()) {
+                predicates.add(cb.equal(
+                    cb.lower(root.get("status")),
+                    criteria.getStatus().toLowerCase()
+                ));
+            }
             return cb.and(predicates.toArray(new Predicate[0]));
         };
     }

@@ -16,8 +16,8 @@ public class BedspaceDTO {
     private Double securityDeposit;
     private Double rentMonth;
     private Double rentDay;
-    private Boolean hasWardrobe;
-    private Boolean hasKitchen;
+    //private Boolean hasWardrobe;
+   // private Boolean hasKitchen;
     private Integer unitId;
     
     private Integer partitionId;
@@ -27,6 +27,7 @@ public class BedspaceDTO {
     private String bedspaceCategoryName;
 
     private Integer bedspaceBathroomTypeId;
-    //private String bedspaceBathroomTypeName;
+    private String bedspaceBathroomTypeName;
+    private String status;
 
 }

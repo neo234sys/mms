@@ -23,6 +23,7 @@ public class BedspaceSearchCriteria {
     private Integer bedspaceBathroomTypeId;
     private String features;
     private String keyword;
+    private String status;
 
     // ✅ NEW RENT FILTERS
     private Double minRentMonth;
@@ -33,4 +34,9 @@ public class BedspaceSearchCriteria {
     
    // private Integer page = 0;
    // private Integer size = 10;
+    
+    public String getStatus() {
+    	return this.status.toLowerCase();
+    }
+    
 }

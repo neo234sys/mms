@@ -79,4 +79,7 @@ public class Bedspace implements Serializable{
 
 	@Column(name = "bs_pic5_name")
 	private String bsPic5Name;
+	
+	@Column(name = "status")
+	private String status;
 }

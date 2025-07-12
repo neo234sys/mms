@@ -2472,15 +2472,16 @@ public class SubscriberServiceImpl implements SubscriberService {
 	 public ApiResponse<Object> searchBedspaces(BedspaceSearchCriteria criteria) {
 		 //Page<BedspaceDTO>
 		 PaginationRequest paginationRequest = criteria.getPaginationRequest();
+		 paginationRequest.setSortBy("bedspaceId");
 			Sort sort = paginationRequest.getSortDirection().equalsIgnoreCase("desc")
 					? Sort.by(paginationRequest.getSortBy()).descending()
 					: Sort.by(paginationRequest.getSortBy()).ascending();
 			PageRequest pageable = PageRequest.of(paginationRequest.getPage(), paginationRequest.getSize(), sort);
 			
-		// PageRequest pageable = PageRequest.of(paginationRequest.getPage(),paginationRequest.getSize());
+		
 		 
 		 Page<Bedspace> pageResult =   bedspaceRepository.findAll(BedspaceSpecifications.matchesCriteria(criteria),pageable);
-	                //.map(bedspaceMapper::toDto);
+	                
 		 
 		 List<BedspaceDTO> dtos = pageResult.getContent().stream().map(bedspace -> {
 			 
@@ -2496,15 +2497,16 @@ public class SubscriberServiceImpl implements SubscriberService {
 						bedspace.getSecurityDeposit(),
 						bedspace.getRentMonth(),
 						bedspace.getRentDay(),
-						bedspace.getHasWardrobe(),
-						bedspace.getHasKitchen(),
+						//bedspace.getHasWardrobe(),
+						//bedspace.getHasKitchen(),
 						bedspace.getUnit().getUnitId(),
 						bedspace.getPartition().getBedspacePartitionId(),
 						bedspace.getPartition().getBedspacePartitionName(),
 						bedspace.getBedspaceCategory().getBedspaceCatId(),
 						bedspace.getBedspaceCategory().getBedspaceCatName(),
-						bedspace.getBathroomType().getBedspaceBathroomTypeId()
-						//"")
+						bedspace.getBathroomType().getBedspaceBathroomTypeId(),
+						bedspace.getBathroomType().getBedspaceBathroomTypeName(),
+						bedspace.getStatus()
 				);
 			}).collect(Collectors.toList());
 
