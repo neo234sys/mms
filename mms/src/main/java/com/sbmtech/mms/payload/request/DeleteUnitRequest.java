@@ -1,8 +1,14 @@
 package com.sbmtech.mms.payload.request;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Setter
+@Getter
 public class DeleteUnitRequest {
 
 	private Integer unitId;
+	private Integer subscriberId;
 
 	public Integer getUnitId() {
 		return unitId;

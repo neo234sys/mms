@@ -11,6 +11,11 @@ import com.sbmtech.mms.validator.ValidCountryId;
 import com.sbmtech.mms.validator.ValidDateDDMMYYYY;
 import com.sbmtech.mms.validator.ValidPhoneNo;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Setter
+@Getter
 public class CreateUserRequest {
 	
 
@@ -72,150 +77,6 @@ public class CreateUserRequest {
 	private byte[] passportCopy;
 	private byte[] photo;
 
-	public String getEmail() {
-		return email;
-	}
 
-	public void setEmail(String email) {
-		this.email = email;
-	}
-
-	public String getMobileNo() {
-		return mobileNo;
-	}
-
-	public void setMobileNo(String mobileNo) {
-		this.mobileNo = mobileNo;
-	}
-
-	public String getPassword() {
-		return password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
-	}
-
-	public String getEmiratesId() {
-		emiratesId = emiratesId.replace("-", "");
-
-		return emiratesId;
-	}
-
-	public void setEmiratesId(String emiratesId) {
-		this.emiratesId = emiratesId;
-	}
-
-	public String getDob() {
-		return dob;
-	}
-
-	public void setDob(String dob) {
-		this.dob = dob;
-	}
-
-	public Integer getGender() {
-		return gender;
-	}
-
-	public void setGender(Integer gender) {
-		this.gender = gender;
-	}
-
-	public String getAddress() {
-		return address;
-	}
-
-	public void setAddress(String address) {
-		this.address = address;
-	}
-
-	public byte[] getEidaCopy() {
-		return eidaCopy;
-	}
-
-	public void setEidaCopy(byte[] eidaCopy) {
-		this.eidaCopy = eidaCopy;
-	}
-
-	public Integer getNationalityId() {
-		return nationalityId;
-	}
-
-	public void setNationalityId(Integer nationalityId) {
-		this.nationalityId = nationalityId;
-	}
-
-	public Integer getSubscriberId() {
-		return subscriberId;
-	}
-
-	public void setSubscriberId(Integer subscriberId) {
-		this.subscriberId = subscriberId;
-	}
-
-	public String getFirstName() {
-		return firstName;
-	}
-
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
-	}
-
-	public String getLastName() {
-		return lastName;
-	}
-
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
-	}
-
-	public String getPhoneNumber() {
-		return phoneNumber;
-	}
-
-	public void setPhoneNumber(String phoneNumber) {
-		this.phoneNumber = phoneNumber;
-	}
-
-	public String getEidaExpiryDate() {
-		return eidaExpiryDate;
-	}
-
-	public void setEidaExpiryDate(String eidaExpiryDate) {
-		this.eidaExpiryDate = eidaExpiryDate;
-	}
-
-	public String getPassportNo() {
-		return passportNo;
-	}
-
-	public void setPassportNo(String passportNo) {
-		this.passportNo = passportNo;
-	}
-
-	public String getPassportExpiryDate() {
-		return passportExpiryDate;
-	}
-
-	public void setPassportExpiryDate(String passportExpiryDate) {
-		this.passportExpiryDate = passportExpiryDate;
-	}
-
-	public byte[] getPassportCopy() {
-		return passportCopy;
-	}
-
-	public void setPassportCopy(byte[] passportCopy) {
-		this.passportCopy = passportCopy;
-	}
-
-	public byte[] getPhoto() {
-		return photo;
-	}
-
-	public void setPhoto(byte[] photo) {
-		this.photo = photo;
-	}
 
 }

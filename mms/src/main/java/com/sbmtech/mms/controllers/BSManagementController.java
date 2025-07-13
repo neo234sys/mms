@@ -343,12 +343,16 @@ public class BSManagementController {
 	@PostMapping("/deleteBuilding")
 	public ResponseEntity<?> deleteBuilding(@CurrentSecurityContext(expression = "authentication") Authentication auth,
 			@Valid @RequestBody DeleteBuildingRequest request) throws Exception {
+		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
+		request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.deleteBuilding(request));
 	}
 
 	@PostMapping("/deleteUnit")
 	public ResponseEntity<?> deleteUnit(@CurrentSecurityContext(expression = "authentication") Authentication auth,
 			@Valid @RequestBody DeleteUnitRequest request) throws Exception {
+		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
+		request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.deleteUnit(request));
 	}
 

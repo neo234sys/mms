@@ -83,4 +83,7 @@ public class Bedspace implements Serializable{
 	
 	@Column(name = "status")
 	private String status;
+	
+	@Column(name = "is_deleted", nullable = false)
+	private Boolean isDeleted = false;
 }

@@ -115,6 +115,7 @@ import com.sbmtech.mms.payload.request.BuildingRequest;
 import com.sbmtech.mms.payload.request.BuildingSearchRequest;
 import com.sbmtech.mms.payload.request.CommunityRequest;
 import com.sbmtech.mms.payload.request.CreateUserRequest;
+import com.sbmtech.mms.payload.request.DeleteBedspaceRequest;
 import com.sbmtech.mms.payload.request.DeleteBuildingRequest;
 import com.sbmtech.mms.payload.request.DeleteUnitRequest;
 import com.sbmtech.mms.payload.request.DepartmentRequest;
@@ -2875,9 +2876,13 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	public ApiResponse<?> deleteBuilding(DeleteBuildingRequest request) {
 		try {
-			Building building = buildingRepository.findById(request.getBuildingId()).orElseThrow(
-					() -> new ResourceNotFoundException("Building not found with id: " + request.getBuildingId()));
+			Building building = buildingRepository.findByBuildingIdAndSubscriberId(request.getBuildingId(),request.getSubscriberId());
+			if (building==null) {
+				throw new BusinessException("Building not found with id: " + request.getBuildingId(), null);
+			}
 
+			
+			
 			if (building.getIsDeleted()) {
 				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Building is already marked as deleted.", null,
 						null);
@@ -2916,8 +2921,10 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 	public ApiResponse<?> deleteUnit(DeleteUnitRequest request) {
 		try {
-			Unit unit = unitRepository.findById(request.getUnitId())
-					.orElseThrow(() -> new ResourceNotFoundException("Unit not found with id: " + request.getUnitId()));
+			Unit unit = unitRepository.findByUnitIdAndSubscriberId(request.getUnitId(),request.getSubscriberId());
+			if (unit==null) {
+				throw new BusinessException("Unit not found with id: " + request.getUnitId(), null);
+			}
 
 			if (unit.getIsDeleted()) {
 				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Unit is already marked as deleted.", null, null);
@@ -2959,6 +2966,58 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 			throw new BusinessException("Failed to delete unit:"+e.getMessage(), e);
 		}
+	}
+	
+	public ApiResponse<?> deleteBedspace(DeleteBedspaceRequest request) {
+		try {
+			Optional<Bedspace> bedspaceOp = bedspaceRepository.findByIdAndSubscriberId(request.getBedspaceId(),request.getSubscriberId());
+			if (!bedspaceOp.isPresent()) {
+				throw new BusinessException("Bedspace not found with id: " + request.getBedspaceId(), null);
+			}
+			
+			Bedspace bedspace=bedspaceOp.get();
+
+			if (bedspace.getIsDeleted()) {
+				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC, "Bedspace is already marked as deleted.", null, null);
+			}
+/*
+			List<TenantUnit> tenantUnits = tenantUnitRepository.findByUnitUnitId(request.getUnitId());
+			if (!tenantUnits.isEmpty()) {
+				List<Integer> tenantUnitIds = tenantUnits.stream().map(TenantUnit::getTenantUnitId)
+						.collect(Collectors.toList());
+				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
+						"Cannot delete unit because it has associated tenant units. Tenant Unit ids=" + tenantUnitIds,
+						null, null);
+			}
+
+			List<UnitKeys> unitKeys = unitKeysRepository.findByUnitUnitId(request.getUnitId());
+			if (!unitKeys.isEmpty()) {
+				List<Integer> unitKeysIds = unitKeys.stream().map(UnitKeys::getUnitKeysId).collect(Collectors.toList());
+				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
+						"Cannot delete unit because it has associated unit keys. Unit Keys ids=" + unitKeysIds, null,
+						null);
+			}
+
+			List<UnitReserveDetails> unitReserveDetails = unitReserveDetailsRepository
+					.findByUnitUnitId(request.getUnitId());
+			if (!unitReserveDetails.isEmpty()) {
+				List<Integer> unitReserveIds = unitReserveDetails.stream().map(UnitReserveDetails::getUnitReserveId)
+						.collect(Collectors.toList());
+				return new ApiResponse<>(FAILURE_CODE, FAILURE_DESC,
+						"Cannot delete unit because it has associated unit reserve details. Unit Reserve ids="
+								+ unitReserveIds,
+						null, null);
+			}
+
+			unit.setIsDeleted(true);
+			unitRepository.save(unit);
+*/
+			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, "Bedspace successfully marked as deleted", null, null);
+		} catch (Exception e) {
+
+			throw new BusinessException("Failed to delete bedspace:"+e.getMessage(), e);
+		}
+		
 	}
 
 	public ApiResponse<?> deleteTenant(TenantIdRequest request) {

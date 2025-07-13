@@ -1,8 +1,14 @@
 package com.sbmtech.mms.payload.request;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Setter
+@Getter
 public class DeleteBuildingRequest {
 
 	private Integer buildingId;
+	private Integer subscriberId;
 
 	public Integer getBuildingId() {
 		return buildingId;
