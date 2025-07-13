@@ -1,5 +1,6 @@
 package com.sbmtech.mms.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,4 +17,11 @@ public interface BedspaceRepository extends JpaRepository<Bedspace, Long>, JpaSp
 	@Query("SELECT b FROM Bedspace b WHERE b.bedspaceId = :bedspaceId AND b.subscriber.subscriberId = :subscriberId")
 	Optional<Bedspace> findByIdAndSubscriberId(@Param("bedspaceId") Long bedspaceId,
 	                                           @Param("subscriberId") Integer subscriberId);
+	
+	
+	 // 1️⃣ Get all bedspaces for single unit
+    List<Bedspace> findByUnit_UnitId(Integer unitId);
+
+    // 2️⃣ Get all bedspaces for multiple units
+    List<Bedspace> findByUnit_UnitIdIn(List<Integer> unitIds);
 }

@@ -447,4 +447,11 @@ public class BSManagementController {
 	  //  return ResponseEntity.ok(result);
 	}
 	
+	@GetMapping("/getPaymentPurpose")
+	public ResponseEntity<?> getPaymentPurpose(
+			@CurrentSecurityContext(expression = "authentication") Authentication auth) throws Exception {
+
+		return ResponseEntity.ok(paymentService.getAllPaymentPurposes());
+	}
+	
 }

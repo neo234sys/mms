@@ -2,6 +2,11 @@ package com.sbmtech.mms.dto;
 
 import java.util.List;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Setter
+@Getter
 public class UnitDTO {
 
 	private Integer unitId;
@@ -21,142 +26,9 @@ public class UnitDTO {
 	private TenantSimpleDTO tenant;
 	private UnitReserveDetailsDTO reservation;
 	private List<UnitKeyDTO> keys;
+	private List<BedspaceDTO> bedspaces;
 
-	public Integer getUnitId() {
-		return unitId;
-	}
 
-	public void setUnitId(Integer unitId) {
-		this.unitId = unitId;
-	}
-
-	public String getUnitName() {
-		return unitName;
-	}
-
-	public void setUnitName(String unitName) {
-		this.unitName = unitName;
-	}
-
-	public String getFloorName() {
-		return floorName;
-	}
-
-	public void setFloorName(String floorName) {
-		this.floorName = floorName;
-	}
-
-	public String getUnitType() {
-		return unitType;
-	}
-
-	public void setUnitType(String unitType) {
-		this.unitType = unitType;
-	}
-
-	public String getUnitSubType() {
-		return unitSubType;
-	}
-
-	public void setUnitSubType(String unitSubType) {
-		this.unitSubType = unitSubType;
-	}
-
-	public String getSize() {
-		return size;
-	}
-
-	public void setSize(String size) {
-		this.size = size;
-	}
-
-	public Boolean getHasBalcony() {
-		return hasBalcony;
-	}
-
-	public void setHasBalcony(Boolean hasBalcony) {
-		this.hasBalcony = hasBalcony;
-	}
-
-	public String getUnitStatus() {
-		return unitStatus;
-	}
-
-	public void setUnitStatus(String unitStatus) {
-		this.unitStatus = unitStatus;
-	}
-
-	public Double getRentMonth() {
-		return rentMonth;
-	}
-
-	public void setRentMonth(Double rentMonth) {
-		this.rentMonth = rentMonth;
-	}
-
-	public Double getRentYear() {
-		return rentYear;
-	}
-
-	public void setRentYear(Double rentYear) {
-		this.rentYear = rentYear;
-	}
-
-	public Double getSecurityDeposit() {
-		return securityDeposit;
-	}
-
-	public void setSecurityDeposit(Double securityDeposit) {
-		this.securityDeposit = securityDeposit;
-	}
-
-	public String getWaterConnNo() {
-		return waterConnNo;
-	}
-
-	public void setWaterConnNo(String waterConnNo) {
-		this.waterConnNo = waterConnNo;
-	}
-
-	public String getEbConnNo() {
-		return ebConnNo;
-	}
-
-	public void setEbConnNo(String ebConnNo) {
-		this.ebConnNo = ebConnNo;
-	}
-
-	public List<String> getUnitImages() {
-		return unitImages;
-	}
-
-	public void setUnitImages(List<String> unitImages) {
-		this.unitImages = unitImages;
-	}
-
-	public TenantSimpleDTO getTenant() {
-		return tenant;
-	}
-
-	public void setTenant(TenantSimpleDTO tenant) {
-		this.tenant = tenant;
-	}
-
-	public UnitReserveDetailsDTO getReservation() {
-		return reservation;
-	}
-
-	public void setReservation(UnitReserveDetailsDTO reservation) {
-		this.reservation = reservation;
-	}
-
-	public List<UnitKeyDTO> getKeys() {
-		return keys;
-	}
-
-	public void setKeys(List<UnitKeyDTO> keys) {
-		this.keys = keys;
-	}
 
 	@Override
 	public String toString() {

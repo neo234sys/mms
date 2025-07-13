@@ -37,5 +37,6 @@ public class BuildingDetailDTO {
 	private List<ParkingDTO> parkings;
 	private List<ParkingZoneDTO> parkingZones;
 	private List<UnitDTO> units;
+	private List<BedspaceDTO> bedspaces;
 
 }

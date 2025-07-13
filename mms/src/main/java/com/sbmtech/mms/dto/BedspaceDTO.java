@@ -1,5 +1,7 @@
 package com.sbmtech.mms.dto;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,5 +31,7 @@ public class BedspaceDTO {
     private Integer bedspaceBathroomTypeId;
     private String bedspaceBathroomTypeName;
     private String status;
+    
+    private List<String> bsImages;
 
 }

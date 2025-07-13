@@ -2394,6 +2394,51 @@ public class SubscriberServiceImpl implements SubscriberService {
 						return keyDto;
 					}).collect(Collectors.toList()));
 				}
+				
+				
+				List <Bedspace> bedspaceList=bedspaceRepository.findByUnit_UnitId(u.getUnitId());
+				if (bedspaceList!=null && !bedspaceList.isEmpty()) {
+					
+					
+					dto.setBedspaces(bedspaceList.stream().map(bs-> {
+						BedspaceDTO bsDto = new BedspaceDTO();
+						bsDto.setBedspaceId(bs.getBedspaceId());
+						bsDto.setBedspaceName(bs.getBedspaceName());
+						
+
+						if(bs.getPartition()!=null) {
+							bsDto.setPartitionId(bs.getPartition().getBedspacePartitionId());
+							bsDto.setPartitionTypeName(bs.getPartition().getBedspacePartitionName());							
+						}
+						if(bs.getBedspaceCategory()!=null) {
+							bsDto.setBedspaceCategoryId(bs.getBedspaceCategory().getBedspaceCatId());
+							bsDto.setBedspaceCategoryName(bs.getBedspaceCategory().getBedspaceCatName());
+						}
+						
+						if(bs.getBathroomType()!=null) {
+							bsDto.setBedspaceBathroomTypeId(bs.getBathroomType().getBedspaceBathroomTypeId());
+							bsDto.setBedspaceBathroomTypeName(bs.getBathroomType().getBedspaceBathroomTypeName());
+						}
+						bsDto.setFeatures(bs.getFeatures());
+						bsDto.setSecurityDeposit(bs.getSecurityDeposit());
+						bsDto.setRentDay(bs.getRentDay());
+						bsDto.setRentMonth(bs.getRentMonth());
+						bsDto.setStatus(bs.getStatus());
+						bsDto.setUnitId(u.getUnitId());
+						
+						List<String> bsImages = new ArrayList<>();
+						if (StringUtils.isNotBlank(bs.getBsMainPic1Name())) {
+							bsImages.add(s3Service.generatePresignedUrl(subscriberId, b.getBuildingId(), u.getUnitId(),
+									bs.getBsMainPic1Name()));
+						}
+						bsDto.setBsImages(bsImages);
+
+						return bsDto;
+					}).collect(Collectors.toList()));
+					
+					
+					
+				}
 
 				return dto;
 			}).collect(Collectors.toList()));
@@ -2506,7 +2551,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 						bedspace.getBedspaceCategory().getBedspaceCatName(),
 						bedspace.getBathroomType().getBedspaceBathroomTypeId(),
 						bedspace.getBathroomType().getBedspaceBathroomTypeName(),
-						bedspace.getStatus()
+						bedspace.getStatus(), null
 				);
 			}).collect(Collectors.toList());
 
