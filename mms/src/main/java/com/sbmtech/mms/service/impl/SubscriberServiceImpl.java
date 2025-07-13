@@ -147,6 +147,7 @@ import com.sbmtech.mms.payload.response.KeyResponse;
 import com.sbmtech.mms.payload.response.PaginationResponse;
 import com.sbmtech.mms.payload.response.ParkingDetailResponse;
 import com.sbmtech.mms.payload.response.AreaResponse;
+import com.sbmtech.mms.payload.response.BedspaceDetailResponse;
 import com.sbmtech.mms.payload.response.BedspaceResponse;
 import com.sbmtech.mms.payload.response.ParkingResponse;
 import com.sbmtech.mms.payload.response.ParkingZoneResponse;
@@ -2530,11 +2531,6 @@ public class SubscriberServiceImpl implements SubscriberService {
 		 
 		 List<BedspaceDTO> dtos = pageResult.getContent().stream().map(bedspace -> {
 			 
-//				String areaName =  bedspace.getUnit().getBuilding().getArea() != null ? bedspace.getUnit().getBuilding().getArea().getAreaName() : null;
-//				String cityName = (bedspace.getUnit().getBuilding().getArea() != null && bedspace.getUnit().getBuilding().getArea().getCity() != null)
-//						? bedspace.getUnit().getBuilding().getArea().getCity().getName()
-//						: null;
-
 				return new BedspaceDTO(
 						bedspace.getBedspaceId(), 
 						bedspace.getBedspaceName(),
@@ -2762,7 +2758,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 						TenantDetailResponse tenantDetail = new TenantDetailResponse();
 						BeanUtils.copyProperties(tenantUnit.getTenant(), tenantDetail);
 						dto.setTenantDetails(tenantDetail);
-					});
+					});//
 				}
 
 				if (StringUtils.isNotBlank(unit.getUnitMainPic1Name())) {
@@ -2790,9 +2786,41 @@ public class SubscriberServiceImpl implements SubscriberService {
 							unit.getUnitPic5Name());
 					dto.setUnitPic5Link(s3Service.generatePresignedUrl(s3DownloadDto));
 				}
-
+				
+				
+				List <Bedspace> bedspaceList=bedspaceRepository.findByUnit_UnitId(unit.getUnitId());
+				if (bedspaceList!=null && !bedspaceList.isEmpty()) {
+					bedspaceList.stream().map(bs -> {
+						return dto;
+						
+					}).collect(Collectors.toList());
+				}
+				
+				 List<BedspaceDTO> bedspaceDtos = bedspaceList.stream().map(bedspace -> {
+					 
+					 //bedspace.
+						return new BedspaceDTO(
+								bedspace.getBedspaceId(), 
+								bedspace.getBedspaceName(),
+								bedspace.getFeatures(),
+								bedspace.getSecurityDeposit(),
+								bedspace.getRentMonth(),
+								bedspace.getRentDay(),
+								bedspace.getUnit().getUnitId(),
+								bedspace.getPartition().getBedspacePartitionId(),
+								bedspace.getPartition().getBedspacePartitionName(),
+								bedspace.getBedspaceCategory().getBedspaceCatId(),
+								bedspace.getBedspaceCategory().getBedspaceCatName(),
+								bedspace.getBathroomType().getBedspaceBathroomTypeId(),
+								bedspace.getBathroomType().getBedspaceBathroomTypeName(),
+								bedspace.getStatus(), null
+						);
+					}).collect(Collectors.toList());
+				
+				 dto.setBedspaces(bedspaceDtos);
 				return dto;
 			}).collect(Collectors.toList());
+			
 
 			PaginationResponse response = new PaginationResponse<>(unitDTOs, unitPage.getNumber(),
 					unitPage.getTotalPages(), unitPage.getTotalElements(), unitPage.isFirst(), unitPage.isLast());

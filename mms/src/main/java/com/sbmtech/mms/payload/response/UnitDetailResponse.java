@@ -1,9 +1,17 @@
 package com.sbmtech.mms.payload.response;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.sbmtech.mms.dto.BedspaceDTO;
+
+import lombok.Getter;
+import lombok.Setter;
 
 @JsonInclude(Include.NON_NULL)
+@Setter
+@Getter
 public class UnitDetailResponse {
 
 	private Integer unitId;
@@ -29,190 +37,10 @@ public class UnitDetailResponse {
 	private String unitPic4Link;
 	private String unitPic5Link;
 	private TenantDetailResponse tenantDetails;
+	//private BedspaceDetailResponse bsDetails;
+	private List<BedspaceDTO> bedspaces;
 
-	public Integer getUnitId() {
-		return unitId;
-	}
-
-	public void setUnitId(Integer unitId) {
-		this.unitId = unitId;
-	}
-
-	public Integer getBuildingId() {
-		return buildingId;
-	}
-
-	public void setBuildingId(Integer buildingId) {
-		this.buildingId = buildingId;
-	}
-
-	public String getFloor() {
-		return floor;
-	}
-
-	public void setFloor(String floor) {
-		this.floor = floor;
-	}
-
-	public String getUnitName() {
-		return unitName;
-	}
-
-	public void setUnitName(String unitName) {
-		this.unitName = unitName;
-	}
-
-	public Integer getUnitTypeId() {
-		return unitTypeId;
-	}
-
-	public void setUnitTypeId(Integer unitTypeId) {
-		this.unitTypeId = unitTypeId;
-	}
-
-	public String getUnitTypeName() {
-		return unitTypeName;
-	}
-
-	public void setUnitTypeName(String unitTypeName) {
-		this.unitTypeName = unitTypeName;
-	}
-
-	public Integer getUnitSubTypeId() {
-		return unitSubTypeId;
-	}
-
-	public void setUnitSubTypeId(Integer unitSubTypeId) {
-		this.unitSubTypeId = unitSubTypeId;
-	}
-
-	public String getUnitSubTypeName() {
-		return unitSubTypeName;
-	}
-
-	public void setUnitSubTypeName(String unitSubTypeName) {
-		this.unitSubTypeName = unitSubTypeName;
-	}
-
-	public String getSize() {
-		return size;
-	}
-
-	public void setSize(String size) {
-		this.size = size;
-	}
-
-	public Boolean getHasBalcony() {
-		return hasBalcony;
-	}
-
-	public void setHasBalcony(Boolean hasBalcony) {
-		this.hasBalcony = hasBalcony;
-	}
-
-	public Integer getUnitStatusId() {
-		return unitStatusId;
-	}
-
-	public void setUnitStatusId(Integer unitStatusId) {
-		this.unitStatusId = unitStatusId;
-	}
-
-	public String getUnitStatusName() {
-		return unitStatusName;
-	}
-
-	public void setUnitStatusName(String unitStatusName) {
-		this.unitStatusName = unitStatusName;
-	}
-
-	public Double getRentMonth() {
-		return rentMonth;
-	}
-
-	public void setRentMonth(Double rentMonth) {
-		this.rentMonth = rentMonth;
-	}
-
-	public Double getRentYear() {
-		return rentYear;
-	}
-
-	public void setRentYear(Double rentYear) {
-		this.rentYear = rentYear;
-	}
-
-	public Double getSecurityDeposit() {
-		return securityDeposit;
-	}
-
-	public void setSecurityDeposit(Double securityDeposit) {
-		this.securityDeposit = securityDeposit;
-	}
-
-	public String getWaterConnNo() {
-		return waterConnNo;
-	}
-
-	public void setWaterConnNo(String waterConnNo) {
-		this.waterConnNo = waterConnNo;
-	}
-
-	public String getEbConnNo() {
-		return ebConnNo;
-	}
-
-	public void setEbConnNo(String ebConnNo) {
-		this.ebConnNo = ebConnNo;
-	}
-
-	public String getUnitMainPic1Link() {
-		return unitMainPic1Link;
-	}
-
-	public void setUnitMainPic1Link(String unitMainPic1Link) {
-		this.unitMainPic1Link = unitMainPic1Link;
-	}
-
-	public String getUnitPic2Link() {
-		return unitPic2Link;
-	}
-
-	public void setUnitPic2Link(String unitPic2Link) {
-		this.unitPic2Link = unitPic2Link;
-	}
-
-	public String getUnitPic3Link() {
-		return unitPic3Link;
-	}
-
-	public void setUnitPic3Link(String unitPic3Link) {
-		this.unitPic3Link = unitPic3Link;
-	}
-
-	public String getUnitPic4Link() {
-		return unitPic4Link;
-	}
-
-	public void setUnitPic4Link(String unitPic4Link) {
-		this.unitPic4Link = unitPic4Link;
-	}
-
-	public String getUnitPic5Link() {
-		return unitPic5Link;
-	}
-
-	public void setUnitPic5Link(String unitPic5Link) {
-		this.unitPic5Link = unitPic5Link;
-	}
-
-	public TenantDetailResponse getTenantDetails() {
-		return tenantDetails;
-	}
-
-	public void setTenantDetails(TenantDetailResponse tenantDetails) {
-		this.tenantDetails = tenantDetails;
-	}
+	
 
 	@Override
 	public String toString() {
