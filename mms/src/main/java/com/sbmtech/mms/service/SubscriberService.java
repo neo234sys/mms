@@ -84,7 +84,7 @@ public interface SubscriberService {
 
 	public ApiResponse<Object> createTenant(CreateUserRequest request) throws Exception;
 	
-	public ApiResponse<Object> updateTenant(UpdateUserRequest request)throws Exception;
+	public ApiResponse<Object> bsUpdateTenant(UpdateUserRequest request)throws Exception;
 
 	public ApiResponse<Object> createParkingZone(ParkingZoneRequest request);
 

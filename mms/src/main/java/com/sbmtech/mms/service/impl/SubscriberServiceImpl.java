@@ -1544,7 +1544,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 	}
 	
 	@Override
-	public ApiResponse<Object> updateTenant(UpdateUserRequest request) throws Exception {
+	public ApiResponse<Object> bsUpdateTenant(UpdateUserRequest request) throws Exception {
 		List<S3UploadObjectDto> s3UploadObjectDtoList = new ArrayList<>();
 		S3UploadObjectDto s3BuildingLogoDto = null;
 		User existingUser = null;

@@ -186,7 +186,7 @@ public class BSManagementController {
 			@CurrentSecurityContext(expression = "authentication") Authentication auth) throws Exception {
 		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
 		request.setSubscriberId(subscriberId);
-		return ResponseEntity.ok(subscriberService.updateTenant(request));
+		return ResponseEntity.ok(subscriberService.bsUpdateTenant(request));
 	}
 
 
