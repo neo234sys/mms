@@ -139,6 +139,7 @@ import com.sbmtech.mms.payload.request.UnitKeysRequest;
 import com.sbmtech.mms.payload.request.UnitPaginationRequest;
 import com.sbmtech.mms.payload.request.UnitRequest;
 import com.sbmtech.mms.payload.request.UnitUpdateRequest;
+import com.sbmtech.mms.payload.request.UpdateUserRequest;
 import com.sbmtech.mms.payload.request.VerifyOtpRequest;
 import com.sbmtech.mms.payload.response.BuildingResponse;
 import com.sbmtech.mms.payload.response.CommunityResponse;
@@ -1469,11 +1470,11 @@ public class SubscriberServiceImpl implements SubscriberService {
 		tenant = tenantRepository.save(tenant);
 		String pwd = CommonUtil.generateRandomPwd();
 		pwd = "123456";// remove this
+		
 		if (existingUser != null) {
-			// BeanUtils.copyProperties(request, existingUser);
+			
 
 			existingUser.setMobileNo(Long.valueOf(request.getMobileNo()));
-			existingUser.setActive(true);
 			existingUser.setActive(true);
 			existingUser.setEmiratesId(CommonUtil.getLongValofObject(request.getEmiratesId()));
 			existingUser.setDob(CommonUtil.getDatefromString(request.getDob(), DATE_ddMMyyyy));
@@ -1540,6 +1541,156 @@ public class SubscriberServiceImpl implements SubscriberService {
 			throw new BusinessException("Tenant Not created", null);
 		}
 
+	}
+	
+	@Override
+	public ApiResponse<Object> updateTenant(UpdateUserRequest request) throws Exception {
+		List<S3UploadObjectDto> s3UploadObjectDtoList = new ArrayList<>();
+		S3UploadObjectDto s3BuildingLogoDto = null;
+		User existingUser = null;
+		NotificationEmailResponseDTO resp = null;
+		boolean existingTenant = false;
+		Tenant existingTenantDb=null;
+		User user = null;
+		Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
+		if (userOptional.isPresent()) {
+			Countries nationality = countriesRepository.findById(request.getNationalityId()).orElse(null);
+			Subscriber subscriber = subscriberRepository.findById(request.getSubscriberId()).orElse(null);
+
+			existingUser = userOptional.get();
+			Set<Role> exisingRoles = existingUser.getRoles();
+			for (Role r : exisingRoles) {
+				if (r.getRoleId() == RoleEnum.ROLE_TENANT.getValue()) {
+					existingTenant = true;
+				} 
+			}
+
+			if (!existingTenant) {
+				throw new BusinessException("No Tenant found", null);
+			}
+			
+			existingTenantDb=tenantRepository.findByTenantEmailAndSubscriberId(request.getEmail(),request.getSubscriberId());
+			existingTenantDb.setFirstName(request.getFirstName());
+			existingTenantDb.setLastName(request.getLastName());
+		//	existingTenantDb.setEmail(request.getEmail());
+			//existingTenantDb.setPhoneNumber(request.getPhoneNumber());
+			existingTenantDb.setDateOfBirth(CommonUtil.getDatefromString(request.getDob(), DATE_ddMMyyyy));
+			existingTenantDb.setEmiratesId(CommonUtil.getLongValofObject(request.getEmiratesId()));
+			existingTenantDb.setEidaExpiryDate(CommonUtil.getDatefromString(request.getEidaExpiryDate(), DATE_ddMMyyyy));
+			existingTenantDb.setPassportNo(request.getPassportNo());
+			existingTenantDb.setPassportExpiryDate(CommonUtil.getDatefromString(request.getPassportExpiryDate(), DATE_ddMMyyyy));
+			existingTenantDb.setNationality(nationality);
+			existingTenantDb.setSubscriber(subscriber);
+			
+			if (!ObjectUtils.isEmpty(request.getEidaCopy())) {
+				String contentType = CommonUtil.validateAttachment(request.getEidaCopy());
+				String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+				s3BuildingLogoDto = new S3UploadObjectDto(CommonConstants.EID_PIC, contentType, fileExt,
+						Base64.getEncoder().encodeToString(request.getEidaCopy()), null);
+				s3UploadObjectDtoList.add(s3BuildingLogoDto);
+
+				S3UploadDto s3UploadDto = new S3UploadDto();
+				s3UploadDto.setSubscriberId(request.getSubscriberId());
+				s3UploadDto.setObjectType(S3UploadObjTypeEnum.EID.toString());
+				s3UploadDto.setS3UploadObjectDtoList(s3UploadObjectDtoList);
+				List<S3UploadObjectDto> s3UploadObjectDtoListRet = s3Service.upload(s3UploadDto);
+				s3UploadObjectDtoList.clear();
+				for (S3UploadObjectDto s3UploadObjectDto : s3UploadObjectDtoListRet) {
+					if (s3UploadObjectDto != null && StringUtils.isNotBlank(s3UploadObjectDto.getS3FileName())) {
+						if (s3UploadObjectDto.getObjectName().equals(CommonConstants.EID_PIC)) {
+							existingTenantDb.setEidaCopyFilename(s3UploadObjectDto.getS3FileName());
+						}
+
+					}
+				}
+			}
+			if (!ObjectUtils.isEmpty(request.getPassportCopy())) {
+				String contentType = CommonUtil.validateAttachment(request.getPassportCopy());
+				String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+				s3BuildingLogoDto = new S3UploadObjectDto(CommonConstants.PASSPORT_PIC, contentType, fileExt,
+						Base64.getEncoder().encodeToString(request.getPassportCopy()), null);
+				s3UploadObjectDtoList.add(s3BuildingLogoDto);
+
+				S3UploadDto s3UploadDto = new S3UploadDto();
+				s3UploadDto.setSubscriberId(request.getSubscriberId());
+				s3UploadDto.setObjectType(S3UploadObjTypeEnum.PASSPORT.toString());
+				s3UploadDto.setS3UploadObjectDtoList(s3UploadObjectDtoList);
+				List<S3UploadObjectDto> s3UploadObjectDtoListRet = s3Service.upload(s3UploadDto);
+				s3UploadObjectDtoList.clear();
+				for (S3UploadObjectDto s3UploadObjectDto : s3UploadObjectDtoListRet) {
+					if (s3UploadObjectDto != null && StringUtils.isNotBlank(s3UploadObjectDto.getS3FileName())) {
+						if (s3UploadObjectDto.getObjectName().equals(CommonConstants.PASSPORT_PIC)) {
+							existingTenantDb.setPassportCopyFilename(s3UploadObjectDto.getS3FileName());
+						}
+
+					}
+				}
+			}
+
+			if (!ObjectUtils.isEmpty(request.getPhoto())) {
+				String contentType = CommonUtil.validateAttachment(request.getPhoto());
+				String fileExt = contentType.substring(contentType.indexOf("/") + 1);
+				s3BuildingLogoDto = new S3UploadObjectDto(CommonConstants.PHOTO_PIC, contentType, fileExt,
+						Base64.getEncoder().encodeToString(request.getPhoto()), null);
+				s3UploadObjectDtoList.add(s3BuildingLogoDto);
+
+				S3UploadDto s3UploadDto = new S3UploadDto();
+				s3UploadDto.setSubscriberId(request.getSubscriberId());
+				s3UploadDto.setObjectType(S3UploadObjTypeEnum.PHOTO.toString());
+				s3UploadDto.setS3UploadObjectDtoList(s3UploadObjectDtoList);
+				List<S3UploadObjectDto> s3UploadObjectDtoListRet = s3Service.upload(s3UploadDto);
+				s3UploadObjectDtoList.clear();
+				for (S3UploadObjectDto s3UploadObjectDto : s3UploadObjectDtoListRet) {
+					if (s3UploadObjectDto != null && StringUtils.isNotBlank(s3UploadObjectDto.getS3FileName())) {
+						if (s3UploadObjectDto.getObjectName().equals(CommonConstants.PHOTO_PIC)) {
+							existingTenantDb.setPhotoFilename(s3UploadObjectDto.getS3FileName());
+						}
+
+					}
+				}
+			}
+			existingTenantDb = tenantRepository.save(existingTenantDb);
+			
+			System.out.println("existingTenantDb="+existingTenantDb);
+			
+			existingUser.setMobileNo(Long.valueOf(request.getMobileNo()));
+			existingUser.setActive(true);
+			existingUser.setEmiratesId(CommonUtil.getLongValofObject(request.getEmiratesId()));
+			existingUser.setDob(CommonUtil.getDatefromString(request.getDob(), DATE_ddMMyyyy));
+			existingUser.setGender(request.getGender());
+			existingUser.setAddress(request.getAddress());
+			if (request.getEidaCopy() != null && request.getEidaCopy().length > 1
+					&& StringUtils.isNoneBlank(existingTenantDb.getEidaCopyFilename())) {
+				// existingUser.setEidaCopy(request.getEidaCopy());
+				existingUser.setEidaCopyFilename(existingTenantDb.getEidaCopyFilename());
+			}
+			existingUser.setNationality(nationality);
+
+			// user.setUserType(userType);
+			existingUser.setSubscriber(subscriber);
+			existingUser.setUpdatedDate(new Date());
+			
+			//Set<Role> exisingRoles = existingUser.getRoles();
+			//exisingRoles.add(role);
+			//existingUser.setTenantId(tenant.getTenantId());
+			user = userRepository.save(existingUser);
+			
+			NotifEmailDTO dto = new NotifEmailDTO();
+			dto.setEmailTo(request.getEmail());
+			dto.setCustomerName(request.getFirstName());
+		//	dto.setPwd(pwd);
+			resp = notificationService.sendTenentDetailsUpdate(dto);
+
+		}
+		if (resp != null && resp.isEmailSent()) {
+			@SuppressWarnings("rawtypes")
+			GenericResponse gr = new GenericResponse();
+			gr.setId(existingTenantDb.getTenantId());
+			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, gr, null, null);
+		} else {
+			throw new BusinessException("Tenant Not updated", null);
+		}
+		
 	}
 	
 	public ApiResponse<Object> reserveUnit(Integer subscriberId, ReserveUnitRequest request)throws Exception {
@@ -2514,50 +2665,6 @@ public class SubscriberServiceImpl implements SubscriberService {
 	}
 	
 	
-	 @Override
-	 @Transactional(readOnly = true)
-	 public ApiResponse<Object> searchBedspaces(BedspaceSearchCriteria criteria) {
-		 //Page<BedspaceDTO>
-		 PaginationRequest paginationRequest = criteria.getPaginationRequest();
-		 paginationRequest.setSortBy("bedspaceId");
-			Sort sort = paginationRequest.getSortDirection().equalsIgnoreCase("desc")
-					? Sort.by(paginationRequest.getSortBy()).descending()
-					: Sort.by(paginationRequest.getSortBy()).ascending();
-			PageRequest pageable = PageRequest.of(paginationRequest.getPage(), paginationRequest.getSize(), sort);
-			
-		
-		 
-		 Page<Bedspace> pageResult =   bedspaceRepository.findAll(BedspaceSpecifications.matchesCriteria(criteria),pageable);
-	                
-		 
-		 List<BedspaceDTO> dtos = pageResult.getContent().stream().map(bedspace -> {
-			 
-				return new BedspaceDTO(
-						bedspace.getBedspaceId(), 
-						bedspace.getBedspaceName(),
-						bedspace.getFeatures(),
-						bedspace.getSecurityDeposit(),
-						bedspace.getRentMonth(),
-						bedspace.getRentDay(),
-						//bedspace.getHasWardrobe(),
-						//bedspace.getHasKitchen(),
-						bedspace.getUnit().getUnitId(),
-						bedspace.getPartition().getBedspacePartitionId(),
-						bedspace.getPartition().getBedspacePartitionName(),
-						bedspace.getBedspaceCategory().getBedspaceCatId(),
-						bedspace.getBedspaceCategory().getBedspaceCatName(),
-						bedspace.getBathroomType().getBedspaceBathroomTypeId(),
-						bedspace.getBathroomType().getBedspaceBathroomTypeName(),
-						bedspace.getStatus(), null
-				);
-			}).collect(Collectors.toList());
-
-			@SuppressWarnings("rawtypes")
-			PaginationResponse pgResp = new PaginationResponse<>(dtos, pageResult.getNumber(), pageResult.getTotalPages(),
-					pageResult.getTotalElements(), pageResult.isFirst(), pageResult.isLast());
-
-			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, pgResp, null, null);
-	 }
 
 
 	private List<FloorDTO> getBuildlingFloors(Building b) {
@@ -3215,7 +3322,7 @@ public class SubscriberServiceImpl implements SubscriberService {
 
 			existingTenant.setFirstName(request.getFirstName());
 			existingTenant.setLastName(request.getLastName());
-			existingTenant.setEmail(request.getEmail());
+			//existingTenant.setEmail(request.getEmail());
 			existingTenant.setPhoneNumber(request.getPhoneNumber());
 			existingTenant.setDateOfBirth(request.getDateOfBirth());
 			existingTenant.setEmiratesId(request.getEmiratesId());
@@ -3602,8 +3709,8 @@ public class SubscriberServiceImpl implements SubscriberService {
 		    bedspace.setSecurityDeposit(dto.getSecurityDeposit());
 		    bedspace.setRentMonth(dto.getRentMonth());
 		    bedspace.setRentDay(dto.getRentDay());
-		    bedspace.setHasWardrobe(dto.getHasWardrobe());
-		    bedspace.setHasKitchen(dto.getHasKitchen());
+		   // bedspace.setHasWardrobe(dto.getHasWardrobe());
+		   // bedspace.setHasKitchen(dto.getHasKitchen());
 		    bedspace.setFeatures(dto.getFeatures());
 		    	
 		    // fetch and set references
@@ -3717,8 +3824,8 @@ public class SubscriberServiceImpl implements SubscriberService {
 			existingBs.setSecurityDeposit(request.getSecurityDeposit());
 			existingBs.setRentMonth(request.getRentMonth());
 			existingBs.setRentDay(request.getRentDay());
-			existingBs.setHasWardrobe(request.getHasWardrobe());
-			existingBs.setHasKitchen(request.getHasKitchen());
+			//existingBs.setHasWardrobe(request.getHasWardrobe());
+			//existingBs.setHasKitchen(request.getHasKitchen());
 			existingBs.setFeatures(request.getFeatures());
 			
 			Unit unit = unitRepository.findByUnitIdAndSubscriberId(request.getUnitId(), subscriberId);  
@@ -3807,13 +3914,53 @@ public class SubscriberServiceImpl implements SubscriberService {
 		}
 	}
 	
-//	
-//	@Transactional(readOnly = true)
-//	public List<Bedspace> searchBedspaces(BedspaceSearchCriteria criteria) {
-//		 List<Bedspace> result = bedspaceRepository.findAll(BedspaceSpecifications.matchesCriteria(criteria));
-//	    //return bedspaceRepository.findAll(BedspaceSpecifications.matchesCriteria(criteria));
-//		 return null;
-//	}
+	 @Override
+	 @Transactional(readOnly = true)
+	 public ApiResponse<Object> searchBedspaces(BedspaceSearchCriteria criteria) {
+		 //Page<BedspaceDTO>
+		 PaginationRequest paginationRequest = criteria.getPaginationRequest();
+		 paginationRequest.setSortBy("bedspaceId");
+			Sort sort = paginationRequest.getSortDirection().equalsIgnoreCase("desc")
+					? Sort.by(paginationRequest.getSortBy()).descending()
+					: Sort.by(paginationRequest.getSortBy()).ascending();
+			PageRequest pageable = PageRequest.of(paginationRequest.getPage(), paginationRequest.getSize(), sort);
+			
+		
+		 
+		 Page<Bedspace> pageResult =   bedspaceRepository.findAll(BedspaceSpecifications.matchesCriteria(criteria),pageable);
+	                
+		 
+		 List<BedspaceDTO> dtos = pageResult.getContent().stream().map(bedspace -> {
+			 
+				return new BedspaceDTO(
+						bedspace.getBedspaceId(), 
+						bedspace.getBedspaceName(),
+						bedspace.getFeatures(),
+						bedspace.getSecurityDeposit(),
+						bedspace.getRentMonth(),
+						bedspace.getRentDay(),
+						//bedspace.getHasWardrobe(),
+						//bedspace.getHasKitchen(),
+						bedspace.getUnit().getUnitId(),
+						bedspace.getPartition().getBedspacePartitionId(),
+						bedspace.getPartition().getBedspacePartitionName(),
+						bedspace.getBedspaceCategory().getBedspaceCatId(),
+						bedspace.getBedspaceCategory().getBedspaceCatName(),
+						bedspace.getBathroomType().getBedspaceBathroomTypeId(),
+						bedspace.getBathroomType().getBedspaceBathroomTypeName(),
+						bedspace.getStatus(), null
+				);
+			}).collect(Collectors.toList());
+
+			@SuppressWarnings("rawtypes")
+			PaginationResponse pgResp = new PaginationResponse<>(dtos, pageResult.getNumber(), pageResult.getTotalPages(),
+					pageResult.getTotalElements(), pageResult.isFirst(), pageResult.isLast());
+
+			return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, pgResp, null, null);
+	 }
+
+	
+
 	
 	
 }

@@ -140,6 +140,28 @@ public class NotificationServiceImpl implements NotificationService {
 		
 		return emailResponseDTO;
 	}
+
+	@Override
+	public NotificationEmailResponseDTO sendTenentDetailsUpdate(NotifEmailDTO dto) throws Exception {
+		NotificationEmailResponseDTO emailResponseDTO = new NotificationEmailResponseDTO();
+		NotifEmailDTO emailSenderDTO = new NotifEmailDTO();
+		boolean isEmailSent = false;
+		
+		emailSenderDTO.setEmailTo(dto.getEmailTo());
+		emailSenderDTO.setEmailBody(util.prepareTenantUpdateDetails(dto));
+		emailSenderDTO.setSubject(NotificationConstants.NOTIF_TENANT_DETAILS_KEY);
+		emailSenderDTO.setAttachmentFileName(dto.getAttachmentFileName());
+		emailSenderDTO.setAttachmentObj(dto.getAttachmentObj());
+		emailSenderDTO.setCustomerName(dto.getCustomerName());
+		
+		isEmailSent =emailService.sendEmailWithMultiAttachments(emailSenderDTO);
+		
+		
+		emailResponseDTO.setEmailSent(isEmailSent);
+		emailResponseDTO.setEmail(emailSenderDTO.getEmailTo());
+		
+		return emailResponseDTO;
+	}
 	
 	
 

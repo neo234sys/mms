@@ -125,6 +125,17 @@ public class NotificationUtil {
 		return mergedContent.toString();
 	}
 	
+	public String prepareTenantUpdateDetails(NotifEmailDTO dto){
+		
+		StringWriter mergedContent = new StringWriter();
+		VelocityContext velocityContext = new VelocityContext();
+		velocityContext.put("dataHolderDTO", dto);
+		Template template = velocityEngine.getTemplate(NotificationConstants.TEMPLATE_PATH  + NotificationConstants.NOTIF_TENANT_UPDATE_DETAILS);
+		 template.merge(velocityContext, mergedContent);
+		
+		return mergedContent.toString();
+	}
+	
 	public String prepareReserveUnitEmail(NotifEmailDTO dto){
 		
 		StringWriter mergedContent = new StringWriter();

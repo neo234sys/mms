@@ -40,6 +40,7 @@ import com.sbmtech.mms.payload.request.UnitKeysRequest;
 import com.sbmtech.mms.payload.request.UnitPaginationRequest;
 import com.sbmtech.mms.payload.request.UnitRequest;
 import com.sbmtech.mms.payload.request.UnitUpdateRequest;
+import com.sbmtech.mms.payload.request.UpdateUserRequest;
 import com.sbmtech.mms.payload.request.VerifyOtpRequest;
 import com.sbmtech.mms.payload.response.SubscriptionPlans;
 
@@ -82,6 +83,8 @@ public interface SubscriberService {
 	public ApiResponse<Object> addUnit(BSUnitRequest request) throws Exception;
 
 	public ApiResponse<Object> createTenant(CreateUserRequest request) throws Exception;
+	
+	public ApiResponse<Object> updateTenant(UpdateUserRequest request)throws Exception;
 
 	public ApiResponse<Object> createParkingZone(ParkingZoneRequest request);
 
@@ -141,5 +144,7 @@ public interface SubscriberService {
 	public ApiResponse<?> updateBedspace(Integer subscriberId, BedspaceRequest request);
 
 	public  ApiResponse<Object> searchBedspaces(BedspaceSearchCriteria criteria);
+
+	
 
 }

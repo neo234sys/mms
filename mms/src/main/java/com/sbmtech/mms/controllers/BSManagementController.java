@@ -49,6 +49,7 @@ import com.sbmtech.mms.payload.request.UnitKeysRequest;
 import com.sbmtech.mms.payload.request.UnitPaginationRequest;
 import com.sbmtech.mms.payload.request.UnitRequest;
 import com.sbmtech.mms.payload.request.UnitUpdateRequest;
+import com.sbmtech.mms.payload.request.UpdateUserRequest;
 import com.sbmtech.mms.service.ConstantLookupService;
 import com.sbmtech.mms.service.PaymentService;
 import com.sbmtech.mms.service.ProductConfigService;
@@ -171,6 +172,23 @@ public class BSManagementController {
 		request.setSubscriberId(subscriberId);
 		return ResponseEntity.ok(subscriberService.createTenant(request));
 	}
+	
+	@PostMapping("/bsCreateTenant")
+	public ResponseEntity<?> bsCreateTenant(@RequestBody CreateUserRequest request,
+			@CurrentSecurityContext(expression = "authentication") Authentication auth) throws Exception {
+		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
+		request.setSubscriberId(subscriberId);
+		return ResponseEntity.ok(subscriberService.createTenant(request));
+	}
+	
+	@PostMapping("/bsUpdateTenant")
+	public ResponseEntity<?> bsUpdateTenant(@RequestBody UpdateUserRequest request,
+			@CurrentSecurityContext(expression = "authentication") Authentication auth) throws Exception {
+		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
+		request.setSubscriberId(subscriberId);
+		return ResponseEntity.ok(subscriberService.updateTenant(request));
+	}
+
 
 	@PostMapping("/addParkingZone")
 	public ResponseEntity<?> addParkingZone(@Valid @RequestBody ParkingZoneRequest request,

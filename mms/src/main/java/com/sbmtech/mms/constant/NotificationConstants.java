@@ -25,4 +25,7 @@ public class NotificationConstants {
 	public static final String NOTIF_TENANT_ACCT_SUBJECT_KEY = "MMS Tenant Account Created";
 	public static final String NOTIF_TENANT_ACCT_ACTIVE_TEMPLATE_KEY = "TenantAcctCreationTemplate.vm";
 	public static final String NOTIF_TENANT_ACCT_ACTIVE_TEMPLATE_KEY_EXT_USER = "TenantAcctCreationTemplateExisingUser.vm";
+	
+	public static final String NOTIF_TENANT_DETAILS_KEY = "MMS Tenant Account Details Updated";
+	public static final String NOTIF_TENANT_UPDATE_DETAILS = "TenantUpdateDetails.vm";
 }

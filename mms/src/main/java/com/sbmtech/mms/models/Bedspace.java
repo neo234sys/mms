@@ -61,8 +61,8 @@ public class Bedspace implements Serializable{
     private Double rentMonth;
     private Double rentDay;
 
-    private Boolean hasWardrobe;
-    private Boolean hasKitchen;
+    //private Boolean hasWardrobe;
+    //private Boolean hasKitchen;
 
     private String features;
     
