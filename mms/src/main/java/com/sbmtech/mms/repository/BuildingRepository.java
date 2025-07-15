@@ -15,7 +15,7 @@ import com.sbmtech.mms.models.Building;
 @Repository
 public interface BuildingRepository extends JpaRepository<Building, Integer>, JpaSpecificationExecutor<Building>  {
 
-	@Query(value = "SELECT B from Building B where B.buildingId=?1 and B.subscriber.subscriberId =?2")
+	@Query(value = "SELECT B from Building B where B.buildingId=?1 and B.subscriber.subscriberId =?2 AND B.isDeleted = false")
 	public Building findByBuildingIdAndSubscriberId(Integer buildingId, Integer subscriberId);
 
 	Page<Building> findAll(Pageable pageable);

@@ -145,6 +145,8 @@ public interface SubscriberService {
 
 	public  ApiResponse<Object> searchBedspaces(BedspaceSearchCriteria criteria);
 
+	public ApiResponse<Object> getBuildingById(Integer subscriberId, Integer buildingId)throws Exception;
+
 	
 
 }

@@ -2604,6 +2604,60 @@ public class SubscriberServiceImpl implements SubscriberService {
 				pageBD.getTotalPages(), pageBD.getTotalElements(), pageBD.isFirst(), pageBD.isLast());
 		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, pgResp, null, null);
 	}
+	
+	
+	@SuppressWarnings("rawtypes")
+	public ApiResponse<Object> getBuildingById(Integer subscriberId, Integer buildingId) {
+		
+		Building b = buildingRepository.findByBuildingIdAndSubscriberId(buildingId,subscriberId);
+
+		List<BuildingDetailDTO> listBD = new ArrayList<>();
+
+	
+			BuildingDetailDTO bt = new BuildingDetailDTO();
+			BeanUtils.copyProperties(b, bt);
+
+			if (StringUtils.isNotBlank(b.getBuildingLogoFileName())) {
+				bt.setBuildingLogoLink(s3Service.generatePresignedUrl(subscriberId, b.getBuildingId(), null,
+						b.getBuildingLogoFileName()));
+			}
+
+			if (b.getCommunity() != null) {
+				Community ct = b.getCommunity();
+				bt.setCommunityId(ct.getCommunityId());
+				bt.setCommunityName(ct.getCommunityName());
+				if (ct.getArea() != null) {
+					Area ae = b.getArea();
+					bt.setAreaId(ae.getAreaId());
+					bt.setAreaName(ae.getAreaName());
+					Countries country = ae.getCountry();
+					bt.setCountryId(country.getCountryId());
+					bt.setCountryName(country.getName());
+					State st = ae.getState();
+					bt.setStateId(st.getStateId());
+					bt.setStateName(st.getName());
+					City city = ae.getCity();
+					bt.setCityId(city.getCityId());
+					bt.setCityName(city.getName());
+				}
+			} else if (b.getArea() != null) {
+				Area ae = b.getArea();
+				bt.setAreaId(ae.getAreaId());
+				bt.setAreaName(ae.getAreaName());
+				Countries country = ae.getCountry();
+				bt.setCountryId(country.getCountryId());
+				bt.setCountryName(country.getName());
+				State st = ae.getState();
+				bt.setStateId(st.getStateId());
+				bt.setStateName(st.getName());
+				City city = ae.getCity();
+				bt.setCityId(city.getCityId());
+				bt.setCityName(city.getName());
+			}
+
+
+		return new ApiResponse<>(SUCCESS_CODE, SUCCESS_DESC, bt, null, null);
+	}
 
 	public ApiResponse<Object> searchBuildings(Integer subscriberId, BuildingSearchRequest request) {
 

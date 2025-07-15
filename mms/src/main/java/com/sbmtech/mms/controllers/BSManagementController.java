@@ -321,6 +321,13 @@ public class BSManagementController {
 		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
 		return ResponseEntity.ok(subscriberService.getAllBuildings(subscriberId, request));
 	}
+	
+	@PostMapping("/getBuildingById")
+	public ResponseEntity<?> getBuildingById(@CurrentSecurityContext(expression = "authentication") Authentication auth,
+			@RequestBody(required = false) BuildingRequest request) throws Exception {
+		Integer subscriberId = subscriberService.getSubscriberIdfromAuth(auth);
+		return ResponseEntity.ok(subscriberService.getBuildingById(subscriberId, request.getBuildingId()));
+	}
 
 	/*
 	 * alternate approach for getAllBuildings search will be cosider later
